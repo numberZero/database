@@ -1,0 +1,4 @@
+[Project]
+Name=database
+Manager=KDevCMakeManager
+VersionControl=kdevgit
