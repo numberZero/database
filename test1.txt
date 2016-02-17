@@ -1,0 +1,93 @@
+DATABASE
+
+TABLE teachers
+Count 2
+
+ROW 0
+Name mr. K.
+
+ROW 1
+Name mr. L.
+
+
+TABLE subjects
+Count 2
+
+ROW 0
+Name Halgebra
+
+ROW 1
+Name Differential Equations
+
+
+TABLE rooms
+Count 2
+
+ROW 0
+Number 410
+
+ROW 1
+Number 415
+
+
+TABLE groups
+Count 1
+
+ROW 0
+Number 0
+Meta NO
+
+
+TABLE times
+Count 4
+
+ROW 0
+Day 0
+Lesson 0
+
+ROW 1
+Day 0
+Lesson 1
+
+ROW 2
+Day 1
+Lesson 0
+
+ROW 3
+Day 1
+Lesson 1
+
+
+TABLE entries
+Count 4
+
+ROW 0
+Time 0
+Room 0
+Subject 0
+Teacher 0
+Group 0
+
+ROW 1
+Time 1
+Room 0
+Subject 1
+Teacher 1
+Group 0
+
+ROW 2
+Time 2
+Room 0
+Subject 1
+Teacher 1
+Group 0
+
+ROW 3
+Time 3
+Room 0
+Subject 0
+Teacher 0
+Group 0
+
+
+END

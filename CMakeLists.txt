@@ -3,6 +3,7 @@ project(database)
 
 add_executable(database
 	bitset.cxx
+	db.cxx
 	main.cxx
 )
 

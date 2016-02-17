@@ -5,12 +5,14 @@ typedef std::uint32_t Id;
 
 struct Teacher
 {
-	char name[128];
+	static const std::size_t name_len = 128;
+	char name[name_len];
 };
 
 struct Subject
 {
-	char name[128];
+	static const std::size_t name_len = 128;
+	char name[name_len];
 };
 
 struct Room
@@ -20,6 +22,7 @@ struct Room
 
 struct Group
 {
+	std::uint16_t number;
 	bool meta;
 };
 
