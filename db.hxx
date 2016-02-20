@@ -2,21 +2,8 @@
 #include <iostream>
 #include "db.th.hxx"
 #include "db.tc.hxx"
-
-class RowReference
-{
-	Database *db;
-	Row *row;
-
-public:
-	char *getTeacher() const;
-	char *getSubject() const;
-	int getRoom() const;
-	int getGroup() const;
-	bool isMetaGroup() const;
-	int getDay() const;
-	int getLesson() const;
-};
+#include "select.hxx"
+#include "bitset.hxx"
 
 class DatabaseError:
 	public std::runtime_error
@@ -49,6 +36,20 @@ class Database
 
 	Table<Row> rows;
 
+	Bitset index_teacher_subject;
+	Bitset index_teacher_room;
+	Bitset index_teacher_group;
+	Bitset index_teacher_time;
+
+	Bitset index_subject_room;
+	Bitset index_subject_group;
+	Bitset index_subject_time;
+
+	Bitset index_room_group;
+	Bitset index_room_time;
+
+	Bitset index_group_time;
+
 	void readTableRowData_teachers(std::istream& file);
 	void readTableRowData_subjects(std::istream& file);
 	void readTableRowData_rooms(std::istream& file);
@@ -63,7 +64,7 @@ public:
 	Id addRoom(unsigned number);
 	Id addGroup(unsigned number, bool meta = false);
 	Id addTime(unsigned day, unsigned lesson);
-	Id addRow(Id time, Id room, Id subject, Id teacher, Id group);;
+	Id addRow(Id time, Id room, Id subject, Id teacher, Id group);
 
 	void readText(std::string const& filename);
 	void readText(std::istream& file);

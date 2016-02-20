@@ -94,14 +94,14 @@ void Database::readTable(std::istream& file, std::string const& name, void (Data
 {
 	std::string key;
 	std::string value;
-	long count;
+	std::size_t count;
 	value = readValue(file, "TABLE");
 	if(value != name)
 		throw DatabaseFileError("Unexpected table: " + name + " expected, " + value + " found");
 	count = readInteger(file, "Count");
-	for(long k = 0; k != count; ++k)
+	for(std::size_t k = 0; k != count; ++k)
 	{
-		long j = readInteger(file, "ROW");
+		std::size_t j = readInteger(file, "ROW");
 		if(j != k)
 			throw DatabaseFileError("Wrong row numeration: row #" + std::to_string(k) + " marked as being #" + std::to_string(j));
 		(this->*reader)(file);
@@ -198,7 +198,8 @@ void Database::writeText(std::ostream& file)
 
 void Database::printDB(std::ostream& file, int width)
 {
-	for(long k = 0; k != rows.count; ++k)
+	(void)(width);
+	for(std::size_t k = 0; k != rows.count; ++k)
 	{
 		file << "*** Row " << k << " ***\n";
 		file << "Day: " << times[rows[k].time].day << "\n";
@@ -237,22 +238,22 @@ Id Database::addSubject(std::string const& name)
 
 Id Database::addRoom(unsigned number)
 {
-	rooms.add(Room{number});
+	return rooms.add(Room{(std::uint16_t)number});
 }
 
 Id Database::addGroup(unsigned int number, bool meta)
 {
-	groups.add(Group{meta});
+	return groups.add(Group{(std::uint16_t)number, meta});
 }
 
 Id Database::addTime(unsigned day, unsigned lesson)
 {
-	times.add(Time{day, lesson});
+	return times.add(Time{(std::uint16_t)day, (std::uint16_t)lesson});
 }
 
 Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 {
-	rows.add(Row{time, room, subject, teacher, group});
+	return rows.add(Row{time, room, subject, teacher, group});
 }
 
 void Database::clear()

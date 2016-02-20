@@ -1,7 +1,7 @@
 #include <iostream>
 #include "db.hxx"
 
-int main(int argc, char **argv)
+int main()//int argc, char **argv)
 {
 	std::clog << "Database manipulation program" << std::endl;
 	Database db;
