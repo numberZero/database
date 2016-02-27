@@ -16,41 +16,6 @@ void Database::writeText(std::string const& filename)
 	writeText(file);
 }
 
-std::string readValue(std::istream& file, std::string const& key)
-{
-	static char const *space = "\t ";
-	std::string line;
-	std::string str;
-	while(line.empty())
-		std::getline(file, line);
-	auto pos = line.find_first_of(space);
-	if(pos == std::string::npos)
-		throw DatabaseFileError("Key-value pair expected");
-	auto p2 = line.find_first_not_of(space, pos);
-	str = line.substr(0, pos);
-	if(str != key)
-		throw DatabaseFileError("Invalid key: " + key + " expected, " + str + " found");
-	return line.substr(p2);
-}
-
-long readInteger(std::istream& file, std::string const& key)
-{
-	return std::stoi(readValue(file, key));
-}
-
-bool readBoolean(std::istream& file, std::string const& key)
-{
-	std::string value = readValue(file, key);
-	std::string str = value;
-	for (auto & c: str)
-		c = std::toupper(c);
-	if((str == "Y") || (str == "T") || (str == "1") || (str == "YES") || (str == "TRUE"))
-		return true;
-	if((str == "N") || (str == "F") || (str == "0") || (str == "NO") || (str == "FALSE"))
-		return false;
-	throw DatabaseFileError("Boolean value expected, " + value + " found");
-}
-
 void Database::readTableRowData_teachers(std::istream& file)
 {
 	addTeacher(readValue(file, "Name"));
@@ -254,6 +219,31 @@ Id Database::addTime(unsigned day, unsigned lesson)
 Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 {
 	return rows.add(Row{time, room, subject, teacher, group});
+}
+
+Id Database::findTeacher(std::string const& name)
+{
+	return index_teacher[name.c_str()].id;
+}
+
+Id Database::findSubject(std::string const& name)
+{
+	return index_subject[name.c_str()].id;
+}
+
+Id Database::findRoom(unsigned number)
+{
+	return index_room[getRoomKey(number)].id;
+}
+
+Id Database::findGroup(unsigned number, bool meta)
+{
+	return index_group[getGroupKey(number, meta)].id;
+}
+
+Id Database::findTime(unsigned day, unsigned lesson)
+{
+	return index_time[getTimeKey(day, lesson)].id;
 }
 
 void Database::clear()

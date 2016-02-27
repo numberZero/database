@@ -4,8 +4,10 @@ project(database)
 add_executable(database
 	bitset.cxx
 	db.cxx
+	dbhelper.cxx
 	hashtable.cxx
 	main.cxx
+	select.cxx
 )
 
 if($<VERSION_GREATER:CMAKE_VERSION,"3.0">)
