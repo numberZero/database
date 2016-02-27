@@ -3,44 +3,44 @@
 
 static const int bits_x = 64;
 static const int bits_y = 64;
-typedef std::uint64_t BitfieldItem;
-typedef std::uint_fast8_t BitfieldSubindex;
-typedef std::uint_fast16_t BitfieldIndex;
+typedef std::uint64_t BitsetItem;
+typedef std::uint_fast8_t BitsetSubindex;
+typedef std::uint_fast16_t BitsetIndex;
 
-class Bitfield;
+class Bitset;
 
-struct SBitfieldBlock
+struct SBitsetBlock
 {
-	BitfieldItem data[bits_y];
+	BitsetItem data[bits_y];
 };
 
-struct SBitfieldRow
+struct SBitsetRow
 {
-	SBitfieldBlock *block_array;
+	SBitsetBlock *block_array;
 	long block_capacity;
 };
 
-struct SBitfieldPointer
+struct SBitsetPointer
 {
-	SBitfieldBlock *block;
-	BitfieldSubindex sx, sy;
+	SBitsetBlock *block;
+	BitsetSubindex sx, sy;
 };
 
-struct SBitfieldPointerEx: SBitfieldPointer
+struct SBitsetPointerEx: SBitsetPointer
 {
-	Bitfield *bf;
-	BitfieldIndex x, y;
+	Bitset *bf;
+	BitsetIndex x, y;
 };
 
-class Bitfield
+class Bitset
 {
-	SBitfieldRow *row_array;
+	SBitsetRow *row_array;
 	long row_capacity;
 
 public:
-	Bitfield();
-	~Bitfield(); 
-	bool get(BitfieldIndex x, BitfieldIndex y);
-	void set(BitfieldIndex x, BitfieldIndex y);
-	void clear(BitfieldIndex x, BitfieldIndex y);
+	Bitset();
+	~Bitset();
+	bool get(BitsetIndex x, BitsetIndex y);
+	void set(BitsetIndex x, BitsetIndex y);
+	void clear(BitsetIndex x, BitsetIndex y);
 };
