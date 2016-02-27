@@ -14,7 +14,7 @@ TABLE subjects
 Count 2
 
 ROW 0
-Name Halgebra
+Name Algebra
 
 ROW 1
 Name Differential Equations
