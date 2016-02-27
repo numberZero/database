@@ -191,8 +191,13 @@ void Database::printDB(std::ostream& file, int width)
 Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 {
 	Id id = rows.add(Row{time, room, subject, teacher, group});
+	Row *row = &rows[id];
 
-// 	index_teacher[teacher].
+	teachers[teacher].addRow(row);
+	subjects[subject].addRow(row);
+	rooms[room].addRow(row);
+	groups[group].addRow(row);
+	times[time].addRow(row);
 
 	index_teacher_subject.set(teacher, subject);
 	index_teacher_room.set(teacher, room);
@@ -207,6 +212,8 @@ Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 	index_room_time.set(room, time);
 
 	index_group_time.set(group, time);
+
+	return id;
 }
 
 void Database::clear()
