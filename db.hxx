@@ -7,22 +7,16 @@
 #include "bitset.hxx"
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
+#include "dbtables.hxx"
 
-class Database
+class Database:
+	public SubDB_Teacher,
+	public SubDB_Subject,
+	public SubDB_Room,
+	public SubDB_Group,
+	public SubDB_Time
 {
-	Table<Teacher> teachers;
-	Table<Subject> subjects;
-	Table<Room> rooms;
-	Table<Group> groups;
-	Table<Time> times;
-
 	Table<Row> rows;
-
-	HashTable<TeacherRef, char const*, getTeacherName, hashString> index_teacher;
-	HashTable<SubjectRef, char const*, getSubjectName, hashString> index_subject;
-	HashTable<RoomRef, std::uint_fast32_t, getRoomKey, hashInteger<std::uint_fast32_t>> index_room;
-	HashTable<GroupRef, std::uint_fast32_t, getGroupKey, hashInteger<std::uint_fast32_t>> index_group;
-	HashTable<TimeRef, std::uint_fast32_t, getTimeKey, hashInteger<std::uint_fast32_t>> index_time;
 
 	Bitset index_teacher_subject;
 	Bitset index_teacher_room;
@@ -47,18 +41,7 @@ class Database
 	void readTable(std::istream& file, std::string const& name, void (Database::*reader)(std::istream& file));
 
 public:
-	Id addTeacher(std::string const& name);
-	Id addSubject(std::string const& name);
-	Id addRoom(unsigned number);
-	Id addGroup(unsigned number, bool meta = false);
-	Id addTime(unsigned day, unsigned lesson);
 	Id addRow(Id time, Id room, Id subject, Id teacher, Id group);
-
-	Id findTeacher(std::string const& name);
-	Id findSubject(std::string const& name);
-	Id findRoom(unsigned number);
-	Id findGroup(unsigned number, bool meta = false);
-	Id findTime(unsigned day, unsigned lesson);
 
 	void readText(std::string const& filename);
 	void readText(std::istream& file);

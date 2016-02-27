@@ -181,69 +181,25 @@ void Database::printDB(std::ostream& file, int width)
 	}
 }
 
-Id Database::addTeacher(std::string const& name)
-{
-	if(name.length() >= Teacher::name_len)
-		throw DataError("Teacher name too long");
-	auto p = teachers.add();
-	std::memcpy(p.second->name, name.data(), name.length());
-	p.second->name[name.length()] = 0;
-	return p.first;
-}
-
-Id Database::addSubject(std::string const& name)
-{
-	if(name.length() >= Subject::name_len)
-		throw DataError("Subject name too long");
-	auto p = subjects.add();
-	std::memcpy(p.second->name, name.data(), name.length());
-	p.second->name[name.length()] = 0;
-	return p.first;
-}
-
-Id Database::addRoom(unsigned number)
-{
-	return rooms.add(Room{(std::uint16_t)number});
-}
-
-Id Database::addGroup(unsigned int number, bool meta)
-{
-	return groups.add(Group{(std::uint16_t)number, meta});
-}
-
-Id Database::addTime(unsigned day, unsigned lesson)
-{
-	return times.add(Time{(std::uint16_t)day, (std::uint16_t)lesson});
-}
-
 Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 {
-	return rows.add(Row{time, room, subject, teacher, group});
-}
+	Id id = rows.add(Row{time, room, subject, teacher, group});
 
-Id Database::findTeacher(std::string const& name)
-{
-	return index_teacher[name.c_str()].id;
-}
+// 	index_teacher[teacher].
 
-Id Database::findSubject(std::string const& name)
-{
-	return index_subject[name.c_str()].id;
-}
+	index_teacher_subject.set(teacher, subject);
+	index_teacher_room.set(teacher, room);
+	index_teacher_group.set(teacher, group);
+	index_teacher_time.set(teacher, time);
 
-Id Database::findRoom(unsigned number)
-{
-	return index_room[getRoomKey(number)].id;
-}
+	index_subject_room.set(subject, room);
+	index_subject_group.set(subject, group);
+	index_subject_time.set(subject, time);
 
-Id Database::findGroup(unsigned number, bool meta)
-{
-	return index_group[getGroupKey(number, meta)].id;
-}
+	index_room_group.set(room, group);
+	index_room_time.set(room, time);
 
-Id Database::findTime(unsigned day, unsigned lesson)
-{
-	return index_time[getTimeKey(day, lesson)].id;
+	index_group_time.set(group, time);
 }
 
 void Database::clear()

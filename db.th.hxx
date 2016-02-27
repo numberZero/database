@@ -3,8 +3,6 @@
 #include <utility>
 #include "data.hxx"
 
-class Database;
-
 template <typename _Object>
 struct Table
 {

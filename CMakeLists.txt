@@ -5,6 +5,7 @@ add_executable(database
 	bitset.cxx
 	db.cxx
 	dbhelper.cxx
+	dbtables.cxx
 	hashtable.cxx
 	main.cxx
 	select.cxx

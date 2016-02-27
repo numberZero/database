@@ -3,24 +3,39 @@
 #include <string>
 #include "data.hxx"
 
-template <typename _Object>
-struct Reference
+struct RowRefList
 {
-	Id id;
-	_Object *obj;
+	static const int node_capacity = 16;
+
+	struct Node
+	{
+		Row *rows[node_capacity];
+		Node *next;
+	};
+
+	Node *head = nullptr;
+
+	RowRefList() = default;
+	~RowRefList();
+	void addRow(Row *row);
 };
 
-typedef Reference<Teacher> TeacherRef;
-typedef Reference<Subject> SubjectRef;
-typedef Reference<Room> RoomRef;
-typedef Reference<Group> GroupRef;
-typedef Reference<Time> TimeRef;
+template <typename _Data>
+struct Container
+{
+	_Data data;
+	RowRefList rows;
+	void addRow(Row *row)
+	{
+		rows.addRow(row);
+	}
+};
 
-char const *getTeacherName(TeacherRef const& object);
-char const *getSubjectName(SubjectRef const& object);
-std::uint_fast32_t getRoomKey(RoomRef const& object);
-std::uint_fast32_t getGroupKey(GroupRef const& object);
-std::uint_fast32_t getTimeKey(TimeRef const& object);
+char const *getKey(Teacher const& object);
+char const *getKey(Subject const& object);
+std::uint_fast32_t getKey(Room const& object);
+std::uint_fast32_t getKey(Group const& object);
+std::uint_fast32_t getKey(Time const& object);
 
 std::uint_fast32_t getRoomKey(std::uint16_t number);
 std::uint_fast32_t getGroupKey(std::uint16_t number, bool meta);

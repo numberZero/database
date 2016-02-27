@@ -1,29 +1,29 @@
 #include "dbhelper.hxx"
 #include "dbcommon.hxx"
 
-const char* getTeacherName(const TeacherRef& object)
+char const *getKey(Teacher const& object)
 {
-	return object.obj->name;
+	return object.name;
 }
 
-const char* getSubjectName(const SubjectRef& object)
+char const *getKey(Subject const& object)
 {
-	return object.obj->name;
+	return object.name;
 }
 
-uint_fast32_t getRoomKey(const RoomRef& object)
+uint_fast32_t getKey(Room const& object)
 {
-	return getRoomKey(object.obj->number);
+	return getRoomKey(object.number);
 }
 
-uint_fast32_t getGroupKey(const GroupRef& object)
+uint_fast32_t getKey(Group const& object)
 {
-	return getGroupKey(object.obj->number, object.obj->meta);
+	return getGroupKey(object.number, object.meta);
 }
 
-uint_fast32_t getTimeKey(const TimeRef& object)
+uint_fast32_t getKey(Time const& object)
 {
-	return getTimeKey(object.obj->day, object.obj->lesson);
+	return getTimeKey(object.day, object.lesson);
 }
 
 uint_fast32_t getRoomKey(std::uint16_t number)
