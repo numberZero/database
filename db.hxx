@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include "dbcommon.hxx"
 #include "db.th.hxx"
 #include "db.tc.hxx"
 
@@ -16,27 +17,6 @@ public:
 	bool isMetaGroup() const;
 	int getDay() const;
 	int getLesson() const;
-};
-
-class DatabaseError:
-	public std::runtime_error
-{
-public:
-	using std::runtime_error::runtime_error;
-};
-
-class DataError:
-	public DatabaseError
-{
-public:
-	using DatabaseError::DatabaseError;
-};
-
-class DatabaseFileError:
-	public DatabaseError
-{
-public:
-	using DatabaseError::DatabaseError;
 };
 
 class Database
