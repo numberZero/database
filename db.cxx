@@ -132,6 +132,12 @@ void writeTableRowData(std::ostream& file, Row const& object)
 }
 
 template <typename _Object>
+void writeTableRowData(std::ostream& file, Container<_Object> const& container)
+{
+	writeTableRowData(file, container.data);
+}
+
+template <typename _Object>
 void writeTable(std::ostream& file, Table<_Object>& table, std::string const& name)
 {
 	file << "TABLE " << name << "\n";
@@ -167,16 +173,16 @@ void Database::printDB(std::ostream& file, int width)
 	for(std::size_t k = 0; k != rows.count; ++k)
 	{
 		file << "*** Row " << k << " ***\n";
-		file << "Day: " << times[rows[k].time].day << "\n";
-		file << "Lesson #" << times[rows[k].time].lesson << "\n";
-		file << "Room #" << rooms[rows[k].room].number << "\n";
-		file << "Subject: " << subjects[rows[k].subject].name << "\n";
-		file << "Teacher: " << teachers[rows[k].teacher].name << "\n";
-		if(groups[rows[k].group].meta)
+		file << "Day: " << times[rows[k].time].data.day << "\n";
+		file << "Lesson #" << times[rows[k].time].data.lesson << "\n";
+		file << "Room #" << rooms[rows[k].room].data.number << "\n";
+		file << "Subject: " << subjects[rows[k].subject].data.name << "\n";
+		file << "Teacher: " << teachers[rows[k].teacher].data.name << "\n";
+		if(groups[rows[k].group].data.meta)
 			file << "Metagroup #";
 		else
 			file << "Group #";
-		file << groups[rows[k].group].number << "\n";
+		file << groups[rows[k].group].data.number << "\n";
 		file << std::endl; // also flushes the stream
 	}
 }

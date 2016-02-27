@@ -1,6 +1,30 @@
 #include "dbhelper.hxx"
 #include "dbcommon.hxx"
 
+RowRefList::~RowRefList()
+{
+	Node *node = head;
+	while(node)
+	{
+		Node *next = node->next;
+		delete node;
+		node = next;
+	}
+}
+
+void RowRefList::addRow(Row* row)
+{
+	std::size_t idx = count % node_capacity;
+	if(!idx)
+	{
+		Node *node = new Node;
+		node->next = head;
+		head = node;
+	}
+	head->rows[idx] = row;
+	++count;
+}
+
 char const *getKey(Teacher const& object)
 {
 	return object.name;

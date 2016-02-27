@@ -14,6 +14,7 @@ struct RowRefList
 	};
 
 	Node *head = nullptr;
+	std::size_t count = 0;
 
 	RowRefList() = default;
 	~RowRefList();
@@ -25,6 +26,12 @@ struct Container
 {
 	_Data data;
 	RowRefList rows;
+
+	Container(_Data&& contents) :
+		data(contents)
+	{
+	}
+
 	void addRow(Row *row)
 	{
 		rows.addRow(row);

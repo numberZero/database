@@ -13,11 +13,11 @@
 		friend HashTable<Id, KEY, SubDB_##NAME>; \
 		KEY operator() (Id id) \
 		{ \
-			return getKey(NAME_LC##s[id]); \
+			return getKey(NAME_LC##s[id].data); \
 		} \
 \
 	protected: \
-		Table<NAME> NAME_LC##s; \
+		Table<Container<NAME>> NAME_LC##s; \
 		HashTable<Id, KEY, SubDB_##NAME> index_##NAME_LC; \
 		void readTableRowData_##NAME_LC##s(std::istream& file); \
  \

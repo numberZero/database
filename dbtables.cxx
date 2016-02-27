@@ -6,10 +6,12 @@ Id SubDB_Teacher::addTeacher(std::string const& name)
 	if(name.length() >= Teacher::name_len)
 		throw DataError("Teacher name too long");
 	auto p = teachers.add();
-	std::memcpy(p.second->name, name.data(), name.length());
-	p.second->name[name.length()] = 0;
-	index_teacher.add(p.first);
-	return p.first;
+	Id id = p.first;
+	Teacher &teacher = p.second->data;
+	std::memcpy(teacher.name, name.data(), name.length());
+	teacher.name[name.length()] = 0;
+	index_teacher.add(id);
+	return id;
 }
 
 Id SubDB_Subject::addSubject(std::string const& name)
@@ -17,10 +19,12 @@ Id SubDB_Subject::addSubject(std::string const& name)
 	if(name.length() >= Subject::name_len)
 		throw DataError("Subject name too long");
 	auto p = subjects.add();
-	std::memcpy(p.second->name, name.data(), name.length());
-	p.second->name[name.length()] = 0;
-	index_subject.add(p.first);
-	return p.first;
+	Id id = p.first;
+	Subject &subject = p.second->data;
+	std::memcpy(subject.name, name.data(), name.length());
+	subject.name[name.length()] = 0;
+	index_subject.add(id);
+	return id;
 }
 
 Id SubDB_Room::addRoom(unsigned number)
