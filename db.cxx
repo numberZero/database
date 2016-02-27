@@ -165,6 +165,7 @@ void Database::writeText(std::ostream& file)
 #undef writeTable
 	writeTable(file,  rows, "entries");
 	file << "END\n";
+	file.flush();
 }
 
 void Database::printDB(std::ostream& file, int width)
