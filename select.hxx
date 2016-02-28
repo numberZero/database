@@ -99,10 +99,9 @@ class Selection
 	PreSelection *s;
 
 public:
-	Selection(Database *database, SelectionParams const& params);
+	Selection(Database& database, SelectionParams const& params);
 	~Selection();
 
-	void perform(); // initializes the selection
 	bool isValid(); // do we have more rows
 	RowReference getRow(); // returns current row
 	void next(); // shifts to the next row

@@ -149,25 +149,16 @@ void PreSelection_SimpleKey::next()
 
 /*** Selection ***/
 
-Selection::Selection(Database *database, SelectionParams const& params) :
-	db(database),
-	p(params),
-	s(nullptr)
+Selection::Selection(Database& database, SelectionParams const& params) :
+	db(&database),
+	p(params)
 {
+	s = new PreSelection_Full(db->rows); // slow but always works
 }
 
 Selection::~Selection()
 {
-	if(s)
-		delete s;
-}
-
-void Selection::perform()
-{
-	if(s)
-		throw std::logic_error("Selection::perform() is called second time");
-	s = new PreSelection_Full(db->rows); // slow but always works
-// 	throw std::logic_error("PreSelection_SimpleKey::perform() is not implemented");
+	delete s;
 }
 
 bool Selection::isValid()
