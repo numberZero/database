@@ -14,7 +14,7 @@ struct StringParam: Param
 {
 	std::string value;
 	void refine(StringParam const& b);
-	bool check(char const *data);
+	bool check(char const *data) const;
 };
 
 struct IntegerParam: Param
@@ -22,14 +22,14 @@ struct IntegerParam: Param
 	long min;
 	long max;
 	void refine(IntegerParam const& b);
-	bool check(long data);
+	bool check(long data) const;
 };
 
 struct BooleanParam: Param
 {
 	bool value;
 	void refine(BooleanParam const& b);
-	bool check(bool data);
+	bool check(bool data) const;
 };
 
 struct SelectionParams
@@ -43,15 +43,17 @@ struct SelectionParams
 	IntegerParam lesson;
 
 	void refine(SelectionParams const& b);
-	bool check(RowReference row);
+	bool check(RowReference row) const;
+	bool isValid() const;
 };
 
 class PreSelection
 {
 public:
-	virtual bool isValid() = 0;
-	virtual Row *getRow() = 0;
-	virtual void next() = 0;
+	virtual ~PreSelection() = default;
+	virtual bool isValid();
+	virtual Row *getRow();
+	virtual void next();
 };
 
 class PreSelection_Full:

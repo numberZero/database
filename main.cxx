@@ -1,5 +1,5 @@
 #include <iostream>
-#include "db.hxx"
+#include "db/db.hxx"
 
 int main(int argc, char **argv)
 {

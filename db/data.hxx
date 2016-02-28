@@ -34,9 +34,9 @@ struct Time
 
 struct Row
 {
-	Id time;
-	Id room;
-	Id subject;
 	Id teacher;
+	Id subject;
+	Id room;
 	Id group;
+	Id time;
 };

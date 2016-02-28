@@ -12,15 +12,13 @@ Bitset::~Bitset()
 
 bool Bitset::get(BitsetIndex x, BitsetIndex y) const
 {
-
+	return false;
 }
 
 void Bitset::set(BitsetIndex x, BitsetIndex y)
 {
-
 }
 
 void Bitset::clear(BitsetIndex x, BitsetIndex y)
 {
-
 }

@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <utility>
-#include "data.hxx"
 
 template <typename _Object>
 struct Table
@@ -14,11 +13,11 @@ struct Table
 
 	Table();
 	~Table();
-	Id add(_Object&& object);
-	std::pair<Id, _Object *> add();
-	_Object *get(Id id);
+	std::size_t add(_Object&& object);
+	std::pair<std::size_t, _Object *> add();
+	_Object *get(std::size_t id);
 
-	_Object& operator[] (Id id);
+	_Object& operator[] (std::size_t id);
 };
 
 template <typename _Object>
@@ -36,9 +35,9 @@ Table<_Object>::~Table()
 }
 
 template <typename _Object>
-std::pair<Id, _Object *> Table<_Object>::add()
+std::pair<std::size_t, _Object *> Table<_Object>::add()
 {
-	Id id = count;
+	std::size_t id = count;
 	if(count >= capacity)
 	{
 		if(capacity < 0x00000100)
@@ -57,7 +56,7 @@ std::pair<Id, _Object *> Table<_Object>::add()
 }
 
 template <typename _Object>
-Id Table<_Object>::add(_Object&& object)
+std::size_t Table<_Object>::add(_Object&& object)
 {
 	auto p = add();
 	*p.second = std::move(object);
@@ -65,7 +64,7 @@ Id Table<_Object>::add(_Object&& object)
 }
 
 template <typename _Object>
-_Object *Table<_Object>::get(Id id)
+_Object *Table<_Object>::get(std::size_t id)
 {
 	if(id >= count)
 		return nullptr;
@@ -73,7 +72,7 @@ _Object *Table<_Object>::get(Id id)
 }
 
 template <typename _Object>
-_Object& Table<_Object>::operator[] (Id id)
+_Object& Table<_Object>::operator[] (std::size_t id)
 {
 	_Object *obj = get(id);
 	if(!obj)

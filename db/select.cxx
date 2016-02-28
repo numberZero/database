@@ -1,7 +1,9 @@
 #include "select.hxx"
 #include "db.hxx"
 
-/*** Param ***/
+/********* Param *********/
+
+/*** StringParam ***/
 
 void StringParam::refine(StringParam const& b)
 {
@@ -20,7 +22,7 @@ void StringParam::refine(StringParam const& b)
 	}
 }
 
-bool StringParam::check(char const* data)
+bool StringParam::check(char const* data) const
 {
 	if(!do_check)
 		return true;
@@ -28,6 +30,8 @@ bool StringParam::check(char const* data)
 		return false;
 	return value == data;
 }
+
+/*** IntegerParam ***/
 
 void IntegerParam::refine(IntegerParam const& b)
 {
@@ -48,7 +52,7 @@ void IntegerParam::refine(IntegerParam const& b)
 	is_valid = min <= max;
 }
 
-bool IntegerParam::check(long int data)
+bool IntegerParam::check(long int data) const
 {
 	if(!do_check)
 		return true;
@@ -56,6 +60,8 @@ bool IntegerParam::check(long int data)
 		return false;
 	return (min <= data) && (data <= max);
 }
+
+/*** BooleanParam ***/
 
 void BooleanParam::refine(BooleanParam const& b)
 {
@@ -68,7 +74,7 @@ void BooleanParam::refine(BooleanParam const& b)
 	value = b.value;
 }
 
-bool BooleanParam::check(bool data)
+bool BooleanParam::check(bool data) const
 {
 	if(!do_check)
 		return true;
@@ -90,7 +96,7 @@ void SelectionParams::refine(SelectionParams const& b)
 	lesson.refine(b.lesson);
 }
 
-bool SelectionParams::check(RowReference row)
+bool SelectionParams::check(RowReference row) const
 {
 	return
 		teacher.check(row.getTeacher()) &&
@@ -102,7 +108,24 @@ bool SelectionParams::check(RowReference row)
 		lesson.check(row.getLesson());
 }
 
-/*** PreSelection ***/
+/********* PreSelection *********/
+
+bool PreSelection::isValid()
+{
+	return false;
+}
+
+Row *PreSelection::getRow()
+{
+	throw DatabaseLogicError("PreSelection::getRow() called");
+}
+
+void PreSelection::next()
+{
+	throw DatabaseLogicError("PreSelection::next() called");
+}
+
+/*** PreSelection_Full ***/
 
 PreSelection_Full::PreSelection_Full(Table<Row>& table) :
 	rows(table),
@@ -125,6 +148,8 @@ void PreSelection_Full::next()
 	++index;
 }
 
+/*** PreSelection_SimpleKey ***/
+
 bool PreSelection_SimpleKey::isValid()
 {
 	return index < rows->count;
@@ -133,21 +158,21 @@ bool PreSelection_SimpleKey::isValid()
 Row *PreSelection_SimpleKey::getRow()
 {
 	if(!isValid())
-		throw DatabaseError("PreSelection_SimpleKey::getRow() called on an invalid selection");
+		throw DatabaseLogicError("PreSelection_SimpleKey::getRow() called on an invalid selection");
 	return node->rows[index % RowRefList::node_capacity];
 }
 
 void PreSelection_SimpleKey::next()
 {
 	if(!isValid())
-		throw DatabaseError("PreSelection_SimpleKey::next() called on an invalid selection");
+		throw DatabaseLogicError("PreSelection_SimpleKey::next() called on an invalid selection");
 	++index;
 	std::size_t shift = index % RowRefList::node_capacity;
 	if(!shift)
 		node = node->next;
 }
 
-/*** Selection ***/
+/********* Selection *********/
 
 Selection::Selection(Database& database, SelectionParams const& params) :
 	db(&database),
@@ -174,7 +199,7 @@ RowReference Selection::getRow()
 void Selection::next()
 {
 	if(!isValid())
-		throw DatabaseError("Selection::next() called on an invalid selection");
+		throw DatabaseLogicError("Selection::next() called on an invalid selection");
 	for(;;)
 	{
 		s->next();

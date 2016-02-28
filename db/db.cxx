@@ -52,7 +52,7 @@ void Database::readTableRowData_rows(std::istream& file)
 	Id subject = readInteger(file, "Subject");
 	Id teacher = readInteger(file, "Teacher");
 	Id group = readInteger(file, "Group");
-	addRow(time, room, subject, teacher, group);
+	addRow(teacher, subject, room, group, time);
 }
 
 void Database::readTable(std::istream& file, std::string const& name, void (Database::*reader)(std::istream& file))
@@ -142,7 +142,7 @@ void writeTable(std::ostream& file, Table<_Object>& table, std::string const& na
 	file << "TABLE " << name << "\n";
 	file << "Count " << table.count << "\n";
 	file << "\n";
-	for(long k = 0; k != table.count; ++k)
+	for(Id k = 0; k != table.count; ++k)
 	{
 		file << "ROW " << k << "\n";
 		writeTableRowData(file, table[k]);
@@ -187,9 +187,9 @@ void Database::printDB(std::ostream& file, int width)
 	}
 }
 
-Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
+Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 {
-	Id id = rows.add(Row{time, room, subject, teacher, group});
+	Id id = rows.add(Row{teacher, subject, room, group, time});
 	Row *row = &rows[id];
 
 	teachers[teacher].addRow(row);

@@ -44,11 +44,15 @@ private:
 	void readTable(std::istream& file, std::string const& name, void (Database::*reader)(std::istream& file));
 
 public:
-	Id addRow(Id time, Id room, Id subject, Id teacher, Id group);
+	Id addRow(Id teacher, Id subject, Id room, Id group, Id time);
 
 	void readText(std::string const& filename);
 	void readText(std::istream& file);
 	void writeText(std::string const& filename);
 	void writeText(std::ostream& file);
 	void printDB(std::ostream& file, int width = 75);
+
+	void insert(std::string const& teacher, std::string const& subject, unsigned room, unsigned group, bool metagroup, unsigned day, unsigned lesson);
+	Selection select(SelectionParams const& p);
+	void remove(SelectionParams const& p);
 };
