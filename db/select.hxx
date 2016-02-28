@@ -124,6 +124,7 @@ class Selection
 	bool reach(); // finds first row that fits the query
 
 public:
+	Selection();
 	Selection(Database& database, SelectionParams const& params);
 	Selection(Selection const& b) = delete;
 	Selection(Selection&& b);

@@ -14,6 +14,19 @@ void upcase_it(std::string& str)
 		c = std::toupper(c);
 }
 
+std::string trim(std::string const& str, std::string const& delimiters)
+{
+	std::string result(str);
+	trim_it(result, delimiters);
+	return std::move(result);
+}
+
+void trim_it(std::string& str, std::string const& delimiters)
+{
+	str.erase(str.find_last_not_of(delimiters) + 1);
+	str.erase(0, str.find_first_not_of(delimiters));
+}
+
 std::string readValue(std::istream& file, std::string const& key)
 {
 	static char const *space = "\t ";

@@ -69,6 +69,7 @@ public:
 		Result perform(Client& client, Database& db) override;
 	};
 
+	Client(Database *database);
 	void signle_query(std::istream& in, std::ostream& out);
 	void run(std::istream& in, std::ostream& out);
 };

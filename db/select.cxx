@@ -170,6 +170,12 @@ void PreSelection_SimpleKey::next()
 
 /********* Selection *********/
 
+Selection::Selection() :
+	db(nullptr),
+	s(nullptr)
+{
+}
+
 Selection::Selection(Database& database, SelectionParams const& params) :
 	db(&database),
 	p(params),

@@ -35,6 +35,7 @@ SelectionParams parseParams(std::istream& in)
 		if(key == "END")
 			break;
 		std::getline(in, value);
+		trim_it(value);
 		if(key == "TEACHER")
 		{
 			p2.teacher.do_check = true;
@@ -163,6 +164,11 @@ Client::Query::Result Client::QueryPrint::perform(Client& client, Database& db)
 	return Result::Error;
 }
 
+Client::Client(Database* database) :
+	db(database)
+{
+}
+
 void Client::signle_query(std::istream& in, std::ostream& out)
 {
 	std::ios::iostate old_emask = in.exceptions();
@@ -179,10 +185,10 @@ void Client::run(std::istream& in, std::ostream& out)
 		for(;;)
 			signle_query(in, out);
 	}
-	catch(std::ios::failure const& e)
+	catch(std::ios_base::failure const& e)
 	{
-		if(in.eof())
-			return; // silently ignore EoF
-		throw;
+// 		if(in.eof())
+// 			return; // silently ignore EOF
+// 		throw;
 	}
 }
