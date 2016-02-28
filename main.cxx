@@ -32,6 +32,9 @@ int main(int argc, char **argv)
 	SelectionParams sp;
 	sp.subject.value = "Algebra";
 	sp.subject.do_check = true;
+	sp.lesson.min = 1;
+	sp.lesson.max = 1;
+	sp.lesson.do_check = true;
 	for(Selection s(db, sp); s.isValid(); s.next())
 	{
 		RowReference r = s.getRow();

@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 project(database)
 
 add_executable(database
+	client/query.cxx
 	common/bitset.cxx
 	common/hashtable.cxx
+	common/misc.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/dbtables.cxx
@@ -12,6 +14,7 @@ add_executable(database
 )
 
 target_include_directories(database PUBLIC
+	${CMAKE_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/common
 )
 

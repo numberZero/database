@@ -1,5 +1,6 @@
-#include "select.hxx"
+#include <cassert>
 #include "db.hxx"
+#include "select.hxx"
 
 /********* Param *********/
 
@@ -108,22 +109,19 @@ bool SelectionParams::check(RowReference row) const
 		lesson.check(row.getLesson());
 }
 
+bool SelectionParams::isValid() const
+{
+	return
+		teacher.is_valid &&
+		subject.is_valid &&
+		room.is_valid &&
+		group.is_valid &&
+		meta.is_valid &&
+		day.is_valid &&
+		lesson.is_valid;
+}
+
 /********* PreSelection *********/
-
-bool PreSelection::isValid()
-{
-	return false;
-}
-
-Row *PreSelection::getRow()
-{
-	throw DatabaseLogicError("PreSelection::getRow() called");
-}
-
-void PreSelection::next()
-{
-	throw DatabaseLogicError("PreSelection::next() called");
-}
 
 /*** PreSelection_Full ***/
 
@@ -157,15 +155,13 @@ bool PreSelection_SimpleKey::isValid()
 
 Row *PreSelection_SimpleKey::getRow()
 {
-	if(!isValid())
-		throw DatabaseLogicError("PreSelection_SimpleKey::getRow() called on an invalid selection");
+	assert(isValid());
 	return node->rows[index % RowRefList::node_capacity];
 }
 
 void PreSelection_SimpleKey::next()
 {
-	if(!isValid())
-		throw DatabaseLogicError("PreSelection_SimpleKey::next() called on an invalid selection");
+	assert(isValid());
 	++index;
 	std::size_t shift = index % RowRefList::node_capacity;
 	if(!shift)
@@ -176,23 +172,66 @@ void PreSelection_SimpleKey::next()
 
 Selection::Selection(Database& database, SelectionParams const& params) :
 	db(&database),
-	p(params)
+	p(params),
+	s(nullptr)
 {
+	if(!params.isValid())
+		return;
 	s = new PreSelection_Full(db->rows); // slow but always works
+	reach();
+}
+
+Selection::Selection(Selection&& b)
+{
+	reset(b);
 }
 
 Selection::~Selection()
 {
-	delete s;
+	drop();
+}
+
+Selection& Selection::operator=(Selection&& b)
+{
+	drop();
+	reset(b);
+	return *this;
+}
+
+void Selection::drop()
+{
+	if(s)
+		delete s;
+}
+
+void Selection::reset(Selection& b)
+{
+	db = b.db;
+	p = b.p;
+	s = b.s;
+	b.s = nullptr;
+}
+
+bool Selection::reach()
+{
+	while(s->isValid())
+	{
+		if(p.check(getRow()))
+			return true;
+		s->next();
+	}
+	return false;
 }
 
 bool Selection::isValid()
 {
-	return s->isValid();
+	return s && s->isValid();
 }
 
 RowReference Selection::getRow()
 {
+	if(!isValid())
+		throw DatabaseLogicError("Selection::getRow() called on an invalid selection");
 	return RowReference(db, s->getRow());
 }
 
@@ -200,12 +239,6 @@ void Selection::next()
 {
 	if(!isValid())
 		throw DatabaseLogicError("Selection::next() called on an invalid selection");
-	for(;;)
-	{
-		s->next();
-		if(!isValid())
-			break; // no more rows
-		if(p.check(getRow()))
-			break; // next row found
-	}
+	s->next();
+	reach();
 }

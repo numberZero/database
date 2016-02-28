@@ -1,5 +1,6 @@
 #pragma once
 #include <stdexcept>
+#include "misc.hxx"
 
 class DatabaseLogicError:
 	public std::logic_error
@@ -22,9 +23,4 @@ public:
 	using DatabaseError::DatabaseError;
 };
 
-class DatabaseFileError:
-	public DatabaseError
-{
-public:
-	using DatabaseError::DatabaseError;
-};
+using DatabaseFileError = ReadError;

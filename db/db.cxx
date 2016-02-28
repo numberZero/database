@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include "misc.hxx"
 
 void Database::readText(std::string const& filename)
 {

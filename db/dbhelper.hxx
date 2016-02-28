@@ -1,5 +1,4 @@
 #pragma once
-#include <istream>
 #include <string>
 #include "data.hxx"
 
@@ -45,6 +44,17 @@ struct Container
 	}
 };
 
+struct RowData
+{
+	std::string teacher;
+	std::string subject;
+	unsigned room;
+	unsigned group;
+	bool metagroup;
+	unsigned day;
+	unsigned lesson;
+};
+
 class RowReference
 {
 	Database *db;
@@ -60,6 +70,8 @@ public:
 	bool isMetaGroup() const;
 	int getDay() const;
 	int getLesson() const;
+
+	RowData getData() const;
 };
 
 char const *getKey(Teacher const& object);
@@ -71,7 +83,3 @@ std::uint_fast32_t getKey(Time const& object);
 std::uint_fast32_t getRoomKey(std::uint16_t number);
 std::uint_fast32_t getGroupKey(std::uint16_t number, bool meta);
 std::uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson);
-
-std::string readValue(std::istream& file, std::string const& key);
-long readInteger(std::istream& file, std::string const& key);
-bool readBoolean(std::istream& file, std::string const& key);

@@ -2,6 +2,7 @@
 #include <cstdint>
 
 typedef std::uint32_t Id;
+static const Id INVALID_ID = ~(Id)0;
 
 struct Teacher
 {

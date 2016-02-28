@@ -52,7 +52,7 @@ public:
 	void writeText(std::ostream& file);
 	void printDB(std::ostream& file, int width = 75);
 
-	void insert(std::string const& teacher, std::string const& subject, unsigned room, unsigned group, bool metagroup, unsigned day, unsigned lesson);
+	void insert(RowData const& row);
 	Selection select(SelectionParams const& p);
 	void remove(SelectionParams const& p);
 };

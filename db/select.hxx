@@ -51,9 +51,9 @@ class PreSelection
 {
 public:
 	virtual ~PreSelection() = default;
-	virtual bool isValid();
-	virtual Row *getRow();
-	virtual void next();
+	virtual bool isValid() = 0;
+	virtual Row *getRow() = 0;
+	virtual void next() = 0;
 };
 
 class PreSelection_Full:
@@ -119,9 +119,18 @@ class Selection
 	SelectionParams p;
 	PreSelection *s;
 
+	void drop();
+	void reset(Selection& b);
+	bool reach(); // finds first row that fits the query
+
 public:
 	Selection(Database& database, SelectionParams const& params);
+	Selection(Selection const& b) = delete;
+	Selection(Selection&& b);
 	~Selection();
+
+	Selection& operator= (Selection const& b) = delete;
+	Selection& operator= (Selection&& b);
 
 	bool isValid(); // do we have more rows
 	RowReference getRow(); // returns current row
