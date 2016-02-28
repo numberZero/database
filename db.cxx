@@ -76,7 +76,6 @@ void Database::readTable(std::istream& file, std::string const& name, void (Data
 void Database::readText(std::istream& file)
 {
 	std::string value;
-	clear();
 	std::getline(file, value);
 	if(value != "DATABASE")
 		throw DatabaseFileError("Database expected");
@@ -214,14 +213,4 @@ Id Database::addRow(Id time, Id room, Id subject, Id teacher, Id group)
 	index_group_time.set(group, time);
 
 	return id;
-}
-
-void Database::clear()
-{
-	teachers.clear();
-	subjects.clear();
-	rooms.clear();
-	groups.clear();
-	times.clear();
-	rows.clear();
 }

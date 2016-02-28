@@ -51,6 +51,4 @@ public:
 	void writeText(std::string const& filename);
 	void writeText(std::ostream& file);
 	void printDB(std::ostream& file, int width = 75);
-
-	void clear();
 };

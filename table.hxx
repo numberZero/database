@@ -17,7 +17,6 @@ struct Table
 	Id add(_Object&& object);
 	std::pair<Id, _Object *> add();
 	_Object *get(Id id);
-	void clear();
 
 	_Object& operator[] (Id id);
 };
@@ -71,15 +70,6 @@ _Object *Table<_Object>::get(Id id)
 	if(id >= count)
 		return nullptr;
 	return data + id;
-}
-
-template <typename _Object>
-void Table<_Object>::clear()
-{
-	std::free(data);
-	data = nullptr;
-	count = 0;
-	capacity = 0;
 }
 
 template <typename _Object>
