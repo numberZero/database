@@ -40,7 +40,7 @@ class Bitset
 public:
 	Bitset();
 	~Bitset();
-	bool get(BitsetIndex x, BitsetIndex y);
+	bool get(BitsetIndex x, BitsetIndex y) const;
 	void set(BitsetIndex x, BitsetIndex y);
 	void clear(BitsetIndex x, BitsetIndex y);
 };

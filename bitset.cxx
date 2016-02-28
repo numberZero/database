@@ -10,7 +10,7 @@ Bitset::~Bitset()
 {
 }
 
-bool Bitset::get(BitsetIndex x, BitsetIndex y)
+bool Bitset::get(BitsetIndex x, BitsetIndex y) const
 {
 
 }

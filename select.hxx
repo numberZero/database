@@ -92,6 +92,25 @@ public:
 	void next() override;
 };
 
+class PreSelection_Bitset:
+	public PreSelection
+{
+private:
+	Bitset const& bs;
+	IntegerParam rx;
+	IntegerParam ry;
+	Id Row::*px;
+	Id Row::*py;
+	Row values;
+
+public:
+	PreSelection_Bitset(Bitset const& bitset, Id Row::*param_x, IntegerParam range_x, Id Row::*param_y, IntegerParam range_y);
+
+	bool isValid() override;
+	Row *getRow() override;
+	void next() override;
+};
+
 class Selection
 {
 	Database *db;

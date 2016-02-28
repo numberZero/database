@@ -8,6 +8,8 @@ class Database;
 template <typename _Object>
 struct Table;
 
+struct Bitset;
+
 struct RowRefList
 {
 	static const int node_capacity = 16;
