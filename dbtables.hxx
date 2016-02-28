@@ -2,7 +2,7 @@
 #pragma once
 #include <iostream>
 #include "dbcommon.hxx"
-#include "db.th.hxx"
+#include "table.hxx"
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
 

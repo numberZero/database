@@ -1,8 +1,7 @@
 #pragma once
 #include <iostream>
 #include "dbcommon.hxx"
-#include "db.th.hxx"
-#include "db.tc.hxx"
+#include "table.hxx"
 #include "select.hxx"
 #include "bitset.hxx"
 #include "hashtable.hxx"
@@ -16,6 +15,9 @@ class Database:
 	public SubDB_Group,
 	public SubDB_Time
 {
+	friend class RowReference;
+
+private:
 	Table<Row> rows;
 
 	Bitset index_teacher_subject;

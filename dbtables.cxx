@@ -1,5 +1,4 @@
 #include "dbtables.hxx"
-#include "db.tc.hxx"
 
 Id SubDB_Teacher::addTeacher(std::string const& name)
 {
