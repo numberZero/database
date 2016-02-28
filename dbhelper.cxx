@@ -1,5 +1,8 @@
 #include "dbhelper.hxx"
 #include "dbcommon.hxx"
+#include "db.hxx"
+
+/*** RowRefList ***/
 
 RowRefList::~RowRefList()
 {
@@ -24,6 +27,51 @@ void RowRefList::addRow(Row* row)
 	head->rows[idx] = row;
 	++count;
 }
+
+/*** RowReference ***/
+
+RowReference::RowReference(Database *database, Row *prow) :
+	db(database),
+	row(prow)
+{
+}
+
+char const *RowReference::getTeacher() const
+{
+	return db->teachers[row->teacher].data.name;
+}
+
+char const *RowReference::getSubject() const
+{
+	return db->subjects[row->subject].data.name;
+}
+
+int RowReference::getRoom() const
+{
+	return db->rooms[row->room].data.number;
+}
+
+int RowReference::getGroup() const
+{
+	return db->groups[row->group].data.number;
+}
+
+bool RowReference::isMetaGroup() const
+{
+	return db->groups[row->group].data.meta;
+}
+
+int RowReference::getDay() const
+{
+	return db->times[row->time].data.day;
+}
+
+int RowReference::getLesson() const
+{
+	return db->times[row->time].data.lesson;
+}
+
+/*** getKey ***/
 
 char const *getKey(Teacher const& object)
 {
@@ -64,6 +112,8 @@ uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson)
 {
 	return (day << 16) | lesson;
 }
+
+/*** read/write ***/
 
 std::string readValue(std::istream& file, std::string const& key)
 {

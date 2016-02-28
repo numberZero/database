@@ -3,6 +3,11 @@
 #include <string>
 #include "data.hxx"
 
+class Database;
+
+template <typename _Object>
+struct Table;
+
 struct RowRefList
 {
 	static const int node_capacity = 16;
@@ -36,6 +41,23 @@ struct Container
 	{
 		rows.addRow(row);
 	}
+};
+
+class RowReference
+{
+	Database *db;
+	Row *row;
+
+public:
+	RowReference(Database *database, Row *prow);
+
+	char const *getTeacher() const;
+	char const *getSubject() const;
+	int getRoom() const;
+	int getGroup() const;
+	bool isMetaGroup() const;
+	int getDay() const;
+	int getLesson() const;
 };
 
 char const *getKey(Teacher const& object);

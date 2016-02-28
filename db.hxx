@@ -16,6 +16,7 @@ class Database:
 	public SubDB_Time
 {
 	friend class RowReference;
+	friend class Selection;
 
 private:
 	Table<Row> rows;

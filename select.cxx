@@ -1,46 +1,7 @@
 #include "select.hxx"
 #include "db.hxx"
 
-RowReference::RowReference(Database *database, Row *prow) :
-	db(database),
-	row(prow)
-{
-}
-
-char const *RowReference::getTeacher() const
-{
-	return db->teachers[row->teacher].data.name;
-}
-
-char const *RowReference::getSubject() const
-{
-	return db->subjects[row->subject].data.name;
-}
-
-int RowReference::getRoom() const
-{
-	return db->rooms[row->room].data.number;
-}
-
-int RowReference::getGroup() const
-{
-	return db->groups[row->group].data.number;
-}
-
-bool RowReference::isMetaGroup() const
-{
-	return db->groups[row->group].data.meta;
-}
-
-int RowReference::getDay() const
-{
-	return db->times[row->time].data.day;
-}
-
-int RowReference::getLesson() const
-{
-	return db->times[row->time].data.lesson;
-}
+/*** Param ***/
 
 void StringParam::refine(StringParam const& b)
 {
@@ -116,6 +77,8 @@ bool BooleanParam::check(bool data)
 	return value == data;
 }
 
+/*** SelectionParams ***/
+
 void SelectionParams::refine(SelectionParams const& b)
 {
 	teacher.refine(b.teacher);
@@ -139,16 +102,27 @@ bool SelectionParams::check(RowReference row)
 		lesson.check(row.getLesson());
 }
 
-Selection::Selection(Database *database, SelectionParams const& params) :
-	db(database),
-	p(params),
-	s(nullptr)
+/*** PreSelection ***/
+
+PreSelection_Full::PreSelection_Full(Table<Row>& table) :
+	rows(table),
+	index(0)
 {
 }
 
-void Selection::perform()
+bool PreSelection_Full::isValid()
 {
-	throw std::logic_error("PreSelection_SimpleKey::perform() is not implemented");
+	return index < rows.count;
+}
+
+Row* PreSelection_Full::getRow()
+{
+	return &rows[index];
+}
+
+void PreSelection_Full::next()
+{
+	++index;
 }
 
 bool PreSelection_SimpleKey::isValid()
@@ -171,6 +145,29 @@ void PreSelection_SimpleKey::next()
 	std::size_t shift = index % RowRefList::node_capacity;
 	if(!shift)
 		node = node->next;
+}
+
+/*** Selection ***/
+
+Selection::Selection(Database *database, SelectionParams const& params) :
+	db(database),
+	p(params),
+	s(nullptr)
+{
+}
+
+Selection::~Selection()
+{
+	if(s)
+		delete s;
+}
+
+void Selection::perform()
+{
+	if(s)
+		throw std::logic_error("Selection::perform() is called second time");
+	s = new PreSelection_Full(db->rows); // slow but always works
+// 	throw std::logic_error("PreSelection_SimpleKey::perform() is not implemented");
 }
 
 bool Selection::isValid()

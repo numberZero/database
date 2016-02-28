@@ -3,25 +3,6 @@
 #include "data.hxx"
 #include "dbhelper.hxx"
 
-class Database;
-
-class RowReference
-{
-	Database *db;
-	Row *row;
-
-public:
-	RowReference(Database *database, 	Row *prow);
-
-	char const *getTeacher() const;
-	char const *getSubject() const;
-	int getRoom() const;
-	int getGroup() const;
-	bool isMetaGroup() const;
-	int getDay() const;
-	int getLesson() const;
-};
-
 struct Param
 {
 	bool do_check = false;
@@ -73,6 +54,20 @@ public:
 	virtual void next() = 0;
 };
 
+class PreSelection_Full:
+	public PreSelection
+{
+private:
+	Table<Row>& rows;
+	std::size_t index;
+
+public:
+	PreSelection_Full(Table<Row>& table);
+	bool isValid() override;
+	Row *getRow() override;
+	void next() override;
+};
+
 class PreSelection_SimpleKey:
 	public PreSelection
 {
@@ -105,6 +100,7 @@ class Selection
 
 public:
 	Selection(Database *database, SelectionParams const& params);
+	~Selection();
 
 	void perform(); // initializes the selection
 	bool isValid(); // do we have more rows
