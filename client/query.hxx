@@ -12,19 +12,19 @@ private:
 	Selection sel;
 
 public:
+	enum class Result
+	{
+		Error = -1,
+		NoData = 0,
+		Success = 1,
+	};
+
 	class Query
 	{
 	protected:
 		Query() = default;
 
 	public:
-		enum class Result
-		{
-			Error = -1,
-			NoData = 0,
-			Success = 1,
-		};
-
 		virtual ~Query() = default;
 		virtual Result perform(Client& client, Database& db) = 0;
 
@@ -70,6 +70,6 @@ public:
 	};
 
 	Client(Database *database);
-	void signle_query(std::istream& in, std::ostream& out);
+	bool signle_query(std::istream& in, std::ostream& out);
 	void run(std::istream& in, std::ostream& out);
 };

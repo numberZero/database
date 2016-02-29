@@ -112,6 +112,8 @@ Client::Query *Client::Query::read(std::istream& source)
 	std::string key;
 	source >> key;
 	upcase_it(key);
+	if(key == "EXIT")
+		return nullptr;
 	if(key == "PRINT")
 		return new QueryPrint(source);
 	if(key == "SELECT")
@@ -131,17 +133,23 @@ Client::QuerySelect::QuerySelect(std::istream& in, bool reselect) :
 {
 }
 
-Client::Query::Result Client::QuerySelect::perform(Client& client, Database& db)
+Client::Result Client::QuerySelect::perform(Client& client, Database&)
 {
-	return Result::Error;
+	if(!re)
+		client.sp = SelectionParams();
+	client.sp.refine(params);
+	return Result::NoData;
 }
 
 Client::QueryInsert::QueryInsert(std::istream& in)
 {
+	(void)in;
 }
 
-Client::Query::Result Client::QueryInsert::perform(Client& client, Database& db)
+Client::Result Client::QueryInsert::perform(Client& client, Database& db)
 {
+	(void)client;
+	(void)db;
 	return Result::Error;
 }
 
@@ -150,18 +158,22 @@ Client::QueryRemove::QueryRemove(std::istream& in):
 {
 }
 
-Client::Query::Result Client::QueryRemove::perform(Client& client, Database& db)
+Client::Result Client::QueryRemove::perform(Client& client, Database& db)
 {
+	(void)client;
+	(void)db;
 	return Result::Error;
 }
 
 Client::QueryPrint::QueryPrint(std::istream& in)
 {
+	(void)in;
 }
 
-Client::Query::Result Client::QueryPrint::perform(Client& client, Database& db)
+Client::Result Client::QueryPrint::perform(Client& client, Database& db)
 {
-	return Result::Error;
+	client.sel = Selection(db, client.sp);
+	return Result::Success;
 }
 
 Client::Client(Database* database) :
@@ -169,21 +181,52 @@ Client::Client(Database* database) :
 {
 }
 
-void Client::signle_query(std::istream& in, std::ostream& out)
+bool Client::signle_query(std::istream& in, std::ostream& out)
 {
+	(void)out;
 	std::ios::iostate old_emask = in.exceptions();
 	in.exceptions(std::ios::eofbit | std::ios::failbit | std::ios::badbit);
 	Query *q = Query::read(in);
-	q->perform(*this, *db);
+	if(!q)
+	{
+		in.exceptions(old_emask);
+		return false;
+	}
+	switch(q->perform(*this, *db))
+	{
+		case Result::Error:
+			out << "Error happened" << std::endl;
+			break;
+		case Result::NoData:
+			out << "Done" << std::endl;
+			break;
+		case Result::Success:
+			out << "Success. Rows:" << std::endl;
+			for(; sel.isValid(); sel.next())
+			{
+				RowReference row = sel.getRow();
+				out << "*** Row ***" << std::endl;
+				out << "Teacher: " << row.getTeacher() << std::endl;
+				out << "Subject: " << row.getSubject() << std::endl;
+				out << "Room: " << row.getRoom() << std::endl;
+				out << "Group: " << row.getGroup() << std::endl;
+				out << "Meta: " << (int)row.isMetaGroup() << std::endl;
+				out << "Day: " << row.getDay() << std::endl;
+				out << "Lesson: " << row.getLesson() << std::endl;
+				out << std::endl;
+			}
+			out << "End." << std::endl;
+			break;
+	}
 	in.exceptions(old_emask);
+	return true;
 }
 
 void Client::run(std::istream& in, std::ostream& out)
 {
 	try
 	{
-		for(;;)
-			signle_query(in, out);
+		while(signle_query(in, out));
 	}
 	catch(std::ios_base::failure const& e)
 	{
