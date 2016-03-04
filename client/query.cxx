@@ -133,7 +133,10 @@ Client::QuerySelect::QuerySelect(std::istream& in, bool reselect) :
 
 Client::Query::Result Client::QuerySelect::perform(Client& client, Database& db)
 {
-	return Result::Error;
+	if(!re)
+		client.sp = SelectionParams();
+	client.sp.refine(params);
+	return Result::Success;
 }
 
 Client::QueryInsert::QueryInsert(std::istream& in)

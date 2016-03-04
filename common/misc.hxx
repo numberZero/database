@@ -13,6 +13,9 @@ public:
 std::string upcase(std::string const& str);
 void upcase_it(std::string& str);
 
+std::string locase(std::string const& str);
+void locase_it(std::string& str);
+
 std::string trim(std::string const& str, std::string const& delimiters = " \f\n\r\t\v");
 void trim_it(std::string& str, std::string const& delimiters = " \f\n\r\t\v");
 

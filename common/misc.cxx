@@ -14,6 +14,19 @@ void upcase_it(std::string& str)
 		c = std::toupper(c);
 }
 
+std::string locase(std::string const& str)
+{
+	std::string result(str);
+	locase_it(result);
+	return std::move(result);
+}
+
+void locase_it(std::string& str)
+{
+	for (char & c: str)
+		c = std::tolower(c);
+}
+
 std::string trim(std::string const& str, std::string const& delimiters)
 {
 	std::string result(str);

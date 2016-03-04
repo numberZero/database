@@ -15,6 +15,7 @@ struct StringParam: Param
 	std::string value;
 	void refine(StringParam const& b);
 	bool check(char const *data) const;
+	void set(std::string const& _value);
 };
 
 struct IntegerParam: Param
@@ -23,6 +24,9 @@ struct IntegerParam: Param
 	long max;
 	void refine(IntegerParam const& b);
 	bool check(long data) const;
+	void set(long _value);
+	void set(long _min, long _max);
+	void set(std::string const& _value);
 };
 
 struct BooleanParam: Param
@@ -30,6 +34,8 @@ struct BooleanParam: Param
 	bool value;
 	void refine(BooleanParam const& b);
 	bool check(bool data) const;
+	void set(bool _value);
+	void set(std::string const& _value);
 };
 
 struct SelectionParams

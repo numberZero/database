@@ -32,6 +32,13 @@ bool StringParam::check(char const* data) const
 	return value == data;
 }
 
+void StringParam::set(std::string const& _value)
+{
+	do_check = true;
+	is_valid = true;
+	value = _value;
+}
+
 /*** IntegerParam ***/
 
 void IntegerParam::refine(IntegerParam const& b)
@@ -62,6 +69,28 @@ bool IntegerParam::check(long int data) const
 	return (min <= data) && (data <= max);
 }
 
+void IntegerParam::set(long _value)
+{
+	set(_value, _value);
+}
+
+void IntegerParam::set(long _min, long _max)
+{
+	do_check = true;
+	is_valid = true;
+	min = _min;
+	max = _max;
+}
+
+void IntegerParam::set(std::string const& _value)
+{
+	std::size_t pos = _value.find('-');
+	if(pos == std::string::npos)
+		set(std::stol(_value));
+	else
+		set(std::stol(_value.substr(0, pos)), std::stol(_value.substr(pos + 1)));
+}
+
 /*** BooleanParam ***/
 
 void BooleanParam::refine(BooleanParam const& b)
@@ -82,6 +111,18 @@ bool BooleanParam::check(bool data) const
 	if(!is_valid)
 		return false;
 	return value == data;
+}
+
+void BooleanParam::set(bool _value)
+{
+	do_check = true;
+	is_valid = true;
+	value = _value;
+}
+
+void BooleanParam::set(std::string const& _value)
+{
+	set(parseBoolean(_value));
 }
 
 /*** SelectionParams ***/
