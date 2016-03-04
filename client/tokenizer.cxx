@@ -89,6 +89,7 @@ std::set<std::string> BaseReader::readParams1()
 			break;
 		if(c != ',')
 			throw error("Comma expected");
+		readChar();
 		readSpace();
 	}
 	return std::move(params);
