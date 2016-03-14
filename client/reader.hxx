@@ -20,6 +20,8 @@ private:
 	void read_help();
 	void read_exit();
 
+	void callReadFunction(std::string const& type);
+
 public:
 	QueryReader(std::istream& stream);
 	void readQuery();

@@ -71,13 +71,8 @@ void QueryReader::read_exit()
 	std::cout << "EXIT" << std::endl;
 }
 
-void QueryReader::readQuery()
+void QueryReader::callReadFunction(std::string const& type)
 {
-	readChar();
-	readSpace();
-	std::string type = readIdent();
-	readSpace();
-	locase_it(type);
 #define QUERY_TYPE(qtype) \
 	if(type == #qtype) \
 		return read_##qtype()
@@ -89,6 +84,17 @@ void QueryReader::readQuery()
 	QUERY_TYPE(help);
 	QUERY_TYPE(exit);
 #undef QUERY_TYPE
+	throw error("Invalid query");
+}
+
+void QueryReader::readQuery()
+{
+	readChar();
+	readSpace();
+	std::string type = readIdent();
+	readSpace();
+	locase_it(type);
+	callReadFunction(type);
 	readEnd();
 	std::cout << "END" << std::endl;
 	std::cout << std::endl;

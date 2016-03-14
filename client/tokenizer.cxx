@@ -85,7 +85,7 @@ std::set<std::string> BaseReader::readParams1()
 		if(!params.insert(name).second)
 			throw error("Parameter already present: " + name);
 		readSpace();
-		if(c == ';')
+		if(isEnd())
 			break;
 		if(c != ',')
 			throw error("Comma expected");
@@ -110,7 +110,7 @@ std::map<std::string, std::string> BaseReader::readParams2()
 		if(!params.emplace(key, value).second)
 			throw error("Parameter already present: " + key);
 		readSpace();
-		if(c == ';')
+		if(isEnd())
 			break;
 		if(c != ',')
 			throw error("Comma expected");
