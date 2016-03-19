@@ -44,7 +44,6 @@ struct SelectionParams
 	StringParam subject;
 	IntegerParam room;
 	IntegerParam group;
-	BooleanParam meta;
 	IntegerParam day;
 	IntegerParam lesson;
 

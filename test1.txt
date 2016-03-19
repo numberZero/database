@@ -34,8 +34,7 @@ TABLE groups
 Count 1
 
 ROW 0
-Number 0
-Meta NO
+Number 101
 
 
 TABLE times

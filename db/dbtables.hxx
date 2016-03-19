@@ -34,5 +34,5 @@
 DEFINE_SUBDB_CLASS(Teacher, teacher, char const*, (std::string const& name));
 DEFINE_SUBDB_CLASS(Subject, subject, char const*, (std::string const& name));
 DEFINE_SUBDB_CLASS(Room, room, std::uint_fast32_t, (unsigned number));
-DEFINE_SUBDB_CLASS(Group, group, std::uint_fast32_t, (unsigned number, bool meta));
+DEFINE_SUBDB_CLASS(Group, group, std::uint_fast32_t, (unsigned number));
 DEFINE_SUBDB_CLASS(Time, time, std::uint_fast32_t, (unsigned day, unsigned lesson));

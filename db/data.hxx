@@ -24,7 +24,6 @@ struct Room
 struct Group
 {
 	std::uint16_t number;
-	bool meta;
 };
 
 struct Time

@@ -133,7 +133,6 @@ void SelectionParams::refine(SelectionParams const& b)
 	subject.refine(b.subject);
 	room.refine(b.room);
 	group.refine(b.group);
-	meta.refine(b.meta);
 	day.refine(b.day);
 	lesson.refine(b.lesson);
 }
@@ -145,7 +144,6 @@ bool SelectionParams::check(RowReference row) const
 		subject.check(row.getSubject()) &&
 		room.check(row.getRoom()) &&
 		group.check(row.getGroup()) &&
-		meta.check(row.isMetaGroup()) &&
 		day.check(row.getDay()) &&
 		lesson.check(row.getLesson());
 }
@@ -157,7 +155,6 @@ bool SelectionParams::isValid() const
 		subject.is_valid &&
 		room.is_valid &&
 		group.is_valid &&
-		meta.is_valid &&
 		day.is_valid &&
 		lesson.is_valid;
 }

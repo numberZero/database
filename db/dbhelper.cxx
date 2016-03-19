@@ -56,11 +56,6 @@ int RowReference::getGroup() const
 	return db->groups[row->group].data.number;
 }
 
-bool RowReference::isMetaGroup() const
-{
-	return db->groups[row->group].data.meta;
-}
-
 int RowReference::getDay() const
 {
 	return db->times[row->time].data.day;
@@ -90,7 +85,7 @@ uint_fast32_t getKey(Room const& object)
 
 uint_fast32_t getKey(Group const& object)
 {
-	return getGroupKey(object.number, object.meta);
+	return getGroupKey(object.number);
 }
 
 uint_fast32_t getKey(Time const& object)
@@ -103,9 +98,9 @@ uint_fast32_t getRoomKey(std::uint16_t number)
 	return number;
 }
 
-uint_fast32_t getGroupKey(std::uint16_t number, bool meta)
+uint_fast32_t getGroupKey(std::uint16_t number)
 {
-	return (meta ? 0x00010000 : 0x00000000) | number;
+	return number;
 }
 
 uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson)
