@@ -19,16 +19,17 @@ std::string const& BaseReader::getEscape(char ch)
 
 char BaseReader::readChar()
 {
-	c = std::char_traits<char>::not_eof(in.get());
-	if(!c)
-		throw error("Unexpected end of input sequence");
+	std::char_traits<char>::int_type ch = in.get();
+	if(ch == std::char_traits<char>::eof())
+		throw EofError("Unexpected end of input sequence");
+	c = ch;
 	return c;
 }
 
 void BaseReader::readSpace(bool required)
 {
 	if(required && !std::isspace(c))
-		throw error("Space expected");
+		throw InvalidCharacterError("Space expected");
 	while(std::isspace(c))
 		readChar();
 }
@@ -36,7 +37,7 @@ void BaseReader::readSpace(bool required)
 void BaseReader::readEnd()
 {
 	if(!isEnd())
-		throw error("Query end expected");
+		throw InvalidCharacterError("Query end expected");
 }
 
 bool BaseReader::isEnd()
@@ -48,7 +49,7 @@ std::string BaseReader::readIdent()
 {
 	std::stringstream result;
 	if(!std::isalpha(c))
-		throw error("Identifier expected");
+		throw InvalidCharacterError("Identifier expected");
 	result.put(c);
 	for(readChar(); std::isalnum(c); readChar())
 		result.put(c);
@@ -83,12 +84,12 @@ std::set<std::string> BaseReader::readParams1()
 	{
 		std::string name = readIdent();
 		if(!params.insert(name).second)
-			throw error("Parameter already present: " + name);
+			throw InvalidQueryError("Parameter already present: " + name);
 		readSpace();
 		if(isEnd())
 			break;
 		if(c != ',')
-			throw error("Comma expected");
+			throw InvalidCharacterError("Comma expected");
 		readChar();
 		readSpace();
 	}
@@ -103,17 +104,17 @@ std::map<std::string, std::string> BaseReader::readParams2()
 		std::string key = readIdent();
 		readSpace();
 		if(c != '=')
-			throw error("\"=\" expected");
+			throw InvalidCharacterError("\"=\" expected");
 		readChar();
 		readSpace();
 		std::string value = readString();
 		if(!params.emplace(key, value).second)
-			throw error("Parameter already present: " + key);
+			throw InvalidQueryError("Parameter already present: " + key);
 		readSpace();
 		if(isEnd())
 			break;
 		if(c != ',')
-			throw error("Comma expected");
+			throw InvalidCharacterError("Comma expected");
 		readChar();
 		readSpace();
 	}
@@ -123,4 +124,9 @@ std::map<std::string, std::string> BaseReader::readParams2()
 BaseReader::BaseReader(std::istream& stream) :
 	in(stream)
 {
+}
+
+void BaseReader::skipLine()
+{
+	while(readChar() != '\n');
 }

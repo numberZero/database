@@ -31,47 +31,54 @@ RowData QueryReader::readInsertParams()
 	return std::move(result);
 }
 
-void QueryReader::read_select()
+PQuery QueryReader::read_select()
 {
-	std::cout << "SELECT" << std::endl;
-	readSelectParams();
+	std::unique_ptr<QuerySelect> q(new QuerySelect());
+	q->params = readSelectParams();
+	q->re = false;
+	return std::move(q);
 }
 
-void QueryReader::read_reselect()
+PQuery QueryReader::read_reselect()
 {
-	std::cout << "SELECT AGAIN" << std::endl;
-	readSelectParams();
+	std::unique_ptr<QuerySelect> q(new QuerySelect());
+	q->params = readSelectParams();
+	q->re = true;
+	return std::move(q);
 }
 
-void QueryReader::read_insert()
+PQuery QueryReader::read_insert()
 {
-	std::cout << "INSERT" << std::endl;
-	readInsertParams();
+	std::unique_ptr<QueryInsert> q(new QueryInsert());
+	q->row = readInsertParams();
+	return std::move(q);
 }
 
-void QueryReader::read_remove()
+PQuery QueryReader::read_remove()
 {
-	std::cout << "REMOVE" << std::endl;
-	readSelectParams();
+	std::unique_ptr<QueryRemove> q(new QueryRemove());
+	q->params = readSelectParams();
+	return std::move(q);
 }
 
-void QueryReader::read_print()
+PQuery QueryReader::read_print()
 {
-	std::cout << "PRINT" << std::endl;
-	readPrintParams();
+	std::unique_ptr<QueryPrint> q(new QueryPrint());
+	q->params = readPrintParams();
+	return std::move(q);
 }
 
-void QueryReader::read_help()
+PQuery QueryReader::read_help()
 {
-	std::cout << "HELP" << std::endl;
+	return PQuery(new QueryHelp());
 }
 
-void QueryReader::read_exit()
+PQuery QueryReader::read_exit()
 {
-	std::cout << "EXIT" << std::endl;
+	return PQuery(new QueryExit());
 }
 
-void QueryReader::callReadFunction(std::string const& type)
+PQuery QueryReader::callReadFunction(std::string const& type)
 {
 #define QUERY_TYPE(qtype) \
 	if(type == #qtype) \
@@ -84,20 +91,26 @@ void QueryReader::callReadFunction(std::string const& type)
 	QUERY_TYPE(help);
 	QUERY_TYPE(exit);
 #undef QUERY_TYPE
-	throw error("Invalid query");
+	throw UnknownQueryTypeError("Unknown query type: " + type);
 }
 
-void QueryReader::readQuery()
+PQuery QueryReader::readQuery()
 {
-	readChar();
-	readSpace();
+	try
+	{
+		readChar();
+		readSpace();
+	}
+	catch(EofError)
+	{
+		throw ExitException();
+	}
 	std::string type = readIdent();
 	readSpace();
 	locase_it(type);
-	callReadFunction(type);
+	PQuery q(callReadFunction(type));
 	readEnd();
-	std::cout << "END" << std::endl;
-	std::cout << std::endl;
+	return std::move(q);
 }
 
 QueryReader::QueryReader(std::istream& stream) :
@@ -105,8 +118,8 @@ QueryReader::QueryReader(std::istream& stream) :
 {
 }
 
-void readQuery(std::istream& in)
+PQuery readQuery(std::istream& in)
 {
 	QueryReader rd(in);
-	rd.readQuery();
+	return rd.readQuery();
 }

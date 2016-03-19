@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 project(zolden)
 
 add_executable(zold
-	client/query.cxx
 	common/bitset.cxx
 	common/hashtable.cxx
 	common/misc.cxx
@@ -17,6 +16,7 @@ add_executable(zol
 	client/main.cxx
 	client/reader.cxx
 	client/tokenizer.cxx
+	client/query.cxx
 	common/misc.cxx
 	db/dbhelper.cxx
 	db/select.cxx

@@ -1,75 +1,71 @@
 #pragma once
 #include <iostream>
+#include <memory>
 #include "db/select.hxx"
 
-class Database;
-
-class Client
+enum class Command
 {
-private:
-	Database *db;
-	SelectionParams sp;
-	Selection sel;
+	Exit,
+	Help,
+};
 
-public:
-	enum class Result
-	{
-		Error = -1,
-		NoData = 0,
-		Success = 1,
-	};
+struct ExitException {};
 
-	class Query
-	{
-	protected:
-		Query() = default;
+struct Query
+{
+	Query() = default;
+	virtual ~Query() = default;
+	virtual void perform() = 0;
+	virtual char const *name() const = 0;
+};
 
-	public:
-		virtual ~Query() = default;
-		virtual Result perform(Client& client, Database& db) = 0;
+typedef std::unique_ptr<Query> PQuery;
 
-		static Query *parse(std::string const& text);
-		static Query *read(std::istream& source);
-	};
+struct QuerySelect: Query
+{
+	SelectionParams params;
+	bool re;
+	void perform() override;
+	char const *name() const override;
+};
 
-	class QuerySelect: public Query
-	{
-	private:
-		SelectionParams params;
-		bool re;
-	public:
-		QuerySelect(std::istream& in, bool reselect);
-		Result perform(Client& client, Database& db) override;
-	};
+struct QueryInsert: Query
+{
+	RowData row;
+	void perform() override;
+	char const *name() const override;
+};
 
-	class QueryPrint: public Query
-	{
-	private:
-		SelectionParams params;
-	public:
-		QueryPrint(std::istream& in);
-		Result perform(Client& client, Database& db) override;
-	};
+struct QueryRemove: Query
+{
+	SelectionParams params;
+	void perform() override;
+	char const *name() const override;
+};
 
-	class QueryInsert: public Query
-	{
-	private:
-		RowData row;
-	public:
-		QueryInsert(std::istream& in);
-		Result perform(Client& client, Database& db) override;
-	};
+struct QueryPrint: Query
+{
+	SelectionParams params;
+	void perform() override;
+	char const *name() const override;
+};
 
-	class QueryRemove: public Query
-	{
-	private:
-		SelectionParams params;
-	public:
-		QueryRemove(std::istream& in);
-		Result perform(Client& client, Database& db) override;
-	};
+struct QueryCommand: Query
+{
+	Command const command;
+	QueryCommand(Command cmd): command(cmd) {}
+};
 
-	Client(Database *database);
-	bool signle_query(std::istream& in, std::ostream& out);
-	void run(std::istream& in, std::ostream& out);
+struct QueryHelp: QueryCommand
+{
+	QueryHelp() : QueryCommand(Command::Help) {}
+	void perform() override;
+	char const *name() const override;
+};
+
+struct QueryExit: QueryCommand
+{
+	QueryExit() : QueryCommand(Command::Help) {}
+	void perform() override;
+	char const *name() const override;
 };

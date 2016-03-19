@@ -6,13 +6,13 @@ static const Id INVALID_ID = ~(Id)0;
 
 struct Teacher
 {
-	static const std::size_t name_len = 128;
+	static constexpr std::size_t const name_len = 128;
 	char name[name_len];
 };
 
 struct Subject
 {
-	static const std::size_t name_len = 128;
+	static constexpr std::size_t const name_len = 128;
 	char name[name_len];
 };
 

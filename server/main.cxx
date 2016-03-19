@@ -1,21 +1,23 @@
 #include <iostream>
 #include "db/db.hxx"
-#include "client/query.hxx"
+
+Database db;
 
 int main(int argc, char **argv)
 {
-	if(argc != 2)
+	if(argc > 2)
 	{
 		std::cerr << "Usage:" << std::endl;
-		std::cerr << "\t" << argv[0] << " [ data-file-name ]" << std::endl;
+		std::cerr << "\t" << argv[0] << " [ <data-file-name> ]" << std::endl;
 		std::cerr << std::endl;
 		return -1;
 	}
 	std::clog << "Database manipulation program" << std::endl;
-	Database db;
-	db.readText(argv[1]);
-	Client client(&db);
-	client.run(std::cin, std::cout);
+	if(argc == 2)
+	{
+		std::clog << "Reading database from: " << argv[1] << std::endl;
+		db.readText(argv[1]);
+	}
 /*
 	SelectionParams sp;
 	sp.subject.value = "Algebra";

@@ -4,11 +4,16 @@
 #include <stdexcept>
 #include <string>
 #include <map>
+#include "misc.hxx"
+
+NEW_ERROR_CLASS(ReaderError, runtime_error, std);
+NEW_ERROR_CLASS(EofError, ReaderError, );
+NEW_ERROR_CLASS(InvalidQueryError, ReaderError, );
+NEW_ERROR_CLASS(InvalidCharacterError, InvalidQueryError, );
 
 class BaseReader
 {
 protected:
-	typedef std::runtime_error error;
 	static const std::map<char, std::string> escape_sequences;
 	std::istream& in;
 	char c;
@@ -27,4 +32,7 @@ protected:
 	std::map<std::string, std::string> readParams2();
 
 	BaseReader(std::istream& stream);
+
+public:
+	void skipLine(); // force skip till next newline
 };

@@ -1,7 +1,10 @@
 #pragma once
 #include "tokenizer.hxx"
+#include "query.hxx"
 #include "db/dbhelper.hxx"
 #include "db/select.hxx"
+
+NEW_ERROR_CLASS(UnknownQueryTypeError, InvalidQueryError, );
 
 class QueryReader:
 	public BaseReader
@@ -12,19 +15,19 @@ protected:
 	RowData readInsertParams();
 
 private:
-	void read_select();
-	void read_reselect();
-	void read_insert();
-	void read_remove();
-	void read_print();
-	void read_help();
-	void read_exit();
+	PQuery read_select();
+	PQuery read_reselect();
+	PQuery read_insert();
+	PQuery read_remove();
+	PQuery read_print();
+	PQuery read_help();
+	PQuery read_exit();
 
-	void callReadFunction(std::string const& type);
+	PQuery callReadFunction(std::string const& type);
 
 public:
 	QueryReader(std::istream& stream);
-	void readQuery();
+	PQuery readQuery();
 };
 
-void readQuery(std::istream& in);
+PQuery readQuery(std::istream& in);

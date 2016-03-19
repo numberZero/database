@@ -3,12 +3,13 @@
 #include <stdexcept>
 #include <string>
 
-class ReadError:
-	public std::runtime_error
-{
-public:
-	using std::runtime_error::runtime_error;
-};
+#define NEW_ERROR_CLASS(name,base,basens)  \
+	struct name: basens::base \
+	{ \
+		using basens::base::base; \
+	}
+
+NEW_ERROR_CLASS(ReadError, runtime_error, std);
 
 std::string upcase(std::string const& str);
 void upcase_it(std::string& str);

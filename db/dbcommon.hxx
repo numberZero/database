@@ -2,25 +2,8 @@
 #include <stdexcept>
 #include "misc.hxx"
 
-class DatabaseLogicError:
-	public std::logic_error
-{
-public:
-	using std::logic_error::logic_error;
-};
-
-class DatabaseError:
-	public std::runtime_error
-{
-public:
-	using std::runtime_error::runtime_error;
-};
-
-class DataError:
-	public DatabaseError
-{
-public:
-	using DatabaseError::DatabaseError;
-};
+NEW_ERROR_CLASS(DatabaseLogicError, logic_error, std);
+NEW_ERROR_CLASS(DatabaseError, runtime_error, std);
+NEW_ERROR_CLASS(DataError, DatabaseError, );
 
 using DatabaseFileError = ReadError;
