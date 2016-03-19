@@ -4,6 +4,8 @@
 #include <string>
 #include "misc.hxx"
 #include "reader.hxx"
+#include "db/dbhelper.hxx"
+#include "binary/network.hxx"
 
 char const *const PRE_Input = "> ";
 char const *const PRE_Output = "< ";
@@ -32,6 +34,8 @@ int main(void)
 					if(!q)
 						break;
 					q->perform();
+					SelectionParams sp;
+					NetworkType<SelectionParams>::serialize(std::cout, sp);
 				}
 				catch(InvalidQueryError const& e)
 				{

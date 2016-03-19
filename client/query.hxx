@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include "db/select.hxx"
+#include "binary/message.hxx"
 
 enum class Command
 {
