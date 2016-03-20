@@ -6,6 +6,7 @@ add_executable(zold
 	common/bitset.cxx
 	common/hashtable.cxx
 	common/misc.cxx
+	common/net.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/dbtables.cxx
@@ -20,6 +21,7 @@ add_executable(zol
 	client/query.cxx
 	common/bio.cxx
 	common/misc.cxx
+	common/net.cxx
 	db/dbhelper.cxx
 	db/select.cxx
 )
@@ -48,16 +50,24 @@ if($<VERSION_GREATER:CMAKE_VERSION,"3.0">)
 	)
 else()
 	target_compile_options(zold PUBLIC
-		-std=c++11)
+		-std=c++11
+	)
 	target_compile_options(zol PUBLIC
-		-std=c++11)
+		-std=c++11
+	)
 endif()
 
 target_compile_options(zold PUBLIC
-	-Wall -Werror -pedantic)
+	-Wall
+	-Werror
+	-pedantic
+)
 
 target_compile_options(zol PUBLIC
-	-Wall -Werror -pedantic)
+	-Wall
+	-Werror
+	-pedantic
+)
 
 target_compile_definitions(zold PUBLIC
 	_POSIX_C_SOURCE=200809L
@@ -65,6 +75,10 @@ target_compile_definitions(zold PUBLIC
 
 target_compile_definitions(zol PUBLIC
 	_POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(zold PUBLIC
+	pthread
 )
 
 install(TARGETS zold RUNTIME DESTINATION bin)

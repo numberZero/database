@@ -1,8 +1,9 @@
 #pragma once
 #include <iostream>
 #include <memory>
-#include "misc.hxx"
 #include "db/select.hxx"
+#include "misc.hxx"
+#include "net.hxx"
 
 enum class Command
 {
@@ -75,7 +76,7 @@ struct QueryExit: QueryCommand
 
 struct QueryMachineState
 {
-	int connection; // socket
+	Socket connection;
 	std::istream &cin;
 	std::ostream &cout;
 	SelectionParams params;

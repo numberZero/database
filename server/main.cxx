@@ -1,7 +1,33 @@
 #include <iostream>
+#include <memory>
+#include <thread>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include "binary/network.hxx"
 #include "db/db.hxx"
+#include "net.hxx"
 
 Database db;
+Socket server;
+
+class Client
+{
+	Socket socket;
+
+public:
+	Client(Socket &&s);
+	void operator() ();
+};
+
+Client::Client(Socket &&s) :
+	socket(std::move(s))
+{
+}
+
+void Client::operator() ()
+{
+}
 
 int main(int argc, char **argv)
 {
@@ -18,30 +44,18 @@ int main(int argc, char **argv)
 		std::clog << "Reading database from: " << argv[1] << std::endl;
 		db.readText(argv[1]);
 	}
-/*
-	SelectionParams sp;
-	sp.subject.value = "Algebra";
-	sp.subject.do_check = true;
-	sp.lesson.min = 1;
-	sp.lesson.max = 1;
-	sp.lesson.do_check = true;
-	for(Selection s(db, sp); s.isValid(); s.next())
+	server = Bind("127.0.0.1", std::to_string(zolden_port));
+	if(0 != listen(server.get(), 20))
+		throw std::system_error(errno, std::system_category(), "Can't listen on a socket");
+	for(;;)
 	{
-		RowReference r = s.getRow();
-		std::cout << "*** Row ***\n";
-		std::cout << "Day: " << r.getDay() << "\n";
-		std::cout << "Lesson #" << r.getLesson() << "\n";
-		std::cout << "Room #" << r.getRoom() << "\n";
-		std::cout << "Subject: " << r.getSubject() << "\n";
-		std::cout << "Teacher: " << r.getTeacher() << "\n";
-		if(r.isMetaGroup())
-			std::cout << "Metagroup #";
-		else
-			std::cout << "Group #";
-		std::cout << r.getGroup() << "\n";
-		std::cout << std::endl; // also flushes the stream
+		Socket fd(accept(server.get(), nullptr, nullptr));
+		if(!fd)
+			throw std::system_error(errno, std::system_category(), "Can't accept new connection");
+		std::clog << "Client connected. ";
+		std::thread t(Client(std::move(fd)));
+		t.detach();
+		std::clog << "Thread started." << std::endl;
 	}
-	std::clog << "Done" << std::endl;
-*/
 	return 0;
 }

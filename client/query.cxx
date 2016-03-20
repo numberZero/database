@@ -9,7 +9,7 @@
 #include "query.hxx"
 
 QueryMachineState global_state {
-	-1,
+	{},
 	std::cin,
 	std::cout,
 	{}
@@ -68,11 +68,11 @@ void QueryPrint::perform()
 	char *body = packet + head_size;
 	NetworkType<QueryType>::static_serialize(head, QueryType::Select);
 	assert(body_size == NetworkType<SelectionParams>::dynamic_serialize(body, body_size, global_state.params));
-	writePacket(global_state.connection, packet, packet_size);
+	writePacket(global_state.connection.get(), packet, packet_size);
 	for(std::size_t id = 1;; ++id)
 	{
 		buffer.reset(); // free unneeded memory
-		readPacket(global_state.connection, packet, packet_size);
+		readPacket(global_state.connection.get(), packet, packet_size);
 		buffer.reset(packet); // make sure it will be freed when necessary
 		if(!packet_size)
 		{ // empty packet indicates end of data
