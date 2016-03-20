@@ -9,7 +9,18 @@ SelectionParams QueryReader::readSelectParams()
 	SelectionParams result;
 	auto params = readParams2();
 	for(std::pair<std::string, std::string> const& param: params)
-		std::cout << param.first << ": " << param.second << std::endl;
+	{
+#define SELPARAM(name) \
+		if(param.first == #name) \
+			result.name.set(param.second)
+		SELPARAM(teacher); else
+		SELPARAM(subject); else
+		SELPARAM(room); else
+		SELPARAM(group); else
+		SELPARAM(day); else
+		SELPARAM(lesson); else
+		throw InvalidQueryError("Unknown SELECT parameter");
+	}
 	return std::move(result);
 }
 
@@ -18,7 +29,18 @@ SelectionParams QueryReader::readPrintParams()
 	SelectionParams result;
 	auto params = readParams1();
 	for(std::string const& param: params)
-		std::cout << param << std::endl;
+	{
+#define PRNPARAM(name) \
+		if(param == #name) \
+			result.name.do_return = true
+		PRNPARAM(teacher); else
+		PRNPARAM(subject); else
+		PRNPARAM(room); else
+		PRNPARAM(group); else
+		PRNPARAM(day); else
+		PRNPARAM(lesson); else
+		throw InvalidQueryError("Unknown PRINT parameter");
+	}
 	return std::move(result);
 }
 
@@ -27,7 +49,21 @@ RowData QueryReader::readInsertParams()
 	RowData result;
 	auto params = readParams2();
 	for(std::pair<std::string, std::string> const& param: params)
-		std::cout << param.first << ": " << param.second << std::endl;
+	{
+#define INSPARAMS(name) \
+		if(param.first == #name) \
+			result.name = param.second
+#define INSPARAMI(name) \
+		if(param.first == #name) \
+			result.name = std::stoi(param.second)
+		INSPARAMS(teacher); else
+		INSPARAMS(subject); else
+		INSPARAMI(room); else
+		INSPARAMI(group); else
+		INSPARAMI(day); else
+		INSPARAMI(lesson); else
+		throw InvalidQueryError("Unknown INSERT parameter");
+	}
 	return std::move(result);
 }
 
@@ -90,7 +126,6 @@ PQuery QueryReader::callReadFunction(std::string const& type)
 	QUERY_TYPE(print);
 	QUERY_TYPE(help);
 	QUERY_TYPE(exit);
-#undef QUERY_TYPE
 	throw UnknownQueryTypeError("Unknown query type: " + type);
 }
 
@@ -103,7 +138,7 @@ PQuery QueryReader::readQuery()
 	}
 	catch(EofError)
 	{
-		throw ExitException();
+		throw ExitException(); // treat EOF before query beginning as normal exit
 	}
 	std::string type = readIdent();
 	readSpace();

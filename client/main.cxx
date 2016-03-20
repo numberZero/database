@@ -1,5 +1,6 @@
 #include <cctype>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include "misc.hxx"
@@ -22,7 +23,7 @@ int main(void)
 			QueryReader rd(std::cin);
 			std::cout << PRE_Info << "Welcome to the Zolden database client!" << std::endl;
 			std::cout << PRE_Info << std::endl;
-			std::cout << PRE_Info << "Type queries ending with ;" << std::endl;
+			std::cout << PRE_Info << "Enter queries ending with ;" << std::endl;
 			std::cout << PRE_Info << "Type \"help;\" for more information" << std::endl;
 			for(;;)
 			{
@@ -34,8 +35,6 @@ int main(void)
 					if(!q)
 						break;
 					q->perform();
-					SelectionParams sp;
-					NetworkType<SelectionParams>::serialize(std::cout, sp);
 				}
 				catch(InvalidQueryError const& e)
 				{

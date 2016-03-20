@@ -2,7 +2,6 @@
 #include <iostream>
 #include <memory>
 #include "db/select.hxx"
-#include "binary/message.hxx"
 
 enum class Command
 {
@@ -70,3 +69,13 @@ struct QueryExit: QueryCommand
 	void perform() override;
 	char const *name() const override;
 };
+
+struct QueryMachineState
+{
+	int connection; // socket
+	std::istream& cin;
+	std::ostream& cout;
+	SelectionParams params;
+};
+
+extern QueryMachineState global_state;

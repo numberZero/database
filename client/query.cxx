@@ -4,23 +4,14 @@
 #include "db/dbcommon.hxx"
 #include "misc.hxx"
 #include "query.hxx"
+#include "binary/network.hxx"
 
-IntegerParam parseRange(std::string const& range)
-{
-	IntegerParam p;
-	p.do_check = true;
-	std::string::size_type k = range.find_first_of('-');
-	if(k == std::string::npos)
-	{
-		p.min = p.max = std::stoi(range);
-	}
-	else
-	{
-		p.min = std::stoi(range.substr(0, k));
-		p.max = std::stoi(range.substr(k + 1));
-	}
-	return std::move(p);
-}
+QueryMachineState global_state {
+	0,
+	std::cin,
+	std::cout,
+	{}
+};
 
 char const *QuerySelect::name() const
 {
@@ -32,7 +23,9 @@ char const *QuerySelect::name() const
 
 void QuerySelect::perform()
 {
-
+	if(!re)
+		global_state.params = SelectionParams();
+	global_state.params.refine(params);
 }
 
 char const *QueryInsert::name() const
