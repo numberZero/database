@@ -40,6 +40,17 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes);
 void readPacket(int fd, char *&buffer, std::size_t &bytes);
 
 /**
+ * Reads next packet on the stream
+ * \param [in]	fd		Socket descriptor
+ * \param [out]	bytes	Packet length
+ * \returns				Packet contents (allocated using <tt>new char[]</tt>)
+ * \throws BioEof if reaches EOF before end of packet
+ * \throws BioError on other errors, as reported by the OS
+ * \note The same as <tt>readPacket(int, char *&, std::size_t &)</tt>
+ */
+char *readPacket(int fd, std::size_t &bytes);
+
+/**
  * Writes packet to the stream
  * \param [in]	fd		Socket descriptor
  * \param [in]	buffer	Packet contents
