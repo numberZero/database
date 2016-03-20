@@ -4,6 +4,7 @@ project(zolden)
 add_executable(zold
 	common/bitset.cxx
 	common/hashtable.cxx
+	common/io.cxx
 	common/misc.cxx
 	db/db.cxx
 	db/dbhelper.cxx
@@ -17,6 +18,7 @@ add_executable(zol
 	client/reader.cxx
 	client/tokenizer.cxx
 	client/query.cxx
+	common/io.cxx
 	common/misc.cxx
 	db/dbhelper.cxx
 	db/select.cxx
@@ -56,6 +58,14 @@ target_compile_options(zold PUBLIC
 
 target_compile_options(zol PUBLIC
 	-Wall -Werror -pedantic)
+
+target_compile_definitions(zold PUBLIC
+	_POSIX_C_SOURCE=200809L
+)
+
+target_compile_definitions(zol PUBLIC
+	_POSIX_C_SOURCE=200809L
+)
 
 install(TARGETS zold RUNTIME DESTINATION bin)
 install(TARGETS zol RUNTIME DESTINATION bin)
