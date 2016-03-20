@@ -1,5 +1,7 @@
 #pragma once
+#include <cstring>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -47,11 +49,20 @@ namespace packer
 			typedef _Class Type;
 			typedef _Entry Entry;
 			typedef Struct<_Class, _Entries...> Next;
-			static constexpr std::size_t StaticSize = Next::StaticSize + Entry::StaticSize;
-			static constexpr std::size_t DynamicHeader = Next::DynamicHeader + Entry::DynamicHeader;
+			static constexpr std::size_t StaticSize = Next::StaticSize + Entry::PackerType::StaticSize;
+			static constexpr std::size_t DynamicHeader = Next::DynamicHeader + Entry::PackerType::DynamicHeader;
 
-			static void parse(char const buffer[StaticSize], Type& value);
-			static void serialize(char buffer[StaticSize], Type const& value);
+			static void parse(char const buffer[StaticSize], Type& value)
+			{
+				Entry::PackerType::parse(buffer, Entry::get(value));
+				Next::parse(&buffer[Entry::PackerType::StaticSize], value);
+			}
+
+			static void serialize(char buffer[StaticSize], Type const& value)
+			{
+				Entry::PackerType::serialize(buffer, Entry::get(value));
+				Next::serialize(&buffer[Entry::PackerType::StaticSize], value);
+			}
 
 			static void parse(std::istream& stream, Type& value)
 			{
@@ -88,7 +99,7 @@ namespace packer
 		template <typename _Type, std::size_t _Size>
 		struct Enum: detail::StaticOnly<Enum<_Type, _Size>, _Type>
 		{
-			static_assert(std::is_enum<_Type>::value, "packer::type::Integer can work with integral types only");
+			static_assert(std::is_enum<_Type>::value, "packer::type::Enum can work with enumeration and boolean types only");
 			typedef _Type Type;
 			static constexpr std::size_t StaticSize = _Size;
 			static constexpr std::size_t DynamicHeader = 0;
@@ -97,8 +108,16 @@ namespace packer
 
 			using SO::parse;
 			using SO::serialize;
-			static void parse(char const buffer[StaticSize], _Type& value);
-			static void serialize(char buffer[StaticSize], _Type const& value);
+
+			static void parse(char const buffer[StaticSize], _Type& value)
+			{
+				Integer<Holder, StaticSize>::parse(buffer, reinterpret_cast<Holder&>(value));
+			}
+
+			static void serialize(char buffer[StaticSize], _Type const& value)
+			{
+				Integer<Holder, StaticSize>::serialize(buffer, reinterpret_cast<Holder const&>(value));
+			}
 		};
 
 		template <>
@@ -112,8 +131,16 @@ namespace packer
 
 			using SO::parse;
 			using SO::serialize;
-			static void parse(char const buffer[StaticSize], bool& value);
-			static void serialize(char buffer[StaticSize], bool const& value);
+
+			static void parse(char const buffer[StaticSize], bool& value)
+			{
+				Integer<Holder, StaticSize>::parse(buffer, reinterpret_cast<Holder&>(value));
+			}
+
+			static void serialize(char buffer[StaticSize], bool const& value)
+			{
+				Integer<Holder, StaticSize>::serialize(buffer, reinterpret_cast<Holder const&>(value));
+			}
 		};
 
 		using Boolean = Enum<bool, 1>;
@@ -147,7 +174,7 @@ namespace packer
 			static void parse(std::istream& stream, Type& value);
 			static void serialize(std::ostream& stream, Type const& value);
 		};
-
+/*
 		template <>
 		struct String<std::string, 0>
 		{
@@ -158,7 +185,7 @@ namespace packer
 			static void parse(std::istream& stream, Type& value);
 			static void serialize(std::ostream& stream, Type const& value);
 		};
-
+*/
 		template <typename _Type, typename... _Entries>
 		struct Struct
 		{
@@ -167,110 +194,61 @@ namespace packer
 			static constexpr std::size_t StaticSize = Contents::StaticSize;
 			static constexpr std::size_t DynamicHeader = Contents::DynamicHeader;
 
-			static void parse(char const buffer[StaticSize], Type& value)
-			{
-				Contents::parse(buffer, value);
-			}
-
-			static void serialize(char buffer[StaticSize], Type const& value)
-			{
-				Contents::serialize(buffer, value);
-			}
-
-			static void parse(std::istream& stream, Type& value)
-			{
-				Contents::parse(stream, value);
-			}
-
-			static void serialize(std::ostream& stream, Type const& value)
-			{
-				Contents::serialize(stream, value);
-			}
+			static void parse(char const buffer[StaticSize], Type& value)		{ Contents::parse(buffer, value); }
+			static void serialize(char buffer[StaticSize], Type const& value)	{ Contents::serialize(buffer, value); }
+			static void parse(std::istream& stream, Type& value)			{ Contents::parse(stream, value); }
+			static void serialize(std::ostream& stream, Type const& value)	{ Contents::serialize(stream, value); }
 		};
 	}
 
 	namespace pack
 	{
-		struct Entry
-		{
-		};
-
-		template <typename _Class, typename _FieldType, std::size_t _Size, _FieldType _Class:: *_Field>
-		struct Integer: Entry
-		{
-			typedef type::Integer<_FieldType, _Size> PackerType;
-			typedef _Class Class;
-			typedef typename PackerType::Type FieldType;
-			static constexpr _FieldType _Class:: *Field = _Field;
-			static FieldType& get(_Class& c) { return c.*Field; }
-			static FieldType const& get(_Class const& c) { return c.*Field; }
-		};
-
-		template <typename _Class, typename _FieldType, std::size_t _Size, _FieldType _Class:: *_Field>
-		struct Enum: Entry
-		{
-			typedef type::Enum<_FieldType, _Size> PackerType;
-			typedef _Class Class;
-			typedef typename PackerType::Type FieldType;
-			static constexpr _FieldType _Class:: *Field = _Field;
-			static FieldType& get(_Class& c) { return c.*Field; }
-			static FieldType const& get(_Class const& c) { return c.*Field; }
-		};
-
-		template <typename _Class, bool _Class:: *_Field>
-		using Boolean = Enum<_Class, bool, 1, _Field>;
-
-		template <typename _Class, typename _FieldType, std::size_t _Size, _FieldType _Class:: *_Field>
-		struct String: Entry
-		{
-			typedef type::String<_FieldType, _Size> PackerType;
-			typedef _Class Class;
-			typedef typename PackerType::Type FieldType;
-			static constexpr _FieldType _Class:: *Field = _Field;
-			static FieldType& get(_Class& c) { return c.*Field; }
-			static FieldType const& get(_Class const& c) { return c.*Field; }
-		};
-
 		template <typename _Class, typename _PackerType, typename _PackerType::Type _Class:: *_Field>
-		struct Struct: Entry
+		struct Member
 		{
 			typedef _Class Class;
 			typedef _PackerType PackerType;
 			typedef typename PackerType::Type FieldType;
 			static constexpr typename PackerType::Type _Class:: *Field = _Field;
+
 			static FieldType& get(_Class& c) { return c.*Field; }
 			static FieldType const& get(_Class const& c) { return c.*Field; }
 		};
 
 		template <typename _Class, typename _PackerType>
-		struct Parent: Entry
+		struct Parent
 		{
 			typedef _Class Class;
 			typedef _PackerType PackerType;
 			typedef typename PackerType::Type FieldType;
 			static_assert(std::is_base_of<FieldType, Class>::value, "packer::pack::Parent: _PackerType must be a packer for any base of _Class");
+
 			static FieldType& get(_Class& c) { return static_cast<FieldType&>(c); }
 			static FieldType const& get(_Class const& c) { return static_cast<FieldType const&>(c); }
 		};
 	}
 }
 
-#define MESSAGE_INTEGER(struct,field,size) packer::pack::Integer<struct, decltype(struct::field), size, &struct::field>
-#define MESSAGE_INTEGER_NS(struct,field) packer::pack::Integer<struct, decltype(struct::field), sizeof(struct::field), &struct::field>
-#define MESSAGE_BOOLEAN_NS(struct,field) packer::pack::Boolean<struct, &struct::field>
-#define MESSAGE_ENUM(struct,field,size) packer::pack::Enum<struct, decltype(struct::field), size, &struct::field>
-#define MESSAGE_ENUM_NS(struct,field) packer::pack::Enum<struct, decltype(struct::field), sizeof(struct::field), &struct::field>
-#define MESSAGE_STRING(struct,field,size) packer::pack::String<struct, decltype(struct::field), size, &struct::field>
-#define MESSAGE_STRING_NS(struct,field) packer::pack::String<struct, char[sizeof(struct::field)], sizeof(struct::field), &struct::field>
+#define MESSAGE_INTEGER(struct,field,size)	packer::pack::Member<struct, packer::type::Integer<decltype(struct::field), size>, &struct::field>
+#define MESSAGE_INTEGER_NS(struct,field)	packer::pack::Member<struct, packer::type::Integer<decltype(struct::field), sizeof(struct::field)>, &struct::field>
+#define MESSAGE_BOOLEAN_NS(struct,field)	packer::pack::Member<struct, packer::type::Boolean, &struct::field>
+#define MESSAGE_ENUM(struct,field,size)		packer::pack::Member<struct, packer::type::Enum<decltype(struct::field), size>, &struct::field>
+#define MESSAGE_ENUM_NS(struct,field)		packer::pack::Member<struct, packer::type::Enum<decltype(struct::field), sizeof(struct::field)>, &struct::field>
+#define MESSAGE_STRING(struct,field,size)		packer::pack::Member<struct, packer::type::String<decltype(struct::field), size>, &struct::field>
+#define MESSAGE_STRING_NS(struct,field)		packer::pack::Member<struct, packer::type::String<char[sizeof(struct::field)], sizeof(struct::field)>, &struct::field>
 
-#define MESSAGE_STRUCT(struct,field,pk) packer::pack::Struct<struct, pk, &struct::field>
-#define MESSAGE_STRUCT_A(struct,field,pk) packer::pack::Struct<struct, pk<decltype(struct::field)>, &struct::field>
+#define MESSAGE_STRUCT(struct,field,pckr)	packer::pack::Member<struct, pckr, &struct::field>
+#define MESSAGE_STRUCT_A(struct,field,proto)	packer::pack::Member<struct, proto<decltype(struct::field)>, &struct::field>
+#define MESSAGE_PARENT(struct,pckr)		packer::pack::Parent<struct, pckr>
+#define MESSAGE_PARENT_A(struct,par,proto)	packer::pack::Parent<struct, proto<par>>
 
 /***************************************
  * 
  * Implementation
  * 
  **************************************/
+
+/*** packer::detail::StaticOnly ***/
 
 template <typename _TypeClass, typename _Type>
 void packer::detail::StaticOnly<_TypeClass, _Type>::parse(std::istream& stream, _Type& value)
@@ -292,18 +270,21 @@ void packer::detail::StaticOnly<_TypeClass, _Type>::serialize(std::ostream& stre
 		throw WriteError("Can't serialize: can't write to stream");
 }
 
+
+/*** packer::type::Integer ***/
+
 template <typename _Type, std::size_t _Size>
 void packer::type::Integer<_Type, _Size>::parse(char const buffer[StaticSize], _Type& value)
 {
 	Holder temp;
-	bool sign;
+	bool sign = false;
 	for(std::size_t k = 0; k < StaticSize; ++k)
 	{
 		std::size_t shift = (StaticSize - k - 1) * 8;
 		unsigned char byte = buffer[k];
 		if(std::is_signed<_Type>::value && (k == 0))
 		{
-			sign = byte & 0x80 != 0;
+			sign = (byte & 0x80) != 0;
 			byte &= 0x7F;
 		}
 		temp |= static_cast<Holder>(byte) << shift;
@@ -335,14 +316,71 @@ void packer::type::Integer<_Type, _Size>::serialize(char buffer[StaticSize], _Ty
 		buffer[0] &= 0x7F; // make sure we stored unsigned value (necessary if sizeof(_Type) < StaticSize)
 }
 
-template <typename _Type, std::size_t _Size>
-void packer::type::Enum<_Type, _Size>::parse(char const buffer[StaticSize], _Type& value)
+
+/*** packer::type::String ***/
+
+template <std::size_t _Size>
+void packer::type::String<char[_Size], _Size>::parse(char const buffer[StaticSize], Type& value)
 {
-	Integer<Holder, StaticSize>::parse(buffer, reinterpret_cast<Holder&>(value));
+	std::memcpy(value, buffer, StaticSize);
 }
 
-template <typename _Type, std::size_t _Size>
-void packer::type::Enum<_Type, _Size>::serialize(char buffer[StaticSize], _Type const& value)
+template <std::size_t _Size>
+void packer::type::String<char[_Size], _Size>::serialize(char buffer[StaticSize], Type const& value)
 {
-	Integer<Holder, StaticSize>::serialize(buffer, reinterpret_cast<Holder const&>(value));
+	std::memcpy(buffer, value, StaticSize);
 }
+
+template <std::size_t _Size>
+void packer::type::String<char[_Size], _Size>::parse(std::istream& stream, Type& value)
+{
+	stream.read(value, StaticSize);
+}
+
+template <std::size_t _Size>
+void packer::type::String<char[_Size], _Size>::serialize(std::ostream& stream, Type const& value)
+{
+	stream.write(value, StaticSize);
+}
+
+
+template <std::size_t _Size>
+void packer::type::String<std::string, _Size>::parse(char const buffer[StaticSize], Type& value)
+{
+	value.assign(buffer, strnlen(buffer, StaticSize));
+}
+
+template <std::size_t _Size>
+void packer::type::String<std::string, _Size>::serialize(char buffer[StaticSize], Type const& value)
+{
+	std::strncpy(buffer, value.data(), StaticSize);
+}
+
+template <std::size_t _Size>
+void packer::type::String<std::string, _Size>::parse(std::istream& stream, Type& value)
+{
+	std::size_t len;
+	Header::parse(stream, len);
+	std::unique_ptr<char[]> b(new char[len]);
+	stream.read(b.get(), len);
+	value.assign(b.get(), len);
+}
+
+template <std::size_t _Size>
+void packer::type::String<std::string, _Size>::serialize(std::ostream& stream, Type const& value)
+{
+	Header::serialize(stream, value.length());
+	stream.write(value.data(), value.length());
+}
+
+/*
+template <>
+void packer::type::String<std::string, 0>::parse(std::istream& stream, Type& value)
+{
+}
+
+template <>
+void packer::type::String<std::string, 0>::serialize(std::ostream& stream, Type const& value)
+{
+}
+*/
