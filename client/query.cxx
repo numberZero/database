@@ -1,10 +1,11 @@
 #include <cctype>
 #include <string>
 #include <sstream>
+#include "binary/network.hxx"
 #include "db/dbcommon.hxx"
+#include "io.hxx"
 #include "misc.hxx"
 #include "query.hxx"
-#include "binary/network.hxx"
 
 QueryMachineState global_state {
 	0,

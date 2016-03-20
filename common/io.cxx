@@ -11,7 +11,11 @@ void readBlock(int fd, char *buffer, std::size_t bytes)
 		if(!count)
 			throw IoEofError(errno, std::system_category(), "readBlock() reached end of file");
 		if(count < 0)
+		{
+			if(errno == EINTR)
+				continue;
 			throw IoError(errno, std::system_category(), "readBlock()");
+		}
 		bytes -= count;
 		buffer += count;
 	}
@@ -22,10 +26,12 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes)
 	while(bytes > 0)
 	{
 		ssize_t count = write(fd, buffer, bytes);
-		if(!count)
-			throw IoEofError(errno, std::system_category(), "writeBlock() reached end of file");
-		if(count < 0)
+		if(count <= 0)
+		{
+			if(errno == EINTR)
+				continue;
 			throw IoError(errno, std::system_category(), "writeBlock()");
+		}
 		bytes -= count;
 		buffer += count;
 	}
@@ -39,7 +45,17 @@ void readPacket(int fd, char *&buffer, std::size_t &bytes)
 	readBlock(fd, buf, packet_length_size);
 	packer::type::Integer<std::size_t, packet_length_size>::static_parse(buf, bytes);
 	buffer = new char[bytes];
-	readBlock(fd, buffer, bytes);
+	try
+	{
+		readBlock(fd, buffer, bytes);
+	}
+	catch(...)
+	{
+		delete[] buffer;
+		buffer = nullptr;
+		bytes = 0;
+		throw;
+	}
 }
 
 void writePacket(int fd, char const *buffer, std::size_t bytes)
@@ -48,4 +64,5 @@ void writePacket(int fd, char const *buffer, std::size_t bytes)
 	packer::type::Integer<std::size_t, packet_length_size>::static_serialize(buf, bytes);
 	writeBlock(fd, buf, packet_length_size);
 	writeBlock(fd, buffer, bytes);
+	fsync(fd); // make sure data is actually sent
 }
