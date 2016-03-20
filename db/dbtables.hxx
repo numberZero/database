@@ -19,7 +19,7 @@
 	protected: \
 		Table<Container<NAME>> NAME_LC##s; \
 		HashTable<Id, KEY, SubDB_##NAME> index_##NAME_LC; \
-		void readTableRowData_##NAME_LC##s(std::istream& file); \
+		void readTableRowData_##NAME_LC##s(std::istream &file); \
  \
 		SubDB_##NAME() : \
 			index_##NAME_LC(*this) \
@@ -31,8 +31,8 @@
 		Id find##NAME PARAMS ; \
 	} \
 
-DEFINE_SUBDB_CLASS(Teacher, teacher, char const*, (std::string const& name));
-DEFINE_SUBDB_CLASS(Subject, subject, char const*, (std::string const& name));
+DEFINE_SUBDB_CLASS(Teacher, teacher, char const *, (std::string const &name));
+DEFINE_SUBDB_CLASS(Subject, subject, char const *, (std::string const &name));
 DEFINE_SUBDB_CLASS(Room, room, std::uint_fast32_t, (unsigned number));
 DEFINE_SUBDB_CLASS(Group, group, std::uint_fast32_t, (unsigned number));
 DEFINE_SUBDB_CLASS(Time, time, std::uint_fast32_t, (unsigned day, unsigned lesson));

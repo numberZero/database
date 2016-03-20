@@ -32,9 +32,9 @@ struct HashTable
 
 	HashTable(_GetKey &key_getter) :
 		getKey(key_getter),
-		data(new Node*[_Size])
+		data(new Node *[_Size])
 	{
-		std::memset(data, 0, sizeof(Node*) * _Size);
+		std::memset(data, 0, sizeof(Node *) * _Size);
 	}
 
 	~HashTable()
@@ -74,7 +74,7 @@ struct HashTable
 		return nullptr;
 	}
 
-	_Reference& operator[] (_Key key)
+	_Reference &operator[] (_Key key)
 	{
 		_Reference *obj = get(key);
 		if(!obj)

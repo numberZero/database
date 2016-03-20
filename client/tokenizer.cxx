@@ -12,7 +12,7 @@ const std::map<char, std::string> BaseReader::escape_sequences = {
 	{ '"', "\"" },
 };
 
-std::string const& BaseReader::getEscape(char ch)
+std::string const &BaseReader::getEscape(char ch)
 {
 	return escape_sequences.at(ch);
 }
@@ -121,7 +121,7 @@ std::map<std::string, std::string> BaseReader::readParams2()
 	return std::move(params);
 }
 
-BaseReader::BaseReader(std::istream& stream) :
+BaseReader::BaseReader(std::istream &stream) :
 	in(stream)
 {
 }

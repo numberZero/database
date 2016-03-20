@@ -15,7 +15,7 @@ RowRefList::~RowRefList()
 	}
 }
 
-void RowRefList::addRow(Row* row)
+void RowRefList::addRow(Row *row)
 {
 	std::size_t idx = count % node_capacity;
 	if(!idx)
@@ -68,27 +68,27 @@ int RowReference::getLesson() const
 
 /*** getKey ***/
 
-char const *getKey(Teacher const& object)
+char const *getKey(Teacher const &object)
 {
 	return object.name;
 }
 
-char const *getKey(Subject const& object)
+char const *getKey(Subject const &object)
 {
 	return object.name;
 }
 
-uint_fast32_t getKey(Room const& object)
+uint_fast32_t getKey(Room const &object)
 {
 	return getRoomKey(object.number);
 }
 
-uint_fast32_t getKey(Group const& object)
+uint_fast32_t getKey(Group const &object)
 {
 	return getGroupKey(object.number);
 }
 
-uint_fast32_t getKey(Time const& object)
+uint_fast32_t getKey(Time const &object)
 {
 	return getTimeKey(object.day, object.lesson);
 }

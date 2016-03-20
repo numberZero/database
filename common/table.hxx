@@ -13,11 +13,11 @@ struct Table
 
 	Table();
 	~Table();
-	std::size_t add(_Object&& object);
+	std::size_t add(_Object &&object);
 	std::pair<std::size_t, _Object *> add();
 	_Object *get(std::size_t id);
 
-	_Object& operator[] (std::size_t id);
+	_Object &operator[] (std::size_t id);
 };
 
 template <typename _Object>
@@ -56,7 +56,7 @@ std::pair<std::size_t, _Object *> Table<_Object>::add()
 }
 
 template <typename _Object>
-std::size_t Table<_Object>::add(_Object&& object)
+std::size_t Table<_Object>::add(_Object &&object)
 {
 	auto p = add();
 	*p.second = std::move(object);
@@ -72,7 +72,7 @@ _Object *Table<_Object>::get(std::size_t id)
 }
 
 template <typename _Object>
-_Object& Table<_Object>::operator[] (std::size_t id)
+_Object &Table<_Object>::operator[] (std::size_t id)
 {
 	_Object *obj = get(id);
 	if(!obj)

@@ -5,47 +5,47 @@
 #include <string>
 #include "misc.hxx"
 
-void Database::readText(std::string const& filename)
+void Database::readText(std::string const &filename)
 {
 	std::ifstream file(filename);
 	readText(file);
 }
 
-void Database::writeText(std::string const& filename)
+void Database::writeText(std::string const &filename)
 {
 	std::ofstream file(filename);
 	writeText(file);
 }
 
-void Database::readTableRowData_teachers(std::istream& file)
+void Database::readTableRowData_teachers(std::istream &file)
 {
 	addTeacher(readValue(file, "Name"));
 }
 
-void Database::readTableRowData_subjects(std::istream& file)
+void Database::readTableRowData_subjects(std::istream &file)
 {
 	addSubject(readValue(file, "Name"));
 }
 
-void Database::readTableRowData_rooms(std::istream& file)
+void Database::readTableRowData_rooms(std::istream &file)
 {
 	addRoom(readInteger(file, "Number"));
 }
 
-void Database::readTableRowData_groups(std::istream& file)
+void Database::readTableRowData_groups(std::istream &file)
 {
 	long number = readInteger(file, "Number");
 	addGroup(number);
 }
 
-void Database::readTableRowData_times(std::istream& file)
+void Database::readTableRowData_times(std::istream &file)
 {
 	long day = readInteger(file, "Day");
 	long lesson = readInteger(file, "Lesson");
 	addTime(day, lesson);
 }
 
-void Database::readTableRowData_rows(std::istream& file)
+void Database::readTableRowData_rows(std::istream &file)
 {
 	Id time = readInteger(file, "Time");
 	Id room = readInteger(file, "Room");
@@ -55,7 +55,7 @@ void Database::readTableRowData_rows(std::istream& file)
 	addRow(teacher, subject, room, group, time);
 }
 
-void Database::readTable(std::istream& file, std::string const& name, void (Database::*reader)(std::istream& file))
+void Database::readTable(std::istream &file, std::string const &name, void (Database::*reader)(std::istream &file))
 {
 	std::string key;
 	std::string value;
@@ -73,7 +73,7 @@ void Database::readTable(std::istream& file, std::string const& name, void (Data
 	}
 }
 
-void Database::readText(std::istream& file)
+void Database::readText(std::istream &file)
 {
 	std::string value;
 	std::getline(file, value);
@@ -94,33 +94,33 @@ void Database::readText(std::istream& file)
 		throw DatabaseFileError("Database end expected");
 }
 
-void writeTableRowData(std::ostream& file, Teacher const& object)
+void writeTableRowData(std::ostream &file, Teacher const &object)
 {
 	file << "Name " << object.name << "\n";
 }
 
-void writeTableRowData(std::ostream& file, Subject const& object)
+void writeTableRowData(std::ostream &file, Subject const &object)
 {
 	file << "Name " << object.name << "\n";
 }
 
-void writeTableRowData(std::ostream& file, Room const& object)
+void writeTableRowData(std::ostream &file, Room const &object)
 {
 	file << "Number " << object.number << "\n";
 }
 
-void writeTableRowData(std::ostream& file, Group const& object)
+void writeTableRowData(std::ostream &file, Group const &object)
 {
 	file << "Number " << object.number << "\n";
 }
 
-void writeTableRowData(std::ostream& file, Time const& object)
+void writeTableRowData(std::ostream &file, Time const &object)
 {
 	file << "Day " << object.day << "\n";
 	file << "Lesson " << object.lesson << "\n";
 }
 
-void writeTableRowData(std::ostream& file, Row const& object)
+void writeTableRowData(std::ostream &file, Row const &object)
 {
 	file << "Time " << object.time << "\n";
 	file << "Room " << object.room << "\n";
@@ -130,13 +130,13 @@ void writeTableRowData(std::ostream& file, Row const& object)
 }
 
 template <typename _Object>
-void writeTableRowData(std::ostream& file, Container<_Object> const& container)
+void writeTableRowData(std::ostream &file, Container<_Object> const &container)
 {
 	writeTableRowData(file, container.data);
 }
 
 template <typename _Object>
-void writeTable(std::ostream& file, Table<_Object>& table, std::string const& name)
+void writeTable(std::ostream &file, Table<_Object> &table, std::string const &name)
 {
 	file << "TABLE " << name << "\n";
 	file << "Count " << table.count << "\n";
@@ -150,7 +150,7 @@ void writeTable(std::ostream& file, Table<_Object>& table, std::string const& na
 	file << std::endl;
 }
 
-void Database::writeText(std::ostream& file)
+void Database::writeText(std::ostream &file)
 {
 	file << "DATABASE\n";
 	file << "\n";
@@ -166,7 +166,7 @@ void Database::writeText(std::ostream& file)
 	file.flush();
 }
 
-void Database::printDB(std::ostream& file, int width)
+void Database::printDB(std::ostream &file, int width)
 {
 	(void)(width);
 	for(std::size_t k = 0; k != rows.count; ++k)

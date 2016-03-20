@@ -14,9 +14,9 @@ struct StringParam: Param
 {
 	std::string value;
 
-	void refine(StringParam const& b);
+	void refine(StringParam const &b);
 	bool check(char const *data) const;
-	void set(std::string const& _value);
+	void set(std::string const &_value);
 };
 
 struct IntegerParam: Param
@@ -24,21 +24,21 @@ struct IntegerParam: Param
 	long min = 0;
 	long max = 0;
 
-	void refine(IntegerParam const& b);
+	void refine(IntegerParam const &b);
 	bool check(long data) const;
 	void set(long _value);
 	void set(long _min, long _max);
-	void set(std::string const& _value);
+	void set(std::string const &_value);
 };
 
 struct BooleanParam: Param
 {
 	bool value = false;
 
-	void refine(BooleanParam const& b);
+	void refine(BooleanParam const &b);
 	bool check(bool data) const;
 	void set(bool _value);
-	void set(std::string const& _value);
+	void set(std::string const &_value);
 };
 
 struct SelectionParams
@@ -50,7 +50,7 @@ struct SelectionParams
 	IntegerParam day;
 	IntegerParam lesson;
 
-	void refine(SelectionParams const& b);
+	void refine(SelectionParams const &b);
 	bool check(RowReference row) const;
 	bool isValid() const;
 };
@@ -68,11 +68,11 @@ class PreSelection_Full:
 	public PreSelection
 {
 private:
-	Table<Row>& rows;
+	Table<Row> &rows;
 	std::size_t index;
 
 public:
-	PreSelection_Full(Table<Row>& table);
+	PreSelection_Full(Table<Row> &table);
 	bool isValid() override;
 	Row *getRow() override;
 	void next() override;
@@ -89,7 +89,7 @@ private:
 
 public:
 	template <typename _Object, typename _Key, typename _Table, typename _HashTable>
-	PreSelection_SimpleKey(_HashTable& ht, _Table& table, _Key key)
+	PreSelection_SimpleKey(_HashTable &ht, _Table &table, _Key key)
 	{
 		id = ht[key];
 		rows = table[id].rows;
@@ -106,7 +106,7 @@ class PreSelection_Bitset:
 	public PreSelection
 {
 private:
-	Bitset const& bs;
+	Bitset const &bs;
 	IntegerParam rx;
 	IntegerParam ry;
 	Id Row::*px;
@@ -114,7 +114,7 @@ private:
 	Row values;
 
 public:
-	PreSelection_Bitset(Bitset const& bitset, Id Row::*param_x, IntegerParam range_x, Id Row::*param_y, IntegerParam range_y);
+	PreSelection_Bitset(Bitset const &bitset, Id Row::*param_x, IntegerParam range_x, Id Row::*param_y, IntegerParam range_y);
 
 	bool isValid() override;
 	Row *getRow() override;
@@ -128,18 +128,18 @@ class Selection
 	PreSelection *s;
 
 	void drop();
-	void reset(Selection& b);
+	void reset(Selection &b);
 	bool reach(); // finds first row that fits the query
 
 public:
 	Selection();
-	Selection(Database& database, SelectionParams const& params);
-	Selection(Selection const& b) = delete;
-	Selection(Selection&& b);
+	Selection(Database &database, SelectionParams const &params);
+	Selection(Selection const &b) = delete;
+	Selection(Selection &&b);
 	~Selection();
 
-	Selection& operator= (Selection const& b) = delete;
-	Selection& operator= (Selection&& b);
+	Selection &operator= (Selection const &b) = delete;
+	Selection &operator= (Selection &&b);
 
 	bool isValid(); // do we have more rows
 	RowReference getRow(); // returns current row

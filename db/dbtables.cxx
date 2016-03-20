@@ -1,6 +1,6 @@
 #include "dbtables.hxx"
 
-Id SubDB_Teacher::addTeacher(std::string const& name)
+Id SubDB_Teacher::addTeacher(std::string const &name)
 {
 	if(name.length() >= Teacher::name_len)
 		throw DataError("Teacher name too long");
@@ -13,7 +13,7 @@ Id SubDB_Teacher::addTeacher(std::string const& name)
 	return id;
 }
 
-Id SubDB_Subject::addSubject(std::string const& name)
+Id SubDB_Subject::addSubject(std::string const &name)
 {
 	if(name.length() >= Subject::name_len)
 		throw DataError("Subject name too long");
@@ -47,12 +47,12 @@ Id SubDB_Time::addTime(unsigned day, unsigned lesson)
 	return id;
 }
 
-Id SubDB_Teacher::findTeacher(std::string const& name)
+Id SubDB_Teacher::findTeacher(std::string const &name)
 {
 	return index_teacher[name.c_str()];
 }
 
-Id SubDB_Subject::findSubject(std::string const& name)
+Id SubDB_Subject::findSubject(std::string const &name)
 {
 	return index_subject[name.c_str()];
 }

@@ -35,24 +35,24 @@ private:
 
 	Bitset index_group_time;
 
-	void readTableRowData_teachers(std::istream& file);
-	void readTableRowData_subjects(std::istream& file);
-	void readTableRowData_rooms(std::istream& file);
-	void readTableRowData_groups(std::istream& file);
-	void readTableRowData_times(std::istream& file);
-	void readTableRowData_rows(std::istream& file);
-	void readTable(std::istream& file, std::string const& name, void (Database::*reader)(std::istream& file));
+	void readTableRowData_teachers(std::istream &file);
+	void readTableRowData_subjects(std::istream &file);
+	void readTableRowData_rooms(std::istream &file);
+	void readTableRowData_groups(std::istream &file);
+	void readTableRowData_times(std::istream &file);
+	void readTableRowData_rows(std::istream &file);
+	void readTable(std::istream &file, std::string const &name, void (Database::*reader)(std::istream &file));
 
 public:
 	Id addRow(Id teacher, Id subject, Id room, Id group, Id time);
 
-	void readText(std::string const& filename);
-	void readText(std::istream& file);
-	void writeText(std::string const& filename);
-	void writeText(std::ostream& file);
-	void printDB(std::ostream& file, int width = 75);
+	void readText(std::string const &filename);
+	void readText(std::istream &file);
+	void writeText(std::string const &filename);
+	void writeText(std::ostream &file);
+	void printDB(std::ostream &file, int width = 75);
 
-	void insert(RowData const& row);
-	Selection select(SelectionParams const& p);
-	void remove(SelectionParams const& p);
+	void insert(RowData const &row);
+	Selection select(SelectionParams const &p);
+	void remove(SelectionParams const &p);
 };

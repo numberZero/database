@@ -23,11 +23,11 @@ private:
 	PQuery read_help();
 	PQuery read_exit();
 
-	PQuery callReadFunction(std::string const& type);
+	PQuery callReadFunction(std::string const &type);
 
 public:
-	QueryReader(std::istream& stream);
+	QueryReader(std::istream &stream);
 	PQuery readQuery();
 };
 
-PQuery readQuery(std::istream& in);
+PQuery readQuery(std::istream &in);

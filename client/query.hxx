@@ -73,8 +73,8 @@ struct QueryExit: QueryCommand
 struct QueryMachineState
 {
 	int connection; // socket
-	std::istream& cin;
-	std::ostream& cout;
+	std::istream &cin;
+	std::ostream &cout;
 	SelectionParams params;
 };
 

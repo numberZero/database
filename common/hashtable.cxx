@@ -25,7 +25,7 @@ bool ht_equal<std::uint64_t>(std::uint64_t key1, std::uint64_t key2)
 }
 
 template<>
-std::size_t ht_hash<char const*>(const char* key)
+std::size_t ht_hash<char const *>(const char *key)
 {
 	std::size_t value = 0;
 	while(*key)

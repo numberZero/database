@@ -36,7 +36,7 @@ int main(void)
 						break;
 					q->perform();
 				}
-				catch(InvalidQueryError const& e)
+				catch(InvalidQueryError const &e)
 				{
 					std::cout << PRE_Error << "Query error: " << e.what() << std::endl;
 					rd.skipLine();
@@ -53,19 +53,19 @@ int main(void)
 			throw;
 		}
 	}
-	catch(EofError const& e)
+	catch(EofError const &e)
 	{
 		std::cout << "Unexpected end of input: " << e.what() << std::endl;
 	}
-	catch(ReaderError const& e)
+	catch(ReaderError const &e)
 	{
 		std::cout << "Input read erorr: " << e.what() << std::endl;
 	}
-	catch(std::logic_error const& e)
+	catch(std::logic_error const &e)
 	{
 		std::cout << "Program logic erorr: " << e.what() << std::endl;
 	}
-	catch(std::runtime_error const& e)
+	catch(std::runtime_error const &e)
 	{
 		std::cout << "Runtime erorr: " << e.what() << std::endl;
 	}

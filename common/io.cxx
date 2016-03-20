@@ -33,7 +33,7 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes)
 
 static constexpr int const packet_length_size = 4;
 
-void readPacket(int fd, char *& buffer, std::size_t& bytes)
+void readPacket(int fd, char *&buffer, std::size_t &bytes)
 {
 	char buf[packet_length_size];
 	readBlock(fd, buf, packet_length_size);

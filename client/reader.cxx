@@ -8,7 +8,7 @@ SelectionParams QueryReader::readSelectParams()
 {
 	SelectionParams result;
 	auto params = readParams2();
-	for(std::pair<std::string, std::string> const& param: params)
+	for(std::pair<std::string, std::string> const &param: params)
 	{
 #define SELPARAM(name) \
 		if(param.first == #name) \
@@ -28,7 +28,7 @@ SelectionParams QueryReader::readPrintParams()
 {
 	SelectionParams result;
 	auto params = readParams1();
-	for(std::string const& param: params)
+	for(std::string const &param: params)
 	{
 #define PRNPARAM(name) \
 		if(param == #name) \
@@ -48,7 +48,7 @@ RowData QueryReader::readInsertParams()
 {
 	RowData result;
 	auto params = readParams2();
-	for(std::pair<std::string, std::string> const& param: params)
+	for(std::pair<std::string, std::string> const &param: params)
 	{
 #define INSPARAMS(name) \
 		if(param.first == #name) \
@@ -114,7 +114,7 @@ PQuery QueryReader::read_exit()
 	return PQuery(new QueryExit());
 }
 
-PQuery QueryReader::callReadFunction(std::string const& type)
+PQuery QueryReader::callReadFunction(std::string const &type)
 {
 #define QUERY_TYPE(qtype) \
 	if(type == #qtype) \
@@ -148,12 +148,12 @@ PQuery QueryReader::readQuery()
 	return std::move(q);
 }
 
-QueryReader::QueryReader(std::istream& stream) :
+QueryReader::QueryReader(std::istream &stream) :
 	BaseReader(stream)
 {
 }
 
-PQuery readQuery(std::istream& in)
+PQuery readQuery(std::istream &in)
 {
 	QueryReader rd(in);
 	return rd.readQuery();

@@ -6,7 +6,7 @@
 
 /*** StringParam ***/
 
-void StringParam::refine(StringParam const& b)
+void StringParam::refine(StringParam const &b)
 {
 	do_return |= b.do_return;
 	if(!b.do_check)
@@ -23,7 +23,7 @@ void StringParam::refine(StringParam const& b)
 	}
 }
 
-bool StringParam::check(char const* data) const
+bool StringParam::check(char const *data) const
 {
 	if(!do_check)
 		return true;
@@ -32,7 +32,7 @@ bool StringParam::check(char const* data) const
 	return value == data;
 }
 
-void StringParam::set(std::string const& _value)
+void StringParam::set(std::string const &_value)
 {
 	do_check = true;
 	is_valid = true;
@@ -41,7 +41,7 @@ void StringParam::set(std::string const& _value)
 
 /*** IntegerParam ***/
 
-void IntegerParam::refine(IntegerParam const& b)
+void IntegerParam::refine(IntegerParam const &b)
 {
 	do_return |= b.do_return;
 	if(!b.do_check)
@@ -82,7 +82,7 @@ void IntegerParam::set(long _min, long _max)
 	max = _max;
 }
 
-void IntegerParam::set(std::string const& _value)
+void IntegerParam::set(std::string const &_value)
 {
 	std::size_t pos = _value.find('-');
 	if(pos == std::string::npos)
@@ -93,7 +93,7 @@ void IntegerParam::set(std::string const& _value)
 
 /*** BooleanParam ***/
 
-void BooleanParam::refine(BooleanParam const& b)
+void BooleanParam::refine(BooleanParam const &b)
 {
 	do_return |= b.do_return;
 	if(!b.do_check)
@@ -120,14 +120,14 @@ void BooleanParam::set(bool _value)
 	value = _value;
 }
 
-void BooleanParam::set(std::string const& _value)
+void BooleanParam::set(std::string const &_value)
 {
 	set(parseBoolean(_value));
 }
 
 /*** SelectionParams ***/
 
-void SelectionParams::refine(SelectionParams const& b)
+void SelectionParams::refine(SelectionParams const &b)
 {
 	teacher.refine(b.teacher);
 	subject.refine(b.subject);
@@ -163,7 +163,7 @@ bool SelectionParams::isValid() const
 
 /*** PreSelection_Full ***/
 
-PreSelection_Full::PreSelection_Full(Table<Row>& table) :
+PreSelection_Full::PreSelection_Full(Table<Row> &table) :
 	rows(table),
 	index(0)
 {
@@ -174,7 +174,7 @@ bool PreSelection_Full::isValid()
 	return index < rows.count;
 }
 
-Row* PreSelection_Full::getRow()
+Row *PreSelection_Full::getRow()
 {
 	return &rows[index];
 }
@@ -214,7 +214,7 @@ Selection::Selection() :
 {
 }
 
-Selection::Selection(Database& database, SelectionParams const& params) :
+Selection::Selection(Database &database, SelectionParams const &params) :
 	db(&database),
 	p(params),
 	s(nullptr)
@@ -225,7 +225,7 @@ Selection::Selection(Database& database, SelectionParams const& params) :
 	reach();
 }
 
-Selection::Selection(Selection&& b)
+Selection::Selection(Selection &&b)
 {
 	reset(b);
 }
@@ -235,7 +235,7 @@ Selection::~Selection()
 	drop();
 }
 
-Selection& Selection::operator=(Selection&& b)
+Selection &Selection::operator=(Selection &&b)
 {
 	drop();
 	reset(b);
@@ -248,7 +248,7 @@ void Selection::drop()
 		delete s;
 }
 
-void Selection::reset(Selection& b)
+void Selection::reset(Selection &b)
 {
 	db = b.db;
 	p = b.p;

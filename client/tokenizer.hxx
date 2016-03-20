@@ -15,10 +15,10 @@ class BaseReader
 {
 protected:
 	static const std::map<char, std::string> escape_sequences;
-	std::istream& in;
+	std::istream &in;
 	char c;
 
-	static std::string const& getEscape(char ch);
+	static std::string const &getEscape(char ch);
 
 	char readChar();
 	void readSpace(bool required = false);
@@ -31,7 +31,7 @@ protected:
 	std::set<std::string> readParams1();
 	std::map<std::string, std::string> readParams2();
 
-	BaseReader(std::istream& stream);
+	BaseReader(std::istream &stream);
 
 public:
 	void skipLine(); // force skip till next newline
