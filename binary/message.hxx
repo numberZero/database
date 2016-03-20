@@ -178,12 +178,12 @@ namespace packer
 
 			static void static_parse(char const buffer[StaticSize], _Type &value)
 			{
-				Integer<Holder, StaticSize>::dynamic_parse(buffer, reinterpret_cast<Holder&>(value));
+				Integer<Holder, StaticSize>::static_parse(buffer, reinterpret_cast<Holder &>(value));
 			}
 
 			static void static_serialize(char buffer[StaticSize], _Type const &value)
 			{
-				Integer<Holder, StaticSize>::dynamic_serialize(buffer, reinterpret_cast<Holder const&>(value));
+				Integer<Holder, StaticSize>::static_serialize(buffer, reinterpret_cast<Holder const &>(value));
 			}
 		};
 
@@ -202,12 +202,12 @@ namespace packer
 
 			static void static_parse(char const buffer[StaticSize], bool &value)
 			{
-				Integer<Holder, StaticSize>::static_parse(buffer, reinterpret_cast<Holder&>(value));
+				Integer<Holder, StaticSize>::static_parse(buffer, reinterpret_cast<Holder &>(value));
 			}
 
 			static void static_serialize(char buffer[StaticSize], bool const &value)
 			{
-				Integer<Holder, StaticSize>::static_serialize(buffer, reinterpret_cast<Holder const&>(value));
+				Integer<Holder, StaticSize>::static_serialize(buffer, reinterpret_cast<Holder const &>(value));
 			}
 		};
 
@@ -289,8 +289,8 @@ namespace packer
 			typedef typename PackerType::Type FieldType;
 			static_assert(std::is_base_of<FieldType, Class>::value, "packer::pack::Parent: _PackerType must be a packer for any base of _Class");
 
-			static FieldType &get(_Class &c) { return static_cast<FieldType&>(c); }
-			static FieldType const &get(_Class const &c) { return static_cast<FieldType const&>(c); }
+			static FieldType &get(_Class &c) { return static_cast<FieldType &>(c); }
+			static FieldType const &get(_Class const &c) { return static_cast<FieldType const &>(c); }
 		};
 	}
 }
@@ -325,18 +325,14 @@ std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_size(_Type co
 template <typename _TypeClass, typename _Type>
 std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(char const *buffer, std::size_t length, _Type &value)
 {
-	if(length != _TypeClass::StaticSize)
-		throw packer::ParseError("StaticOnly: buffer has incorrect length");
-	_TypeClass::dynamic_parse(buffer, value);
+	_TypeClass::static_parse(buffer, value);
 	return _TypeClass::StaticSize;
 }
 
 template <typename _TypeClass, typename _Type>
 std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(char *buffer, std::size_t length, _Type const &value)
 {
-	if(length != _TypeClass::StaticSize)
-		throw packer::SerializeError("StaticOnly: buffer has incorrect length");
-	_TypeClass::dynamic_serialize(buffer, value);
+	_TypeClass::static_serialize(buffer, value);
 	return _TypeClass::StaticSize;
 }
 
@@ -347,14 +343,14 @@ void packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(std::istream &
 	stream.read(buffer, _TypeClass::StaticSize);
 	if(!stream.good())
 		throw packer::ReadError("Can't dynamic_parse: can't read from stream");
-	_TypeClass::dynamic_parse(buffer, value);
+	_TypeClass::static_parse(buffer, value);
 }
 
 template <typename _TypeClass, typename _Type>
 void packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(std::ostream &stream, _Type const &value)
 {
 	char buffer[_TypeClass::StaticSize];
-	_TypeClass::dynamic_serialize(buffer, value);
+	_TypeClass::static_serialize(buffer, value);
 	stream.write(buffer, _TypeClass::StaticSize);
 	if(!stream.good())
 		throw packer::WriteError("Can't dynamic_serialize: can't write to stream");
@@ -366,7 +362,7 @@ void packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(std::ostre
 template <typename _Type, std::size_t _Size>
 void packer::type::Integer<_Type, _Size>::static_parse(char const buffer[StaticSize], _Type &value)
 {
-	Holder temp;
+	Holder temp = 0;
 	bool sign = false;
 	for(std::size_t k = 0; k < StaticSize; ++k)
 	{

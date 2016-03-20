@@ -3,6 +3,12 @@
 #include "db/dbhelper.hxx"
 #include "db/select.hxx"
 
+enum class QueryType {
+	Select = 1,
+	Insert = 2,
+	Remove = 3,
+};
+
 template <typename T>
 struct NetworkType;
 
@@ -11,6 +17,9 @@ struct _NetworkType_S: packer::type::Struct<T, E...> {};
 
 template <typename T, typename P, typename... E>
 struct _NetworkType_P: packer::type::Struct<T, packer::pack::Parent<T, NetworkType<P>>, E...> {};
+
+template <>
+struct NetworkType<QueryType>: packer::type::Enum<QueryType, 1> {};
 
 template <>
 struct NetworkType<RowData>: _NetworkType_S<RowData

@@ -3,10 +3,12 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <sys/socket.h>
 #include "misc.hxx"
 #include "reader.hxx"
 #include "db/dbhelper.hxx"
 #include "binary/network.hxx"
+#include "io.hxx"
 
 char const *const PRE_Input = "> ";
 char const *const PRE_Output = "< ";
@@ -59,15 +61,15 @@ int main(void)
 	}
 	catch(ReaderError const &e)
 	{
-		std::cout << "Input read erorr: " << e.what() << std::endl;
+		std::cout << "Input read error: " << e.what() << std::endl;
 	}
 	catch(std::logic_error const &e)
 	{
-		std::cout << "Program logic erorr: " << e.what() << std::endl;
+		std::cout << "Program logic error: " << e.what() << std::endl;
 	}
 	catch(std::runtime_error const &e)
 	{
-		std::cout << "Runtime erorr: " << e.what() << std::endl;
+		std::cout << "Runtime error: " << e.what() << std::endl;
 	}
 	catch(...)
 	{

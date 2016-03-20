@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <memory>
+#include "misc.hxx"
 #include "db/select.hxx"
 
 enum class Command
@@ -10,6 +11,8 @@ enum class Command
 };
 
 struct ExitException {};
+
+NEW_ERROR_CLASS(ProtocolError, runtime_error, std);
 
 struct Query
 {
