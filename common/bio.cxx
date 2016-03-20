@@ -1,7 +1,7 @@
 #include <cerrno>
 #include <unistd.h>
-#include "io.hxx"
 #include "binary/message.hxx"
+#include "bio.hxx"
 
 void readBlock(int fd, char *buffer, std::size_t bytes)
 {
@@ -9,12 +9,12 @@ void readBlock(int fd, char *buffer, std::size_t bytes)
 	{
 		ssize_t count = read(fd, buffer, bytes);
 		if(!count)
-			throw IoEofError(errno, std::system_category(), "readBlock() reached end of file");
+			throw BioEof("readBlock() reached end of file");
 		if(count < 0)
 		{
 			if(errno == EINTR)
 				continue;
-			throw IoError(errno, std::system_category(), "readBlock()");
+			throw BioError(errno, std::system_category(), "readBlock()");
 		}
 		bytes -= count;
 		buffer += count;
@@ -30,7 +30,7 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes)
 		{
 			if(errno == EINTR)
 				continue;
-			throw IoError(errno, std::system_category(), "writeBlock()");
+			throw BioError(errno, std::system_category(), "writeBlock()");
 		}
 		bytes -= count;
 		buffer += count;

@@ -51,6 +51,7 @@ struct SelectionParams
 	IntegerParam lesson;
 
 	void refine(SelectionParams const &b);
+	void clearReturn();
 	bool check(RowReference row) const;
 	bool isValid() const;
 };

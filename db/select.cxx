@@ -137,6 +137,16 @@ void SelectionParams::refine(SelectionParams const &b)
 	lesson.refine(b.lesson);
 }
 
+void SelectionParams::clearReturn()
+{
+	teacher.do_return = false;
+	subject.do_return = false;
+	room.do_return = false;
+	group.do_return = false;
+	day.do_return = false;
+	lesson.do_return = false;
+}
+
 bool SelectionParams::check(RowReference row) const
 {
 	return

@@ -4,7 +4,7 @@
 #include <sstream>
 #include "binary/network.hxx"
 #include "db/dbcommon.hxx"
-#include "io.hxx"
+#include "bio.hxx"
 #include "misc.hxx"
 #include "query.hxx"
 
@@ -57,6 +57,7 @@ char const *QueryPrint::name() const
 
 void QueryPrint::perform()
 {
+	global_state.params.clearReturn();
 	global_state.params.refine(params);
 	std::size_t head_size = NetworkType<QueryType>::StaticSize;
 	std::size_t body_size = NetworkType<SelectionParams>::dynamic_size(global_state.params);

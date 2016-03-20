@@ -2,16 +2,16 @@
 #include <cinttypes>
 #include "misc.hxx"
 
-NEW_ERROR_CLASS(IoError, system_error, std);
-NEW_ERROR_CLASS(IoEofError, IoError, );
+NEW_ERROR_CLASS(BioError, system_error, std);
+NEW_ERROR_CLASS(BioEof, runtime_error, std);
 
 /**
  * Reads data block from a stream
  * \param [in]	fd		Socket descriptor
  * \param [out]	buffer	Output buffer
  * \param [out]	bytes	Block length
- * \throws IoEofError if reaches EOF before end of data block
- * \throws IoError on other errors, as reported by the OS
+ * \throws BioEof if reaches EOF before end of data block
+ * \throws BioError on other errors, as reported by the OS
  * 
  * Unlike \c read, this function either reads a whole block (of length \p bytes), or throws an exception
  */
@@ -22,7 +22,7 @@ void readBlock(int fd, char *buffer, std::size_t bytes);
  * \param [in]	fd		Socket descriptor
  * \param [in]	buffer	Input buffer
  * \param [in]	bytes	Block length
- * \throws IoError on errors, as reported by the OS
+ * \throws BioError on errors, as reported by the OS
  * 
  * Unlike \c write, this function either writes a whole block (of length \p bytes), or throws an exception
  */
@@ -33,8 +33,8 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes);
  * \param [in]	fd		Socket descriptor
  * \param [out]	buffer	Packet contents (allocated by this function using <tt>new char[]</tt>)
  * \param [out]	bytes	Packet length
- * \throws IoEofError if reaches EOF before end of packet
- * \throws IoError on other errors, as reported by the OS
+ * \throws BioEof if reaches EOF before end of packet
+ * \throws BioError on other errors, as reported by the OS
  * \note \p buffer is freed on exception throw
  */
 void readPacket(int fd, char *&buffer, std::size_t &bytes);
@@ -44,6 +44,6 @@ void readPacket(int fd, char *&buffer, std::size_t &bytes);
  * \param [in]	fd		Socket descriptor
  * \param [in]	buffer	Packet contents
  * \param [in]	bytes	Packet length
- * \throws IoError on errors, as reported by the OS
+ * \throws BioError on errors, as reported by the OS
  */
 void writePacket(int fd, char const *buffer, std::size_t bytes);
