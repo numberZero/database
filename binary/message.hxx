@@ -6,6 +6,46 @@
 #include <string>
 #include <type_traits>
 
+/**
+ * 
+ * \defgroup packer::type::*
+ * 	Each class in \c packer::type should have the following methods:
+ * @{
+ * 
+ * * \fn static std::size_t dynamic_size(_Type const& value)
+ * 		\returns buffer size needed to store the \p value serialized
+ * 
+ * * \fn static std::size_t dynamic_parse(char const *buffer, std::size_t length, _Type& value)
+ * 		\brief parses first bytes in \p buffer and stores result in \p value.
+ * 		\returns count of bytes consumed
+ * 
+ * * \fn static std::size_t dynamic_serialize(char *buffer, std::size_t length, _Type const& value)
+ * 		\brief serializes \p value into first bytes in \p buffer
+ * 		\returns number of bytes used
+ * 
+ * * \fn static void static_parse(char const buffer[], Type& value)
+ * 		\brief parses WHOLE \p buffer into \p value
+ * 
+ * * \fn static void static_serialize(char buffer[], Type const& value) 
+ * 		\brief serializes \p value into WHOLE \p buffer
+ * 
+ * * \fn static void dynamic_parse(std::istream& stream, _Type& value)
+ * 		\brief reads from \p stream, stores parsed value in \p value
+ * 		\note advances stream pointer accordingly, instead of returning byte count
+ * 
+ * * \fn static void dynamic_serialize(std::ostream& stream, _Type const& value)
+ * 		\brief serializes \p value to \p stream
+ * 		\note advances stream pointer accordingly, instead of returning byte count
+ * 
+ * @}
+ */
+
+/***************************************
+ * 
+ * Interface
+ * 
+ **************************************/
+
 namespace packer
 {
 	struct PackingError: std::runtime_error { using std::runtime_error::runtime_error; };
@@ -21,8 +61,11 @@ namespace packer
 		template <typename _TypeClass, typename _Type>
 		struct StaticOnly
 		{
-			static void parse(std::istream& stream, _Type& value);
-			static void serialize(std::ostream& stream, _Type const& value);
+			static std::size_t dynamic_size(_Type const& value);
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, _Type& value);
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, _Type const& value);
+			static void dynamic_parse(std::istream& stream, _Type& value);
+			static void dynamic_serialize(std::ostream& stream, _Type const& value);
 		};
 
 		template <typename _Class, typename... _Entries>
@@ -36,10 +79,13 @@ namespace packer
 			static constexpr std::size_t StaticSize = 0;
 			static constexpr std::size_t DynamicHeader = 0;
 
-			static void parse(char const buffer[], Type& value) {}
-			static void serialize(char buffer[], Type const& value) {}
-			static void parse(std::istream& stream, Type& value) {}
-			static void serialize(std::ostream& stream, Type const& value) {}
+			static std::size_t dynamic_size(Type const& value) { return 0; }
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, Type& value) { return 0; }
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, Type const& value) { return 0; }
+			static void static_parse(char const buffer[], Type& value) {}
+			static void static_serialize(char buffer[], Type const& value) {}
+			static void dynamic_parse(std::istream& stream, Type& value) {}
+			static void dynamic_serialize(std::ostream& stream, Type const& value) {}
 		};
 
 		template <typename _Class, typename _Entry, typename... _Entries>
@@ -52,28 +98,47 @@ namespace packer
 			static constexpr std::size_t StaticSize = Next::StaticSize + Entry::PackerType::StaticSize;
 			static constexpr std::size_t DynamicHeader = Next::DynamicHeader + Entry::PackerType::DynamicHeader;
 
-			static void parse(char const buffer[StaticSize], Type& value)
+			static std::size_t dynamic_size(Type const& value)
 			{
-				Entry::PackerType::parse(buffer, Entry::get(value));
-				Next::parse(&buffer[Entry::PackerType::StaticSize], value);
+				return Entry::PackerType::dynamic_size(Entry::get(value)) + Next::dynamic_size(value);
 			}
 
-			static void serialize(char buffer[StaticSize], Type const& value)
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, Type& value)
 			{
-				Entry::PackerType::serialize(buffer, Entry::get(value));
-				Next::serialize(&buffer[Entry::PackerType::StaticSize], value);
+				std::size_t position = Entry::PackerType::dynamic_parse(buffer, length, Entry::get(value));
+				position += Next::dynamic_parse(&buffer[position], length - position, value);
+				return position;
 			}
 
-			static void parse(std::istream& stream, Type& value)
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, Type const& value)
 			{
-				Entry::PackerType::parse(stream, Entry::get(value));
-				Next::parse(stream, value);
+				std::size_t position = Entry::PackerType::dynamic_serialize(buffer, length, Entry::get(value));
+				position += Next::dynamic_serialize(&buffer[position], length - position, value);
+				return position;
 			}
 
-			static void serialize(std::ostream& stream, Type const& value)
+			static void static_parse(char const buffer[StaticSize], Type& value)
 			{
-				Entry::PackerType::serialize(stream, Entry::get(value));
-				Next::serialize(stream, value);
+				Entry::PackerType::dynamic_parse(buffer, Entry::get(value));
+				Next::dynamic_parse(&buffer[Entry::PackerType::StaticSize], value);
+			}
+
+			static void static_serialize(char buffer[StaticSize], Type const& value)
+			{
+				Entry::PackerType::dynamic_serialize(buffer, Entry::get(value));
+				Next::dynamic_serialize(&buffer[Entry::PackerType::StaticSize], value);
+			}
+
+			static void dynamic_parse(std::istream& stream, Type& value)
+			{
+				Entry::PackerType::dynamic_parse(stream, Entry::get(value));
+				Next::dynamic_parse(stream, value);
+			}
+
+			static void dynamic_serialize(std::ostream& stream, Type const& value)
+			{
+				Entry::PackerType::dynamic_serialize(stream, Entry::get(value));
+				Next::dynamic_serialize(stream, value);
 			}
 		};
 	}
@@ -90,10 +155,11 @@ namespace packer
 			typedef typename std::make_unsigned<Type>::type Holder;
 			typedef detail::StaticOnly<Integer<Type, StaticSize>, Type> SO;
 
-			using SO::parse;
-			using SO::serialize;
-			static void parse(char const buffer[StaticSize], _Type& value);
-			static void serialize(char buffer[StaticSize], _Type const& value);
+			using SO::dynamic_size;
+			using SO::dynamic_parse;
+			using SO::dynamic_serialize;
+			static void static_parse(char const buffer[StaticSize], _Type& value);
+			static void static_serialize(char buffer[StaticSize], _Type const& value);
 		};
 
 		template <typename _Type, std::size_t _Size>
@@ -106,17 +172,18 @@ namespace packer
 			typedef typename std::make_unsigned<Type>::type Holder;
 			typedef detail::StaticOnly<Enum<Type, StaticSize>, Type> SO;
 
-			using SO::parse;
-			using SO::serialize;
+			using SO::dynamic_size;
+			using SO::dynamic_parse;
+			using SO::dynamic_serialize;
 
-			static void parse(char const buffer[StaticSize], _Type& value)
+			static void static_parse(char const buffer[StaticSize], _Type& value)
 			{
-				Integer<Holder, StaticSize>::parse(buffer, reinterpret_cast<Holder&>(value));
+				Integer<Holder, StaticSize>::dynamic_parse(buffer, reinterpret_cast<Holder&>(value));
 			}
 
-			static void serialize(char buffer[StaticSize], _Type const& value)
+			static void static_serialize(char buffer[StaticSize], _Type const& value)
 			{
-				Integer<Holder, StaticSize>::serialize(buffer, reinterpret_cast<Holder const&>(value));
+				Integer<Holder, StaticSize>::dynamic_serialize(buffer, reinterpret_cast<Holder const&>(value));
 			}
 		};
 
@@ -129,17 +196,18 @@ namespace packer
 			typedef unsigned char Holder;
 			typedef detail::StaticOnly<Enum<Type, StaticSize>, Type> SO;
 
-			using SO::parse;
-			using SO::serialize;
+			using SO::dynamic_size;
+			using SO::dynamic_parse;
+			using SO::dynamic_serialize;
 
-			static void parse(char const buffer[StaticSize], bool& value)
+			static void static_parse(char const buffer[StaticSize], bool& value)
 			{
-				Integer<Holder, StaticSize>::parse(buffer, reinterpret_cast<Holder&>(value));
+				Integer<Holder, StaticSize>::static_parse(buffer, reinterpret_cast<Holder&>(value));
 			}
 
-			static void serialize(char buffer[StaticSize], bool const& value)
+			static void static_serialize(char buffer[StaticSize], bool const& value)
 			{
-				Integer<Holder, StaticSize>::serialize(buffer, reinterpret_cast<Holder const&>(value));
+				Integer<Holder, StaticSize>::static_serialize(buffer, reinterpret_cast<Holder const&>(value));
 			}
 		};
 
@@ -149,16 +217,19 @@ namespace packer
 		struct String;
 
 		template <std::size_t _Size>
-		struct String<char[_Size], _Size>: detail::StaticOnly<String<char[_Size], _Size>, char[_Size]>
+		struct String<char[_Size], _Size>
 		{
 			typedef char Type[_Size];
 			static constexpr std::size_t StaticSize = _Size;
 			static constexpr std::size_t DynamicHeader = 0;
 
-			static void parse(char const buffer[StaticSize], Type& value);
-			static void serialize(char buffer[StaticSize], Type const& value);
-			static void parse(std::istream& stream, Type& value);
-			static void serialize(std::ostream& stream, Type const& value);
+			static std::size_t dynamic_size(Type const& value);
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, Type& value);
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, Type const& value);
+			static void static_parse(char const buffer[StaticSize], Type& value);
+			static void static_serialize(char buffer[StaticSize], Type const& value);
+			static void dynamic_parse(std::istream& stream, Type& value);
+			static void dynamic_serialize(std::ostream& stream, Type const& value);
 		};
 
 		template <std::size_t _Size>
@@ -169,23 +240,15 @@ namespace packer
 			static constexpr std::size_t StaticSize = _Size;
 			static constexpr std::size_t DynamicHeader = Header::StaticSize;
 
-			static void parse(char const buffer[StaticSize], Type& value);
-			static void serialize(char buffer[StaticSize], Type const& value);
-			static void parse(std::istream& stream, Type& value);
-			static void serialize(std::ostream& stream, Type const& value);
+			static std::size_t dynamic_size(Type const& value);
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, Type& value);
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, Type const& value);
+			static void static_parse(char const buffer[StaticSize], Type& value);
+			static void static_serialize(char buffer[StaticSize], Type const& value);
+			static void dynamic_parse(std::istream& stream, Type& value);
+			static void dynamic_serialize(std::ostream& stream, Type const& value);
 		};
-/*
-		template <>
-		struct String<std::string, 0>
-		{
-			typedef std::string Type;
-			typedef Integer<std::size_t, 4> Header;
-			static constexpr std::size_t DynamicHeader = Header::StaticSize;
 
-			static void parse(std::istream& stream, Type& value);
-			static void serialize(std::ostream& stream, Type const& value);
-		};
-*/
 		template <typename _Type, typename... _Entries>
 		struct Struct
 		{
@@ -194,10 +257,13 @@ namespace packer
 			static constexpr std::size_t StaticSize = Contents::StaticSize;
 			static constexpr std::size_t DynamicHeader = Contents::DynamicHeader;
 
-			static void parse(char const buffer[StaticSize], Type& value)		{ Contents::parse(buffer, value); }
-			static void serialize(char buffer[StaticSize], Type const& value)	{ Contents::serialize(buffer, value); }
-			static void parse(std::istream& stream, Type& value)			{ Contents::parse(stream, value); }
-			static void serialize(std::ostream& stream, Type const& value)	{ Contents::serialize(stream, value); }
+			static std::size_t dynamic_size(_Type const& value)	{ return Contents::dynamic_size(value); }
+			static std::size_t dynamic_parse(char const *buffer, std::size_t length, _Type& value)	{ return Contents::dynamic_parse(buffer, length, value); }
+			static std::size_t dynamic_serialize(char *buffer, std::size_t length, _Type const& value)	{ return Contents::dynamic_serialize(buffer, length, value); }
+			static void static_parse(char const buffer[StaticSize], Type& value)		{ Contents::dynamic_parse(buffer, value); }
+			static void static_serialize(char buffer[StaticSize], Type const& value)	{ Contents::dynamic_serialize(buffer, value); }
+			static void dynamic_parse(std::istream& stream, Type& value)			{ Contents::dynamic_parse(stream, value); }
+			static void dynamic_serialize(std::ostream& stream, Type const& value)	{ Contents::dynamic_serialize(stream, value); }
 		};
 	}
 
@@ -251,30 +317,54 @@ namespace packer
 /*** packer::detail::StaticOnly ***/
 
 template <typename _TypeClass, typename _Type>
-void packer::detail::StaticOnly<_TypeClass, _Type>::parse(std::istream& stream, _Type& value)
+std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_size(_Type const& value)
+{
+	return _TypeClass::StaticSize;
+}
+
+template <typename _TypeClass, typename _Type>
+std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(char const *buffer, std::size_t length, _Type& value)
+{
+	if(length != _TypeClass::StaticSize)
+		throw packer::ParseError("StaticOnly: buffer has incorrect length");
+	_TypeClass::dynamic_parse(buffer, value);
+	return _TypeClass::StaticSize;
+}
+
+template <typename _TypeClass, typename _Type>
+std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(char *buffer, std::size_t length, _Type const& value)
+{
+	if(length != _TypeClass::StaticSize)
+		throw packer::SerializeError("StaticOnly: buffer has incorrect length");
+	_TypeClass::dynamic_serialize(buffer, value);
+	return _TypeClass::StaticSize;
+}
+
+template <typename _TypeClass, typename _Type>
+void packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(std::istream& stream, _Type& value)
 {
 	char buffer[_TypeClass::StaticSize];
 	stream.read(buffer, _TypeClass::StaticSize);
 	if(!stream.good())
-		throw ReadError("Can't parse: can't read from stream");
-	_TypeClass::parse(buffer, value);
+		throw packer::ReadError("Can't dynamic_parse: can't read from stream");
+	_TypeClass::dynamic_parse(buffer, value);
 }
 
 template <typename _TypeClass, typename _Type>
-void packer::detail::StaticOnly<_TypeClass, _Type>::serialize(std::ostream& stream, _Type const& value)
+void packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(std::ostream& stream, _Type const& value)
 {
 	char buffer[_TypeClass::StaticSize];
-	_TypeClass::serialize(buffer, value);
+	_TypeClass::dynamic_serialize(buffer, value);
 	stream.write(buffer, _TypeClass::StaticSize);
 	if(!stream.good())
-		throw WriteError("Can't serialize: can't write to stream");
+		throw packer::WriteError("Can't dynamic_serialize: can't write to stream");
 }
 
 
 /*** packer::type::Integer ***/
 
 template <typename _Type, std::size_t _Size>
-void packer::type::Integer<_Type, _Size>::parse(char const buffer[StaticSize], _Type& value)
+void packer::type::Integer<_Type, _Size>::static_parse(char const buffer[StaticSize], _Type& value)
 {
 	Holder temp;
 	bool sign = false;
@@ -296,7 +386,7 @@ void packer::type::Integer<_Type, _Size>::parse(char const buffer[StaticSize], _
 }
 
 template <typename _Type, std::size_t _Size>
-void packer::type::Integer<_Type, _Size>::serialize(char buffer[StaticSize], _Type const& value)
+void packer::type::Integer<_Type, _Size>::static_serialize(char buffer[StaticSize], _Type const& value)
 {
 	Holder temp;
 	bool sign = value < 0;
@@ -320,67 +410,107 @@ void packer::type::Integer<_Type, _Size>::serialize(char buffer[StaticSize], _Ty
 /*** packer::type::String ***/
 
 template <std::size_t _Size>
-void packer::type::String<char[_Size], _Size>::parse(char const buffer[StaticSize], Type& value)
+std::size_t packer::type::String<char[_Size], _Size>::dynamic_size(Type const& value)
+{
+	return StaticSize;
+}
+
+template <std::size_t _Size>
+std::size_t packer::type::String<char[_Size], _Size>::dynamic_parse(char const *buffer, std::size_t length, Type& value)
+{
+	if(length < StaticSize)
+		throw ParseError("String (array)::dynamic_parse(): buffer is too small");
+	std::memcpy(value, buffer, StaticSize);
+	return StaticSize;
+}
+
+template <std::size_t _Size>
+std::size_t packer::type::String<char[_Size], _Size>::dynamic_serialize(char *buffer, std::size_t length, Type const& value)
+{
+	if(length < StaticSize)
+		throw SerializeError("String (C): buffer is too small");
+	std::memcpy(buffer, value, StaticSize);
+	return StaticSize;
+}
+
+template <std::size_t _Size>
+void packer::type::String<char[_Size], _Size>::static_parse(char const buffer[StaticSize], Type& value)
 {
 	std::memcpy(value, buffer, StaticSize);
 }
 
 template <std::size_t _Size>
-void packer::type::String<char[_Size], _Size>::serialize(char buffer[StaticSize], Type const& value)
+void packer::type::String<char[_Size], _Size>::static_serialize(char buffer[StaticSize], Type const& value)
 {
 	std::memcpy(buffer, value, StaticSize);
 }
 
 template <std::size_t _Size>
-void packer::type::String<char[_Size], _Size>::parse(std::istream& stream, Type& value)
+void packer::type::String<char[_Size], _Size>::dynamic_parse(std::istream& stream, Type& value)
 {
 	stream.read(value, StaticSize);
 }
 
 template <std::size_t _Size>
-void packer::type::String<char[_Size], _Size>::serialize(std::ostream& stream, Type const& value)
+void packer::type::String<char[_Size], _Size>::dynamic_serialize(std::ostream& stream, Type const& value)
 {
 	stream.write(value, StaticSize);
 }
 
 
 template <std::size_t _Size>
-void packer::type::String<std::string, _Size>::parse(char const buffer[StaticSize], Type& value)
+std::size_t packer::type::String<std::string, _Size>::dynamic_size(Type const& value)
+{
+	return Header::dynamic_size(value.size()) + value.size();
+}
+
+template <std::size_t _Size>
+std::size_t packer::type::String<std::string, _Size>::dynamic_parse(char const *buffer, std::size_t length, Type& value)
+{
+	std::size_t len;
+	std::size_t pos = Header::dynamic_parse(buffer, length, len);
+	if(pos + len > length)
+		throw ParseError("String (C++): input buffer is too small");
+	value.assign(buffer + pos, len);
+	return pos + len;
+}
+
+template <std::size_t _Size>
+std::size_t packer::type::String<std::string, _Size>::dynamic_serialize(char *buffer, std::size_t length, Type const& value)
+{
+	std::size_t len = value.size();
+	std::size_t pos = Header::dynamic_serialize(buffer, length, len);
+	if(pos + len > length)
+		throw SerializeError("String (C++): output buffer is too small");
+	std::memcpy(buffer + pos, value.data(), len);
+	return pos + len;
+}
+
+template <std::size_t _Size>
+void packer::type::String<std::string, _Size>::static_parse(char const buffer[StaticSize], Type& value)
 {
 	value.assign(buffer, strnlen(buffer, StaticSize));
 }
 
 template <std::size_t _Size>
-void packer::type::String<std::string, _Size>::serialize(char buffer[StaticSize], Type const& value)
+void packer::type::String<std::string, _Size>::static_serialize(char buffer[StaticSize], Type const& value)
 {
 	std::strncpy(buffer, value.data(), StaticSize);
 }
 
 template <std::size_t _Size>
-void packer::type::String<std::string, _Size>::parse(std::istream& stream, Type& value)
+void packer::type::String<std::string, _Size>::dynamic_parse(std::istream& stream, Type& value)
 {
 	std::size_t len;
-	Header::parse(stream, len);
+	Header::dynamic_parse(stream, len);
 	std::unique_ptr<char[]> b(new char[len]);
 	stream.read(b.get(), len);
 	value.assign(b.get(), len);
 }
 
 template <std::size_t _Size>
-void packer::type::String<std::string, _Size>::serialize(std::ostream& stream, Type const& value)
+void packer::type::String<std::string, _Size>::dynamic_serialize(std::ostream& stream, Type const& value)
 {
-	Header::serialize(stream, value.length());
-	stream.write(value.data(), value.length());
+	Header::dynamic_serialize(stream, value.size());
+	stream.write(value.data(), value.size());
 }
-
-/*
-template <>
-void packer::type::String<std::string, 0>::parse(std::istream& stream, Type& value)
-{
-}
-
-template <>
-void packer::type::String<std::string, 0>::serialize(std::ostream& stream, Type const& value)
-{
-}
-*/

@@ -33,12 +33,11 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes)
 
 static constexpr int const packet_length_size = 4;
 
-void readPacket(int fd, char *&buffer)
+void readPacket(int fd, char *& buffer, std::size_t& bytes)
 {
-	std::size_t bytes;
 	char buf[packet_length_size];
 	readBlock(fd, buf, packet_length_size);
-	packer::type::Integer<std::size_t, packet_length_size>::parse(buf, bytes);
+	packer::type::Integer<std::size_t, packet_length_size>::static_parse(buf, bytes);
 	buffer = new char[bytes];
 	readBlock(fd, buffer, bytes);
 }
@@ -46,7 +45,7 @@ void readPacket(int fd, char *&buffer)
 void writePacket(int fd, char const *buffer, std::size_t bytes)
 {
 	char buf[packet_length_size];
-	packer::type::Integer<std::size_t, packet_length_size>::serialize(buf, bytes);
+	packer::type::Integer<std::size_t, packet_length_size>::static_serialize(buf, bytes);
 	writeBlock(fd, buf, packet_length_size);
 	writeBlock(fd, buffer, bytes);
 }
