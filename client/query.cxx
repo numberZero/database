@@ -9,10 +9,10 @@
 #include "query.hxx"
 
 QueryMachineState global_state {
-	{},
+	Socket(),
 	std::cin,
 	std::cout,
-	{}
+	SelectionParams()
 };
 
 char const *QuerySelect::name() const

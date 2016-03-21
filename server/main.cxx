@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -6,14 +7,21 @@
 #include <unistd.h>
 #include "binary/network.hxx"
 #include "db/db.hxx"
+#include "db/select.hxx"
+#include "bio.hxx"
+#include "misc.hxx"
 #include "net.hxx"
 
 Database db;
 Socket server;
 
+NEW_ERROR_CLASS(InvalidRequestException, runtime_error, std);
+
 class Client
 {
 	Socket socket;
+
+	void select(SelectionParams const &sp);
 
 public:
 	Client(Socket &&s);
@@ -25,8 +33,71 @@ Client::Client(Socket &&s) :
 {
 }
 
+void Client::select(SelectionParams const &sp)
+{
+	std::clog << "SELECT called" << std::endl;
+	for(Selection sel(db, sp); sel.isValid(); sel.next())
+	{
+		RowData row = sel.getRow().getData();
+		std::size_t size;
+		size = NetworkType<RowData>::dynamic_size(row);
+		std::unique_ptr<char[]> packet(new char[size]);
+		assert(size == NetworkType<RowData>::dynamic_serialize(packet.get(), size, row));
+		writePacket(socket.get(), packet.get(), size);
+	}
+	writePacket(socket.get(), nullptr, 0); // end of data
+}
+
 void Client::operator() ()
 {
+	try
+	{
+		for(;;)
+		{
+			std::size_t rem;
+			std::size_t count;
+			std::unique_ptr<char[]> packet(readPacket(socket.get(), rem));
+			std::clog << "Packet arrived" << std::endl;
+			char *ptr = packet.get();
+			QueryType qt;
+			SelectionParams sp;
+			count = NetworkType<QueryType>::dynamic_parse(ptr, rem, qt);
+			ptr += count;
+			rem -= count;
+			switch(qt)
+			{
+			case QueryType::Select:
+				count = NetworkType<SelectionParams>::dynamic_parse(ptr, rem, sp);
+				if(count != rem)
+					throw InvalidRequestException("Garbage after request");
+				packet.reset();
+				select(sp);
+				break;
+//			case QueryType::Insert:
+//				break;
+//			case QueryType::Remove:
+//				break;
+			default:
+				throw InvalidRequestException("Unknown request type");
+			}
+		}
+	}
+	catch(packer::PackingError const& e)
+	{
+		std::clog << "Invalid packet: " << e.what() << std::endl;
+	}
+	catch(InvalidRequestException const& e)
+	{
+		std::clog << "Invalid request: " << e.what() << std::endl;
+	}
+	catch(BioEof const& e)
+	{
+		std::clog << "Client disconnect" << std::endl;
+	}
+	catch(...)
+	{
+		std::clog << "Client error" << std::endl;
+	}
 }
 
 int main(int argc, char **argv)

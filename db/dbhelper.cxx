@@ -46,24 +46,36 @@ char const *RowReference::getSubject() const
 	return db->subjects[row->subject].data.name;
 }
 
-int RowReference::getRoom() const
+unsigned RowReference::getRoom() const
 {
 	return db->rooms[row->room].data.number;
 }
 
-int RowReference::getGroup() const
+unsigned RowReference::getGroup() const
 {
 	return db->groups[row->group].data.number;
 }
 
-int RowReference::getDay() const
+unsigned RowReference::getDay() const
 {
 	return db->times[row->time].data.day;
 }
 
-int RowReference::getLesson() const
+unsigned RowReference::getLesson() const
 {
 	return db->times[row->time].data.lesson;
+}
+
+RowData RowReference::getData() const
+{
+	return {
+		getTeacher(),
+		getSubject(),
+		getRoom(),
+		getGroup(),
+		getDay(),
+		getLesson()
+	};
 }
 
 /*** getKey ***/

@@ -79,13 +79,13 @@ namespace packer
 			static constexpr std::size_t StaticSize = 0;
 			static constexpr std::size_t DynamicHeader = 0;
 
-			static std::size_t dynamic_size(Type const &value) { return 0; }
-			static std::size_t dynamic_parse(char const *buffer, std::size_t length, Type &value) { return 0; }
-			static std::size_t dynamic_serialize(char *buffer, std::size_t length, Type const &value) { return 0; }
-			static void static_parse(char const buffer[], Type &value) {}
-			static void static_serialize(char buffer[], Type const &value) {}
-			static void dynamic_parse(std::istream &stream, Type &value) {}
-			static void dynamic_serialize(std::ostream &stream, Type const &value) {}
+			static std::size_t dynamic_size(Type const &) { return 0; }
+			static std::size_t dynamic_parse(char const *, std::size_t, Type &) { return 0; }
+			static std::size_t dynamic_serialize(char *, std::size_t, Type const &) { return 0; }
+			static void static_parse(char const[], Type &) {}
+			static void static_serialize(char[], Type const &) {}
+			static void dynamic_parse(std::istream &, Type &) {}
+			static void dynamic_serialize(std::ostream &, Type const &) {}
 		};
 
 		template <typename _Class, typename _Entry, typename... _Entries>
@@ -317,7 +317,7 @@ namespace packer
 /*** packer::detail::StaticOnly ***/
 
 template <typename _TypeClass, typename _Type>
-std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_size(_Type const &value)
+std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_size(_Type const &)
 {
 	return _TypeClass::StaticSize;
 }
@@ -325,6 +325,8 @@ std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_size(_Type co
 template <typename _TypeClass, typename _Type>
 std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(char const *buffer, std::size_t length, _Type &value)
 {
+	if(length < _TypeClass::StaticSize)
+		throw packer::ReadError("Can't dynamic_parse: buffer is too small");
 	_TypeClass::static_parse(buffer, value);
 	return _TypeClass::StaticSize;
 }
@@ -332,6 +334,8 @@ std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_parse(char co
 template <typename _TypeClass, typename _Type>
 std::size_t packer::detail::StaticOnly<_TypeClass, _Type>::dynamic_serialize(char *buffer, std::size_t length, _Type const &value)
 {
+	if(length < _TypeClass::StaticSize)
+		throw packer::ReadError("Can't dynamic_serialize: buffer is too small");
 	_TypeClass::static_serialize(buffer, value);
 	return _TypeClass::StaticSize;
 }

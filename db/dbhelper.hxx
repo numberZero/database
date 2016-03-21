@@ -64,10 +64,10 @@ public:
 
 	char const *getTeacher() const;
 	char const *getSubject() const;
-	int getRoom() const;
-	int getGroup() const;
-	int getDay() const;
-	int getLesson() const;
+	unsigned getRoom() const;
+	unsigned getGroup() const;
+	unsigned getDay() const;
+	unsigned getLesson() const;
 
 	RowData getData() const;
 };

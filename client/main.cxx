@@ -1,4 +1,5 @@
 #include <cctype>
+#include <csignal>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -21,6 +22,7 @@ char const *const PRE_Error = "! ";
 
 int main(int argc, char **argv)
 {
+	std::signal(SIGPIPE, SIG_IGN);
 	try
 	{
 		switch(argc)
@@ -39,6 +41,7 @@ int main(int argc, char **argv)
 				std::cout << "\t" << argv[0] << " [ host [ port ] ]" << std::endl;
 				return 1;
 		}
+		std::cout << "Connected" << std::endl;
 		try
 		{
 			QueryReader rd(std::cin);
