@@ -52,7 +52,7 @@ public:
 	void writeText(std::ostream &file);
 	void printDB(std::ostream &file, int width = 75);
 
-	void insert(RowData const &row);
+	RowReference insert(RowData const &row);
 	Selection select(SelectionParams const &p);
-	void remove(SelectionParams const &p);
+	std::size_t remove(SelectionParams const &p);
 };

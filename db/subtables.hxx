@@ -29,6 +29,7 @@
 	public: \
 		Id add##NAME PARAMS ; \
 		Id find##NAME PARAMS ; \
+		Id need##NAME PARAMS ; \
 	} \
 
 DEFINE_SUBDB_CLASS(Teacher, teacher, char const *, (std::string const &name));

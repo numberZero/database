@@ -57,7 +57,8 @@ void Client::select(SelectionParams const &sp)
 
 void Client::insert(RowData const &row)
 {
-	sendAnswerHeader(501, "INSERT not implemented");
+	db.insert(row);
+	sendAnswerHeader();
 }
 
 void Client::remove(SelectionParams const &rp)

@@ -71,3 +71,43 @@ Id SubDB_Time::findTime(unsigned day, unsigned lesson)
 {
 	return index_time[getTimeKey(day, lesson)];
 }
+
+Id SubDB_Teacher::needTeacher(std::string const &name)
+{
+	Id *id = index_teacher.get(name.c_str());
+	if(id)
+		return *id;
+	return addTeacher(name);
+}
+
+Id SubDB_Subject::needSubject(std::string const &name)
+{
+	Id *id = index_subject.get(name.c_str());
+	if(id)
+		return *id;
+	return addSubject(name);
+}
+
+Id SubDB_Room::needRoom(unsigned number)
+{
+	Id *id = index_room.get(getRoomKey(number));
+	if(id)
+		return *id;
+	return addRoom(number);
+}
+
+Id SubDB_Group::needGroup(unsigned number)
+{
+	Id *id = index_group.get(getGroupKey(number));
+	if(id)
+		return *id;
+	return addGroup(number);
+}
+
+Id SubDB_Time::needTime(unsigned day, unsigned lesson)
+{
+	Id *id = index_time.get(getTimeKey(day, lesson));
+	if(id)
+		return *id;
+	return addTime(day, lesson);
+}

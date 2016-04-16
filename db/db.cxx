@@ -216,9 +216,14 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 	return id;
 }
 
-void Database::insert(RowData const &row)
+RowReference Database::insert(RowData const &row)
 {
-
+	Id teacher = needTeacher(row.teacher);
+	Id subject = needSubject(row.subject);
+	Id room = needRoom(row.room);
+	Id group = needGroup(row.group);
+	Id time = needTime(row.day, row.lesson);
+	return RowReference(this, rows.get(addRow(teacher, subject, room, group, time)));
 }
 
 Selection Database::select(SelectionParams const &p)
@@ -230,11 +235,12 @@ Selection Database::select(SelectionParams const &p)
 	return Selection(*this, p, std::move(s));
 }
 
-void Database::remove(SelectionParams const &p)
+std::size_t Database::remove(SelectionParams const &p)
 {
+	std::size_t count = 0;
 	std::unique_ptr<PreSelection_Real> s;
 	if(!p.isValid())
-		return;
+		return 0;
 	s.reset(new PreSelection_Full(rows)); // slow but always works
 	while(s->isValid())
 	{
@@ -243,5 +249,7 @@ void Database::remove(SelectionParams const &p)
 		if(!RowReference(this, rows.get(row)).check(p))
 			continue;
 		rows.remove(row); // it always present (unless threads conflict)
+		++count;
 	}
+	return count;
 }
