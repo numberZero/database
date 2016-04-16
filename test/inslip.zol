@@ -1,0 +1,7 @@
+print;
+insert teacher="mr. L.", subject="Math", room=412, group=101, day=2, lesson=1;
+print;
+select teacher="mr. L.";
+print;
+select room=410;
+print;
