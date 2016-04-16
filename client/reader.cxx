@@ -144,7 +144,7 @@ PQuery QueryReader::readQuery()
 	readSpace();
 	locase_it(type);
 	PQuery q(callReadFunction(type));
-	readEnd();
+	ensureEnd();
 	return std::move(q);
 }
 

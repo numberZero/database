@@ -34,10 +34,17 @@ void BaseReader::readSpace(bool required)
 		readChar();
 }
 
-void BaseReader::readEnd()
+void BaseReader::ensureEnd()
 {
 	if(!isEnd())
 		throw InvalidCharacterError("Query end expected");
+}
+
+void BaseReader::ensureChar(char expected)
+{
+	if(c != expected)
+		throw InvalidCharacterError(std::string() + "\"" + expected + "\" expected");
+	readChar();
 }
 
 bool BaseReader::isEnd()
@@ -88,9 +95,7 @@ std::set<std::string> BaseReader::readParams1()
 		readSpace();
 		if(isEnd())
 			break;
-		if(c != ',')
-			throw InvalidCharacterError("Comma expected");
-		readChar();
+		ensureChar(',');
 		readSpace();
 	}
 	return std::move(params);
@@ -99,13 +104,13 @@ std::set<std::string> BaseReader::readParams1()
 std::map<std::string, std::string> BaseReader::readParams2()
 {
 	std::map<std::string, std::string> params;
+	if(isEnd())
+		return std::move(params);
 	for(;;)
 	{
 		std::string key = readIdent();
 		readSpace();
-		if(c != '=')
-			throw InvalidCharacterError("\"=\" expected");
-		readChar();
+		ensureChar('=');
 		readSpace();
 		std::string value = readString();
 		if(!params.emplace(key, value).second)
@@ -113,9 +118,7 @@ std::map<std::string, std::string> BaseReader::readParams2()
 		readSpace();
 		if(isEnd())
 			break;
-		if(c != ',')
-			throw InvalidCharacterError("Comma expected");
-		readChar();
+		ensureChar(',');
 		readSpace();
 	}
 	return std::move(params);

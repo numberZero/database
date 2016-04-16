@@ -22,8 +22,9 @@ protected:
 
 	char readChar();
 	void readSpace(bool required = false);
-	void readEnd();
 
+	void ensureEnd(); ///< throws if not at the end; doesn't read the next char
+	void ensureChar(char expected); ///< throws if there is different char; reads the next char in the buffer
 	bool isEnd();
 
 	std::string readIdent();
