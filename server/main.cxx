@@ -38,7 +38,7 @@ Client::Client(Socket &&s) :
 
 void Client::sendAnswerHeader(bool success, int mc)
 {
-	ResultHeader hdr { true, 0 };
+	ResultHeader hdr { success, mc };
 	std::size_t const size = NetworkType<ResultHeader>::StaticSize;
 	char buffer[size];
 	NetworkType<ResultHeader>::static_serialize(buffer, hdr);
@@ -107,7 +107,10 @@ void Client::operator() ()
 //			case QueryType::Remove:
 //				break;
 			default:
+				sendAnswerHeader(-1, "Unknown request type");
+#ifdef DISCONNECT_ON_INVALID_REQUEST
 				throw InvalidRequestException("Unknown request type");
+#endif
 			}
 		}
 	}

@@ -134,7 +134,7 @@ Socket Bind(std::string address, std::string service, bool reuseaddr)
 {
 	int const options = AI_V4MAPPED | AI_ADDRCONFIG | AI_PASSIVE;
 	if(reuseaddr)
-		return Socket(Choose<BindCallback>(address, service, options));
-	else
 		return Socket(Choose<BindCallback_RA>(address, service, options));
+	else
+		return Socket(Choose<BindCallback>(address, service, options));
 }
