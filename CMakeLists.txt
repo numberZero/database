@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 2.6)
 project(zolden)
 
 add_executable(zold
-	common/bio.cxx
-	common/bitset.cxx
-	common/hashtable.cxx
-	common/misc.cxx
-	common/net.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/select.cxx
 	db/subtables.cxx
+	lib/bio.cxx
+	lib/bitset.cxx
+	lib/hashtable.cxx
+	lib/misc.cxx
+	lib/net.cxx
 	server/client.cxx
 	server/main.cxx
 )
@@ -20,16 +20,17 @@ add_executable(zol
 	client/reader.cxx
 	client/tokenizer.cxx
 	client/query.cxx
-	common/bio.cxx
-	common/misc.cxx
-	common/net.cxx
 	db/dbhelper.cxx
 	db/select.cxx
+	lib/bio.cxx
+	lib/misc.cxx
+	lib/net.cxx
 )
 
 target_include_directories(zold PUBLIC
 	${CMAKE_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/common
+	${CMAKE_SOURCE_DIR}/lib
 	${CMAKE_SOURCE_DIR}/server
 )
 
@@ -37,6 +38,7 @@ target_include_directories(zol PUBLIC
 	${CMAKE_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/client
+	${CMAKE_SOURCE_DIR}/lib
 )
 
 if($<VERSION_GREATER:CMAKE_VERSION,"3.0">)
