@@ -236,4 +236,12 @@ void Database::remove(SelectionParams const &p)
 	if(!p.isValid())
 		return;
 	s.reset(new PreSelection_Full(rows)); // slow but always works
+	while(s->isValid())
+	{
+		Id row = s->getRowId();
+		s->next(); // to be sure iterator won’t break
+		if(!RowReference(this, rows.get(row)).check(p))
+			continue;
+		rows.remove(row); // it always present (unless threads conflict)
+	}
 }

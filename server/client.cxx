@@ -62,7 +62,8 @@ void Client::insert(RowData const &row)
 
 void Client::remove(SelectionParams const &rp)
 {
-	sendAnswerHeader(501, "REMOVE not implemented");
+	db.remove(rp);
+	sendAnswerHeader();
 }
 
 void Client::operator() ()
@@ -116,17 +117,21 @@ void Client::operator() ()
 			}
 		}
 	}
-	catch(packer::PackingError const& e)
+	catch(packer::PackingError const &e)
 	{
 		std::clog << "Invalid packet: " << e.what() << std::endl;
 	}
-	catch(InvalidRequestException const& e)
+	catch(InvalidRequestException const &e)
 	{
 		std::clog << "Invalid request: " << e.what() << std::endl;
 	}
-	catch(BioEof const& e)
+	catch(BioEof const &e)
 	{
 		std::clog << "Client disconnect" << std::endl;
+	}
+	catch(std::exception const &e)
+	{
+		std::clog << "Client error: " << e.what() << std::endl;
 	}
 	catch(...)
 	{

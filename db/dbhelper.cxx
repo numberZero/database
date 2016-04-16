@@ -81,6 +81,7 @@ RowData RowReference::getData() const
 bool RowReference::check(SelectionParams const &sp) const
 {
 	return
+		row &&
 		sp.teacher.check(getTeacher()) &&
 		sp.subject.check(getSubject()) &&
 		sp.room.check(getRoom()) &&
