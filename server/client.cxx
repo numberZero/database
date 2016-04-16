@@ -54,6 +54,16 @@ void Client::select(SelectionParams const &sp)
 	writePacket(socket.get(), nullptr, 0); // end of data
 }
 
+void Client::insert(RowData const &row)
+{
+	sendAnswerHeader(501, "INSERT not implemented");
+}
+
+void Client::remove(SelectionParams const &rp)
+{
+	sendAnswerHeader(501, "REMOVE not implemented");
+}
+
 void Client::operator() ()
 {
 	try
@@ -67,6 +77,7 @@ void Client::operator() ()
 			char *ptr = packet.get();
 			QueryType qt;
 			SelectionParams sp;
+			RowData row;
 			count = NetworkType<QueryType>::dynamic_parse(ptr, rem, qt);
 			ptr += count;
 			rem -= count;
@@ -75,14 +86,27 @@ void Client::operator() ()
 			case QueryType::Select:
 				count = NetworkType<SelectionParams>::dynamic_parse(ptr, rem, sp);
 				if(count != rem)
-					throw InvalidRequestException("Garbage after request");
+					throw InvalidRequestException("Garbage after request (SELECT)");
 				packet.reset();
 				select(sp);
 				break;
-//			case QueryType::Insert:
-//				break;
-//			case QueryType::Remove:
-//				break;
+
+			case QueryType::Insert:
+				count = NetworkType<RowData>::dynamic_parse(ptr, rem, row);
+				if(count != rem)
+					throw InvalidRequestException("Garbage after request (INSERT)");
+				packet.reset();
+				insert(row);
+				break;
+
+			case QueryType::Remove:
+				count = NetworkType<SelectionParams>::dynamic_parse(ptr, rem, sp);
+				if(count != rem)
+					throw InvalidRequestException("Garbage after request (REMOVE)");
+				packet.reset();
+				remove(sp);
+				break;
+
 			default:
 				sendAnswerHeader(400, "Unknown request type");
 #ifdef DISCONNECT_ON_INVALID_REQUEST
