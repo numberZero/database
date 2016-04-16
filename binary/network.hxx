@@ -3,8 +3,6 @@
 #include "db/dbhelper.hxx"
 #include "db/select.hxx"
 
-static constexpr std::uint_least16_t const zolden_port = 13377;
-
 enum class QueryType {
 	Select = 1,
 	Insert = 2,

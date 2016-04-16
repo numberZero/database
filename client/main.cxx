@@ -1,19 +1,10 @@
-#include <cctype>
 #include <csignal>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include "misc.hxx"
 #include "reader.hxx"
 #include "db/dbhelper.hxx"
-#include "binary/network.hxx"
-#include "bio.hxx"
-#include "net.hxx"
+#include "config.hxx"
 
 char const *const PRE_Input = "> ";
 char const *const PRE_Output = "< ";
@@ -28,7 +19,7 @@ int main(int argc, char **argv)
 		switch(argc)
 		{
 			case 1:
-				global_state.connection = Connect("127.0.0.1", std::to_string(zolden_port));
+				global_state.connection = Connect(zolden_addr, std::to_string(zolden_port));
 				break;
 			case 2:
 				global_state.connection = Connect(argv[1], std::to_string(zolden_port));

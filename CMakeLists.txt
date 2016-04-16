@@ -11,8 +11,8 @@ add_executable(zold
 	db/dbhelper.cxx
 	db/dbtables.cxx
 	db/select.cxx
+	server/client.cxx
 	server/main.cxx
-	server/query.cxx
 )
 
 add_executable(zol
