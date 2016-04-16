@@ -119,14 +119,14 @@ namespace packer
 
 			static void static_parse(char const buffer[StaticSize], Type &value)
 			{
-				Entry::PackerType::dynamic_parse(buffer, Entry::get(value));
-				Next::dynamic_parse(&buffer[Entry::PackerType::StaticSize], value);
+				Entry::PackerType::static_parse(buffer, Entry::get(value));
+				Next::static_parse(&buffer[Entry::PackerType::StaticSize], value);
 			}
 
 			static void static_serialize(char buffer[StaticSize], Type const &value)
 			{
-				Entry::PackerType::dynamic_serialize(buffer, Entry::get(value));
-				Next::dynamic_serialize(&buffer[Entry::PackerType::StaticSize], value);
+				Entry::PackerType::static_serialize(buffer, Entry::get(value));
+				Next::static_serialize(&buffer[Entry::PackerType::StaticSize], value);
 			}
 
 			static void dynamic_parse(std::istream &stream, Type &value)
@@ -260,8 +260,8 @@ namespace packer
 			static std::size_t dynamic_size(_Type const &value)	{ return Contents::dynamic_size(value); }
 			static std::size_t dynamic_parse(char const *buffer, std::size_t length, _Type &value)	{ return Contents::dynamic_parse(buffer, length, value); }
 			static std::size_t dynamic_serialize(char *buffer, std::size_t length, _Type const &value)	{ return Contents::dynamic_serialize(buffer, length, value); }
-			static void static_parse(char const buffer[StaticSize], Type &value)		{ Contents::dynamic_parse(buffer, value); }
-			static void static_serialize(char buffer[StaticSize], Type const &value)	{ Contents::dynamic_serialize(buffer, value); }
+			static void static_parse(char const buffer[StaticSize], Type &value)		{ Contents::static_parse(buffer, value); }
+			static void static_serialize(char buffer[StaticSize], Type const &value)	{ Contents::static_serialize(buffer, value); }
 			static void dynamic_parse(std::istream &stream, Type &value)			{ Contents::dynamic_parse(stream, value); }
 			static void dynamic_serialize(std::ostream &stream, Type const &value)	{ Contents::dynamic_serialize(stream, value); }
 		};
