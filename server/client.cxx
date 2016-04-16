@@ -1,6 +1,7 @@
 #include <cassert>
 #include "binary/network.hxx"
 #include "db/select.hxx"
+#include "db/db.hxx"
 #include "bio.hxx"
 #include "client.hxx"
 
@@ -42,7 +43,7 @@ void Client::select(SelectionParams const &sp)
 {
 	std::clog << "SELECT called" << std::endl;
 	sendAnswerHeader();
-	for(Selection sel(db, sp); sel.isValid(); sel.next())
+	for(Selection sel(db.select(sp)); sel.isValid(); sel.next())
 	{
 		RowData row = sel.getRow().getData();
 		std::size_t size;

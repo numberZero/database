@@ -15,7 +15,7 @@ RowRefList::~RowRefList()
 	}
 }
 
-void RowRefList::addRow(Row *row)
+void RowRefList::addRow(Id row)
 {
 	std::size_t idx = count % node_capacity;
 	if(!idx)
@@ -30,7 +30,7 @@ void RowRefList::addRow(Row *row)
 
 /*** RowReference ***/
 
-RowReference::RowReference(Database *database, Row *prow) :
+RowReference::RowReference(Database const *database, Row const *prow) :
 	db(database),
 	row(prow)
 {

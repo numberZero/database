@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include "data.hxx"
 #include "dbhelper.hxx"
@@ -61,26 +62,37 @@ class PreSelection
 public:
 	virtual ~PreSelection() = default;
 	virtual bool isValid() = 0;
-	virtual Row *getRow() = 0;
+	virtual Row const *getRow() = 0;
 	virtual void next() = 0;
 };
 
-class PreSelection_Full:
+class PreSelection_Real:
 	public PreSelection
 {
+protected:
+	Rows const &rows;
+	PreSelection_Real(Rows const &db);
+
+public:
+	Row const *getRow() override;
+	virtual Id getRowId() = 0;
+};
+
+class PreSelection_Full:
+	public PreSelection_Real
+{
 private:
-	Table<Row> &rows;
 	std::size_t index;
 
 public:
-	PreSelection_Full(Table<Row> &table);
+	PreSelection_Full(Rows const &table);
 	bool isValid() override;
-	Row *getRow() override;
 	void next() override;
+	Id getRowId() override;
 };
 
 class PreSelection_SimpleKey:
-	public PreSelection
+	public PreSelection_Real
 {
 private:
 	Id id;
@@ -90,7 +102,8 @@ private:
 
 public:
 	template <typename _Object, typename _Key, typename _Table, typename _HashTable>
-	PreSelection_SimpleKey(_HashTable &ht, _Table &table, _Key key)
+	PreSelection_SimpleKey(Rows const &db, _HashTable &ht, _Table &table, _Key key) :
+		PreSelection_Real(db)
 	{
 		id = ht[key];
 		rows = table[id].rows;
@@ -99,8 +112,8 @@ public:
 	}
 
 	bool isValid() override;
-	Row *getRow() override;
 	void next() override;
+	Id getRowId() override;
 };
 
 class PreSelection_Bitset:
@@ -118,7 +131,7 @@ public:
 	PreSelection_Bitset(Bitset const &bitset, Id Row::*param_x, IntegerParam range_x, Id Row::*param_y, IntegerParam range_y);
 
 	bool isValid() override;
-	Row *getRow() override;
+	Row const *getRow() override;
 	void next() override;
 };
 
@@ -126,18 +139,16 @@ class Selection
 {
 	Database *db;
 	SelectionParams p;
-	PreSelection *s;
+	std::unique_ptr<PreSelection> s;
 
-	void drop();
 	void reset(Selection &b);
 	bool reach(); // finds first row that fits the query
 
 public:
 	Selection();
-	Selection(Database &database, SelectionParams const &params);
+	Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect);
 	Selection(Selection const &b) = delete;
 	Selection(Selection &&b);
-	~Selection();
 
 	Selection &operator= (Selection const &b) = delete;
 	Selection &operator= (Selection &&b);

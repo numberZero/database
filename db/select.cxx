@@ -171,22 +171,34 @@ bool SelectionParams::isValid() const
 
 /********* PreSelection *********/
 
+/*** PreSelection_Real ***/
+
+PreSelection_Real::PreSelection_Real(Rows const &db) :
+	rows(db)
+{
+}
+
+Row const *PreSelection_Real::getRow()
+{
+	return &rows[getRowId()];
+}
+
 /*** PreSelection_Full ***/
 
-PreSelection_Full::PreSelection_Full(Table<Row> &table) :
-	rows(table),
+PreSelection_Full::PreSelection_Full(Rows const &table) :
+	PreSelection_Real(table),
 	index(0)
 {
+}
+
+Id PreSelection_Full::getRowId()
+{
+	return index;
 }
 
 bool PreSelection_Full::isValid()
 {
 	return index < rows.count;
-}
-
-Row *PreSelection_Full::getRow()
-{
-	return &rows[index];
 }
 
 void PreSelection_Full::next()
@@ -196,15 +208,15 @@ void PreSelection_Full::next()
 
 /*** PreSelection_SimpleKey ***/
 
-bool PreSelection_SimpleKey::isValid()
-{
-	return index < rows->count;
-}
-
-Row *PreSelection_SimpleKey::getRow()
+Id PreSelection_SimpleKey::getRowId()
 {
 	assert(isValid());
 	return node->rows[index % RowRefList::node_capacity];
+}
+
+bool PreSelection_SimpleKey::isValid()
+{
+	return index < rows->count;
 }
 
 void PreSelection_SimpleKey::next()
@@ -224,14 +236,11 @@ Selection::Selection() :
 {
 }
 
-Selection::Selection(Database &database, SelectionParams const &params) :
+Selection::Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect) :
 	db(&database),
 	p(params),
-	s(nullptr)
+	s(std::move(preselect))
 {
-	if(!params.isValid())
-		return;
-	s = new PreSelection_Full(db->rows); // slow but always works
 	reach();
 }
 
@@ -240,30 +249,17 @@ Selection::Selection(Selection &&b)
 	reset(b);
 }
 
-Selection::~Selection()
-{
-	drop();
-}
-
 Selection &Selection::operator=(Selection &&b)
 {
-	drop();
 	reset(b);
 	return *this;
-}
-
-void Selection::drop()
-{
-	if(s)
-		delete s;
 }
 
 void Selection::reset(Selection &b)
 {
 	db = b.db;
 	p = b.p;
-	s = b.s;
-	b.s = nullptr;
+	s = std::move(b.s);
 }
 
 bool Selection::reach()

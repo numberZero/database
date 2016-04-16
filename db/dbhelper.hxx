@@ -15,7 +15,7 @@ struct RowRefList
 
 	struct Node
 	{
-		Row *rows[node_capacity];
+		Id rows[node_capacity];
 		Node *next;
 	};
 
@@ -24,7 +24,7 @@ struct RowRefList
 
 	RowRefList() = default;
 	~RowRefList();
-	void addRow(Row *row);
+	void addRow(Id row);
 };
 
 template <typename _Data>
@@ -38,11 +38,13 @@ struct Container
 	{
 	}
 
-	void addRow(Row *row)
+	void addRow(Id row)
 	{
 		rows.addRow(row);
 	}
 };
+
+typedef Table<Row> Rows;
 
 struct RowData
 {
@@ -56,11 +58,11 @@ struct RowData
 
 class RowReference
 {
-	Database *db;
-	Row *row;
+	Database const *db;
+	Row const *row;
 
 public:
-	RowReference(Database *database, Row *prow);
+	RowReference(Database const *database, Row const *prow);
 
 	char const *getTeacher() const;
 	char const *getSubject() const;

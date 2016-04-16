@@ -6,7 +6,7 @@
 #include "bitset.hxx"
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
-#include "dbtables.hxx"
+#include "subtables.hxx"
 
 class Database:
 	public SubDB_Teacher,
@@ -19,7 +19,7 @@ class Database:
 	friend class Selection;
 
 private:
-	Table<Row> rows;
+	Rows rows;
 
 	Bitset index_teacher_subject;
 	Bitset index_teacher_room;

@@ -172,7 +172,13 @@ void Database::printDB(std::ostream &file, int width)
 	for(std::size_t k = 0; k != rows.count; ++k)
 	{
 		file << "*** Row " << k << " ***\n";
-		RowReference row(this, &rows[k]);
+		Row *prow = rows.get(k);
+		if(!prow)
+		{
+			file << "(deleted)" << std::endl;
+			continue;
+		}
+		RowReference row(this, prow);
 		file << "Day: " << row.getDay() << "\n";
 		file << "Lesson #" << row.getLesson() << "\n";
 		file << "Room #" << row.getRoom() << "\n";
@@ -186,13 +192,12 @@ void Database::printDB(std::ostream &file, int width)
 Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 {
 	Id id = rows.add(Row{teacher, subject, room, group, time});
-	Row *row = &rows[id];
 
-	teachers[teacher].addRow(row);
-	subjects[subject].addRow(row);
-	rooms[room].addRow(row);
-	groups[group].addRow(row);
-	times[time].addRow(row);
+	teachers[teacher].addRow(id);
+	subjects[subject].addRow(id);
+	rooms[room].addRow(id);
+	groups[group].addRow(id);
+	times[time].addRow(id);
 
 	index_teacher_subject.set(teacher, subject);
 	index_teacher_room.set(teacher, room);
@@ -209,4 +214,13 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 	index_group_time.set(group, time);
 
 	return id;
+}
+
+Selection Database::select(SelectionParams const &p)
+{
+	std::unique_ptr<PreSelection> s;
+	if(!p.isValid())
+		return Selection();
+	s.reset(new PreSelection_Full(rows)); // slow but always works
+	return Selection(*this, p, std::move(s));
 }

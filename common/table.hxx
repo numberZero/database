@@ -16,8 +16,10 @@ struct Table
 	std::size_t add(_Object &&object);
 	std::pair<std::size_t, _Object *> add();
 	_Object *get(std::size_t id);
+	_Object const *get(std::size_t id) const;
 
 	_Object &operator[] (std::size_t id);
+	_Object const &operator[] (std::size_t id) const;
 };
 
 template <typename _Object>
@@ -72,10 +74,27 @@ _Object *Table<_Object>::get(std::size_t id)
 }
 
 template <typename _Object>
+_Object const *Table<_Object>::get(std::size_t id) const
+{
+	if(id >= count)
+		return nullptr;
+	return data + id;
+}
+
+template <typename _Object>
 _Object &Table<_Object>::operator[] (std::size_t id)
 {
 	_Object *obj = get(id);
 	if(!obj)
 		throw std::invalid_argument("Table[] called with invalid id");
+	return *obj;
+}
+
+template <typename _Object>
+_Object const &Table<_Object>::operator[] (std::size_t id) const
+{
+	_Object const *obj = get(id);
+	if(!obj)
+		throw std::invalid_argument("const Table[] called with invalid id");
 	return *obj;
 }

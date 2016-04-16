@@ -9,8 +9,8 @@ add_executable(zold
 	common/net.cxx
 	db/db.cxx
 	db/dbhelper.cxx
-	db/dbtables.cxx
 	db/select.cxx
+	db/subtables.cxx
 	server/client.cxx
 	server/main.cxx
 )

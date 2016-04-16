@@ -1,4 +1,4 @@
-#include "dbtables.hxx"
+#include "subtables.hxx"
 
 Id SubDB_Teacher::addTeacher(std::string const &name)
 {
