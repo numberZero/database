@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "data.hxx"
+#include "struct.hxx"
 
 class Database;
 
@@ -46,16 +47,6 @@ struct Container
 
 typedef Table<Row> Rows;
 
-struct RowData
-{
-	std::string teacher;
-	std::string subject;
-	unsigned room;
-	unsigned group;
-	unsigned day;
-	unsigned lesson;
-};
-
 class RowReference
 {
 	Database const *db;
@@ -72,6 +63,8 @@ public:
 	unsigned getLesson() const;
 
 	RowData getData() const;
+
+	bool check(SelectionParams const &sp) const;
 };
 
 char const *getKey(Teacher const &object);

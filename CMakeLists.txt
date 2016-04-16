@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(zolden)
 
 add_executable(zold
+	common/struct.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/select.cxx
@@ -16,12 +17,11 @@ add_executable(zold
 )
 
 add_executable(zol
+	common/struct.cxx
 	client/main.cxx
 	client/reader.cxx
 	client/tokenizer.cxx
 	client/query.cxx
-	db/dbhelper.cxx
-	db/select.cxx
 	lib/bio.cxx
 	lib/misc.cxx
 	lib/net.cxx

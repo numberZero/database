@@ -216,6 +216,11 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 	return id;
 }
 
+void Database::insert(RowData const &row)
+{
+
+}
+
 Selection Database::select(SelectionParams const &p)
 {
 	std::unique_ptr<PreSelection> s;
@@ -223,4 +228,12 @@ Selection Database::select(SelectionParams const &p)
 		return Selection();
 	s.reset(new PreSelection_Full(rows)); // slow but always works
 	return Selection(*this, p, std::move(s));
+}
+
+void Database::remove(SelectionParams const &p)
+{
+	std::unique_ptr<PreSelection_Real> s;
+	if(!p.isValid())
+		return;
+	s.reset(new PreSelection_Full(rows)); // slow but always works
 }

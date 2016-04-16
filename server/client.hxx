@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
-#include "db/dbhelper.hxx"
-#include "db/select.hxx"
 #include "net.hxx"
+#include "struct.hxx"
 
 class Client
 {

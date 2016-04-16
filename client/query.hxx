@@ -1,9 +1,9 @@
 #pragma once
 #include <iostream>
 #include <memory>
-#include "db/select.hxx"
 #include "misc.hxx"
 #include "net.hxx"
+#include "struct.hxx"
 
 enum class Command
 {

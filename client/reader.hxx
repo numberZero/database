@@ -1,8 +1,7 @@
 #pragma once
+#include "struct.hxx"
 #include "tokenizer.hxx"
 #include "query.hxx"
-#include "db/dbhelper.hxx"
-#include "db/select.hxx"
 
 NEW_ERROR_CLASS(UnknownQueryTypeError, InvalidQueryError, );
 

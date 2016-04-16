@@ -78,6 +78,17 @@ RowData RowReference::getData() const
 	};
 }
 
+bool RowReference::check(SelectionParams const &sp) const
+{
+	return
+		sp.teacher.check(getTeacher()) &&
+		sp.subject.check(getSubject()) &&
+		sp.room.check(getRoom()) &&
+		sp.group.check(getGroup()) &&
+		sp.day.check(getDay()) &&
+		sp.lesson.check(getLesson());
+}
+
 /*** getKey ***/
 
 char const *getKey(Teacher const &object)

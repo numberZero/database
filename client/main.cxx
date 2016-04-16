@@ -2,9 +2,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "reader.hxx"
-#include "db/dbhelper.hxx"
 #include "config.hxx"
+#include "reader.hxx"
+#include "struct.hxx"
 
 char const *const PRE_Input = "> ";
 char const *const PRE_Output = "< ";

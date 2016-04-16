@@ -1,7 +1,6 @@
 #pragma once
 #include "message.hxx"
-#include "db/dbhelper.hxx"
-#include "db/select.hxx"
+#include "struct.hxx"
 
 enum class QueryType {
 	Select = 1,

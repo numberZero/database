@@ -3,7 +3,6 @@
 #include <string>
 #include <sstream>
 #include "binary/network.hxx"
-#include "db/dbcommon.hxx"
 #include "bio.hxx"
 #include "misc.hxx"
 #include "query.hxx"
