@@ -4,6 +4,7 @@
 #include <thread>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <signal.h>
 #include <unistd.h>
 #include "binary/network.hxx"
 #include "db/db.hxx"
@@ -132,8 +133,17 @@ void Client::operator() ()
 	}
 }
 
+void blockSIGPIPE()
+{
+	struct sigaction act;
+	std::memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_IGN;
+	sigaction(SIGPIPE, &act, nullptr);
+}
+
 int main(int argc, char **argv)
 {
+	blockSIGPIPE();
 	if(argc > 2)
 	{
 		std::cerr << "Usage:" << std::endl;
