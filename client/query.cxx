@@ -198,6 +198,16 @@ char const *QueryHelp::name() const
 
 void QueryHelp::perform()
 {
+	global_state.cout << "=== Help ===\n";
+	global_state.cout << "Queries available:\n";
+	global_state.cout << "\tselect\tSelect rows for following print\n";
+	global_state.cout << "\treselect\tUpdate current selection\n";
+	global_state.cout << "\tprint\tPrint rows from the current selection\n";
+	global_state.cout << "\tinsert\tAdd row to the database\n";
+	global_state.cout << "\tremove\tDelete rows from the database\n";
+	global_state.cout << "\thelp\tShow this help\n";
+	global_state.cout << "\texit\tExit the client\n";
+	global_state.cout << std::flush;
 }
 
 char const *QueryExit::name() const
