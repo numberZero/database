@@ -34,7 +34,7 @@ void sendQuery(Socket &socket, QueryType type, DataType data)
 	char *packet = buffer.get();
 	char *head = packet;
 	char *body = packet + head_size;
-	NetworkType<QueryType>::static_serialize(head, QueryType::Select);
+	NetworkType<QueryType>::static_serialize(head, type);
 	assert(body_size == NetworkType<DataType>::dynamic_serialize(body, body_size, data));
 	writePacket(socket.get(), packet, packet_size);
 }
