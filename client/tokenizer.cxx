@@ -87,6 +87,8 @@ std::string BaseReader::readString()
 std::set<std::string> BaseReader::readParams1()
 {
 	std::set<std::string> params;
+	if(isEnd())
+		return std::move(params);
 	for(;;)
 	{
 		std::string name = readIdent();

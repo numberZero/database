@@ -8,19 +8,21 @@ SelectionParams QueryReader::readSelectParams()
 {
 	SelectionParams result;
 	auto params = readParams2();
-	for(std::pair<std::string, std::string> const &param: params)
-	{
+	decltype(params)::iterator iter;
 #define SELPARAM(name) \
-		if(param.first == #name) \
-			result.name.set(param.second)
-		SELPARAM(teacher); else
-		SELPARAM(subject); else
-		SELPARAM(room); else
-		SELPARAM(group); else
-		SELPARAM(day); else
-		SELPARAM(lesson); else
-		throw InvalidQueryError("Unknown SELECT parameter");
-	}
+		iter = params.find(#name); \
+		if(iter != params.end()) { \
+			result.name.set(iter->second); \
+			params.erase(iter); \
+		}
+	SELPARAM(teacher);
+	SELPARAM(subject);
+	SELPARAM(room);
+	SELPARAM(group);
+	SELPARAM(day);
+	SELPARAM(lesson);
+	if(params.size())
+		throw InvalidQueryError("Unknown SELECT parameter: " + params.begin()->first);
 	return std::move(result);
 }
 
@@ -28,19 +30,26 @@ SelectionParams QueryReader::readPrintParams()
 {
 	SelectionParams result;
 	auto params = readParams1();
-	for(std::string const &param: params)
-	{
+	decltype(params)::iterator iter;
+	bool printall = !params.size();
 #define PRNPARAM(name) \
-		if(param == #name) \
-			result.name.do_return = true
-		PRNPARAM(teacher); else
-		PRNPARAM(subject); else
-		PRNPARAM(room); else
-		PRNPARAM(group); else
-		PRNPARAM(day); else
-		PRNPARAM(lesson); else
-		throw InvalidQueryError("Unknown PRINT parameter");
-	}
+		if(printall) \
+			result.name.do_return = true; \
+		else { \
+			iter = params.find(#name); \
+			if(iter != params.end()) { \
+				result.name.do_return = true; \
+				params.erase(iter); \
+			} \
+		}
+	PRNPARAM(teacher);
+	PRNPARAM(subject);
+	PRNPARAM(room);
+	PRNPARAM(group);
+	PRNPARAM(day);
+	PRNPARAM(lesson);
+	if(params.size())
+		throw InvalidQueryError("Unknown PRINT parameter: " + *params.begin());
 	return std::move(result);
 }
 
@@ -48,22 +57,21 @@ RowData QueryReader::readInsertParams()
 {
 	RowData result;
 	auto params = readParams2();
-	for(std::pair<std::string, std::string> const &param: params)
-	{
-#define INSPARAMS(name) \
-		if(param.first == #name) \
-			result.name = param.second
-#define INSPARAMI(name) \
-		if(param.first == #name) \
-			result.name = std::stoi(param.second)
-		INSPARAMS(teacher); else
-		INSPARAMS(subject); else
-		INSPARAMI(room); else
-		INSPARAMI(group); else
-		INSPARAMI(day); else
-		INSPARAMI(lesson); else
-		throw InvalidQueryError("Unknown INSERT parameter");
-	}
+	decltype(params)::iterator iter;
+#define INSPARAM(name,conv) \
+		iter = params.find(#name); \
+		if(iter == params.end()) \
+			throw InvalidQueryError("Missing INSERT parameter: " #name); \
+		result.name = conv(iter->second); \
+		params.erase(iter)
+	INSPARAM(teacher, );
+	INSPARAM(subject, );
+	INSPARAM(room, std::stoi);
+	INSPARAM(group, std::stoi);
+	INSPARAM(day, std::stoi);
+	INSPARAM(lesson, std::stoi);
+	if(params.size())
+		throw InvalidQueryError("Unknown INSERT parameter: " + params.begin()->first);
 	return std::move(result);
 }
 
