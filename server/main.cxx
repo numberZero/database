@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 		std::clog << "Reading database from: " << argv[1] << std::endl;
 		db.readText(argv[1]);
 	}
-	server = Bind("127.0.0.1", std::to_string(zolden_port));
+	server = Bind("127.0.0.1", std::to_string(zolden_port), true);
 	if(0 != listen(server.get(), 20))
 		throw std::system_error(errno, std::system_category(), "Can't listen on a socket");
 	for(;;)

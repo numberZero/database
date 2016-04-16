@@ -58,13 +58,7 @@ else()
 	)
 endif()
 
-target_compile_options(zold PUBLIC
-	-Wall
-	-Werror
-	-pedantic
-)
-
-target_compile_options(zol PUBLIC
+add_compile_options(
 	-Wall
 	-Werror
 	-pedantic

@@ -117,12 +117,24 @@ bool BindCallback(int fd, addrinfo &addr)
 	return 0 == bind(fd, addr.ai_addr, addr.ai_addrlen);
 }
 
-Socket Connect(std::string address, std::string service)
+bool BindCallback_RA(int fd, addrinfo &addr)
 {
-	return Socket(Choose<ConnectCallback>(address, service, AI_V4MAPPED | AI_ADDRCONFIG));
+	int one = 1;
+	setsockopt(fd, SOL_SOCKET, 	SO_REUSEADDR, &one, sizeof(one));
+	return BindCallback(fd, addr);
 }
 
-Socket Bind(std::string address, std::string service)
+Socket Connect(std::string address, std::string service)
 {
-	return Socket(Choose<BindCallback>(address, service, AI_V4MAPPED | AI_ADDRCONFIG | AI_PASSIVE));
+	int const options = AI_V4MAPPED | AI_ADDRCONFIG;
+	return Socket(Choose<ConnectCallback>(address, service, options));
+}
+
+Socket Bind(std::string address, std::string service, bool reuseaddr)
+{
+	int const options = AI_V4MAPPED | AI_ADDRCONFIG | AI_PASSIVE;
+	if(reuseaddr)
+		return Socket(Choose<BindCallback>(address, service, options));
+	else
+		return Socket(Choose<BindCallback_RA>(address, service, options));
 }
