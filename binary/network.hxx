@@ -11,6 +11,16 @@ enum class QueryType {
 	Remove = 3,
 };
 
+struct ResultHeader {
+	bool success;
+	int message_count;
+};
+
+struct ResultMessage {
+	int code;
+	std::string text;
+};
+
 template <typename T>
 struct NetworkType;
 
@@ -22,6 +32,18 @@ struct _NetworkType_P: packer::type::Struct<T, packer::pack::Parent<T, NetworkTy
 
 template <>
 struct NetworkType<QueryType>: packer::type::Enum<QueryType, 1> {};
+
+template <>
+struct NetworkType<ResultHeader>: _NetworkType_S<ResultHeader
+	, MESSAGE_BOOLEAN_NS(ResultHeader, success)
+	, MESSAGE_INTEGER(ResultHeader, message_count, 2)
+> {};
+
+template <>
+struct NetworkType<ResultMessage>: _NetworkType_S<ResultMessage
+	, MESSAGE_INTEGER(ResultMessage, code, 2)
+	, MESSAGE_STRING(ResultMessage, text, 0)
+> {};
 
 template <>
 struct NetworkType<RowData>: _NetworkType_S<RowData

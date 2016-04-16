@@ -21,6 +21,9 @@ class Client
 {
 	Socket socket;
 
+	void sendMessage(int errcode, std::string message);
+	void sendAnswerHeader(bool success = true, int mc = 0);
+	void sendAnswerHeader(int errcode, std::string message);
 	void select(SelectionParams const &sp);
 
 public:
@@ -33,9 +36,35 @@ Client::Client(Socket &&s) :
 {
 }
 
+void Client::sendAnswerHeader(bool success, int mc)
+{
+	ResultHeader hdr { true, 0 };
+	std::size_t const size = NetworkType<ResultHeader>::StaticSize;
+	char buffer[size];
+	NetworkType<ResultHeader>::static_serialize(buffer, hdr);
+	writePacket(socket.get(), buffer, size);
+}
+
+void Client::sendMessage(int errcode, std::string message)
+{
+	ResultMessage msg { errcode, message };
+	std::size_t size = NetworkType<ResultMessage>::dynamic_size(msg);
+	std::unique_ptr<char[]> buffer(new char[size]);
+	char *body = buffer.get();
+	assert(size == NetworkType<ResultMessage>::dynamic_serialize(body, size, msg));
+	writePacket(socket.get(), buffer.get(), size);
+}
+
+void Client::sendAnswerHeader(int errcode, std::string message)
+{
+	sendAnswerHeader(false, 1);
+	sendMessage(errcode, message);
+}
+
 void Client::select(SelectionParams const &sp)
 {
 	std::clog << "SELECT called" << std::endl;
+	sendAnswerHeader();
 	for(Selection sel(db, sp); sel.isValid(); sel.next())
 	{
 		RowData row = sel.getRow().getData();

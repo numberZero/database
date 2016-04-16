@@ -65,6 +65,11 @@ int main(int argc, char **argv)
 					std::cout << PRE_Error << "Query error: " << e.what() << std::endl;
 					rd.skipLine();
 				}
+				catch(RemoteError const &e)
+				{
+					std::cout << PRE_Error << "Server reported error: " << e.what() << std::endl;
+					rd.skipLine();
+				}
 			}
 		}
 		catch(ExitException)

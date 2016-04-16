@@ -14,6 +14,7 @@ enum class Command
 struct ExitException {};
 
 NEW_ERROR_CLASS(ProtocolError, runtime_error, std);
+NEW_ERROR_CLASS(RemoteError, runtime_error, std);
 
 struct Query
 {

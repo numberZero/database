@@ -15,6 +15,112 @@ QueryMachineState global_state {
 	SelectionParams()
 };
 
+/**
+ * Sends a query in a well-defined format
+ * 
+ * \tparam DataType Content type (required)
+ * \param socket The connection to the server
+ * \param [in] type Query type
+ * \param [in] data Query contents
+ * \throws std::exception subclasses when something goes wrong (see `packer::*`, `writePacket`, `new` for details)
+ */
+template <typename DataType>
+void sendQuery(Socket &socket, QueryType type, DataType data)
+{
+	std::size_t head_size = NetworkType<QueryType>::StaticSize;
+	std::size_t body_size = NetworkType<DataType>::dynamic_size(data);
+	std::size_t packet_size = head_size + body_size;
+	std::unique_ptr<char[]> buffer(new char[packet_size]);
+	char *packet = buffer.get();
+	char *head = packet;
+	char *body = packet + head_size;
+	NetworkType<QueryType>::static_serialize(head, QueryType::Select);
+	assert(body_size == NetworkType<DataType>::dynamic_serialize(body, body_size, data));
+	writePacket(socket.get(), packet, packet_size);
+}
+
+/**
+ * Reads the server answer
+ * 
+ * \tparam DataType Content type (required)
+ * \param socket The connection to the server
+ * \param [out] data Query contents
+ * \returns Is answer present (that is, non-empty)
+ * \throws ProtocolError if answer is not in the correct form
+ * \throws std::exception subclasses when something goes wrong (see `packer::*`, `readPacket`, `new` for details)
+ */
+template <typename DataType>
+bool recvAnswer(Socket &socket, DataType &data)
+{
+	char *packet;
+	std::size_t packet_size;
+	std::size_t bytes;
+	readPacket(socket.get(), packet, packet_size);
+	std::unique_ptr<char[]> buffer(packet); // auto-deleter
+	if(!packet_size)
+		return false;
+	try
+	{
+		bytes = NetworkType<DataType>::dynamic_parse(packet, packet_size, data);
+	}
+	catch(packer::ParseError const &e)
+	{
+		throw ProtocolError(e.what());
+	}
+	if(bytes != packet_size)
+		throw ProtocolError("Invalid packet");
+	return true;
+}
+
+/**
+ * Reads the server answer
+ * 
+ * \tparam DataType Content type (required)
+ * \param socket The connection to the server
+ * \returns The answer
+ * \throws ProtocolError if answer absent or is not in the correct form
+ * \throws std::exception subclasses when something goes wrong
+ */
+template <typename DataType>
+DataType recvAnswer(Socket &socket)
+{
+	DataType result;
+	if(!recvAnswer<DataType>(socket, result))
+		throw ProtocolError("Answer is required");
+	return std::move(result);
+}
+
+void processAnswerHeader(Socket &socket, std::ostream &cout)
+{
+	ResultHeader header = recvAnswer<ResultHeader>(socket);
+	if(header.success)
+	{
+		if(!header.message_count)
+			return;
+		for(int k = 0; k != header.message_count; ++k)
+		{
+			ResultMessage message = recvAnswer<ResultMessage>(socket);
+			cout << "[warn] #" << message.code << ": " << message.text << std::endl;
+		}
+		return;
+	}
+	if(!header.message_count)
+		throw RemoteError("Unknown server-side error");
+	if(header.message_count == 1)
+	{
+		ResultMessage message = recvAnswer<ResultMessage>(socket);
+		throw RemoteError("Error #" + std::to_string(message.code) + ": " + message.text);
+	}
+	std::stringstream str;
+	str << "Multiple errors:\n";
+	for(int k = 0; k != header.message_count; ++k)
+	{
+		ResultMessage message = recvAnswer<ResultMessage>(socket);
+		str << "[fail] #" << message.code << ": " << message.text << std::endl;
+	}
+	throw RemoteError(str.str());
+}
+
 char const *QuerySelect::name() const
 {
 	if(re)
@@ -37,7 +143,8 @@ char const *QueryInsert::name() const
 
 void QueryInsert::perform()
 {
-
+	sendQuery<RowData>(global_state.connection, QueryType::Insert, row);
+	processAnswerHeader(global_state.connection, global_state.cout);
 }
 
 char const *QueryRemove::name() const
@@ -47,7 +154,8 @@ char const *QueryRemove::name() const
 
 void QueryRemove::perform()
 {
-
+	sendQuery<SelectionParams>(global_state.connection, QueryType::Remove, params);
+	processAnswerHeader(global_state.connection, global_state.cout);
 }
 
 char const *QueryPrint::name() const
@@ -59,30 +167,16 @@ void QueryPrint::perform()
 {
 	global_state.params.clearReturn();
 	global_state.params.refine(params);
-	std::size_t head_size = NetworkType<QueryType>::StaticSize;
-	std::size_t body_size = NetworkType<SelectionParams>::dynamic_size(global_state.params);
-	std::size_t packet_size = head_size + body_size;
-	std::unique_ptr<char[]> buffer(new char[packet_size]);
-	char *packet = buffer.get();
-	char *head = packet;
-	char *body = packet + head_size;
-	NetworkType<QueryType>::static_serialize(head, QueryType::Select);
-	assert(body_size == NetworkType<SelectionParams>::dynamic_serialize(body, body_size, global_state.params));
-	writePacket(global_state.connection.get(), packet, packet_size);
+	sendQuery<SelectionParams>(global_state.connection, QueryType::Select, global_state.params);
+	processAnswerHeader(global_state.connection, global_state.cout);
 	for(std::size_t id = 1;; ++id)
 	{
-		buffer.reset(); // free unneeded memory
-		readPacket(global_state.connection.get(), packet, packet_size);
-		buffer.reset(packet); // make sure it will be freed when necessary
-		if(!packet_size)
-		{ // empty packet indicates end of data
+		RowData row;
+		if(!recvAnswer<RowData>(global_state.connection, row))
+		{ // end of data
 			global_state.cout << "*** END ***" << std::endl;
 			break;
 		}
-		RowData row;
-		std::size_t bytes = NetworkType<RowData>::dynamic_parse(packet, packet_size, row);
-		if(bytes != packet_size)
-			throw ProtocolError("Invalid row packet");
 		global_state.cout << "*** Row " << id << " ***\n";
 #define PRINTPAR(name) \
 		if(global_state.params.name.do_return) \
