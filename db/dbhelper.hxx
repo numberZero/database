@@ -34,6 +34,8 @@ struct Container
 	_Data data;
 	RowRefList rows;
 
+	Container() = default;
+
 	Container(_Data &&contents) :
 		data(contents)
 	{

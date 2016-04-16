@@ -139,9 +139,9 @@ template <typename _Object>
 void writeTable(std::ostream &file, Table<_Object> &table, std::string const &name)
 {
 	file << "TABLE " << name << "\n";
-	file << "Count " << table.count << "\n";
+	file << "Count " << table.size() << "\n";
 	file << "\n";
-	for(Id k = 0; k != table.count; ++k)
+	for(Id k = 0; k != table.size(); ++k)
 	{
 		file << "ROW " << k << "\n";
 		writeTableRowData(file, table[k]);
@@ -169,7 +169,7 @@ void Database::writeText(std::ostream &file)
 void Database::printDB(std::ostream &file, int width)
 {
 	(void)(width);
-	for(std::size_t k = 0; k != rows.count; ++k)
+	for(std::size_t k = 0; k != rows.size(); ++k)
 	{
 		file << "*** Row " << k << " ***\n";
 		Row *prow = rows.get(k);

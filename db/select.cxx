@@ -29,7 +29,7 @@ Id PreSelection_Full::getRowId()
 
 bool PreSelection_Full::isValid()
 {
-	return index < rows.count;
+	return index < rows.size();
 }
 
 void PreSelection_Full::next()
