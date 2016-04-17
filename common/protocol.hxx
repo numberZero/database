@@ -1,5 +1,5 @@
 #pragma once
-#include "message.hxx"
+#include "packer.hxx"
 #include "struct.hxx"
 
 enum class QueryType {

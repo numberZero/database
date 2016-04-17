@@ -1,5 +1,5 @@
 #include <cassert>
-#include "binary/network.hxx"
+#include "protocol.hxx"
 #include "db/select.hxx"
 #include "db/db.hxx"
 #include "bio.hxx"

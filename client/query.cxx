@@ -2,7 +2,7 @@
 #include <cctype>
 #include <string>
 #include <sstream>
-#include "binary/network.hxx"
+#include "protocol.hxx"
 #include "bio.hxx"
 #include "misc.hxx"
 #include "query.hxx"

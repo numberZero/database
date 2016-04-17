@@ -1,6 +1,6 @@
 #include <cerrno>
 #include <unistd.h>
-#include "binary/message.hxx"
+#include "packer.hxx"
 #include "bio.hxx"
 
 void readBlock(int fd, char *buffer, std::size_t bytes)
