@@ -74,7 +74,11 @@ char const *getKey(Subject const &object);
 std::uint_fast32_t getKey(Room const &object);
 std::uint_fast32_t getKey(Group const &object);
 std::uint_fast32_t getKey(Time const &object);
-
+/*
 std::uint_fast32_t getRoomKey(std::uint16_t number);
 std::uint_fast32_t getGroupKey(std::uint16_t number);
 std::uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson);
+*/
+char const *getKey(std::string name);
+std::uint_fast32_t getKey(std::uint16_t number);
+std::uint_fast32_t getKey(std::uint16_t day, std::uint16_t lesson);

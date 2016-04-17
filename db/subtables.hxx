@@ -6,34 +6,42 @@
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
 
-#define DEFINE_SUBDB_CLASS(NAME, NAME_LC, KEY, PARAMS) \
-	class SubDB_##NAME \
-	{ \
-	private: \
-		friend HashTable<Id, KEY, SubDB_##NAME>; \
-		KEY operator() (Id id) \
-		{ \
-			return getKey(NAME_LC##s[id].data); \
-		} \
-\
-	protected: \
-		Table<Container<NAME>> NAME_LC##s; \
-		HashTable<Id, KEY, SubDB_##NAME> index_##NAME_LC; \
-		void readTableRowData_##NAME_LC##s(std::istream &file); \
- \
-		SubDB_##NAME() : \
-			index_##NAME_LC(*this) \
-		{ \
-		} \
- \
-	public: \
-		Id add##NAME PARAMS ; \
-		Id find##NAME PARAMS ; \
-		Id need##NAME PARAMS ; \
-	} \
+template <typename _Object, typename _Key, typename... Params>
+class SubDB
+{
+public:
+	typedef _Object Object;
+	typedef _Key Key;
+	typedef SubDB<Object, Key, Params...> Self;
 
-DEFINE_SUBDB_CLASS(Teacher, teacher, char const *, (std::string const &name));
-DEFINE_SUBDB_CLASS(Subject, subject, char const *, (std::string const &name));
-DEFINE_SUBDB_CLASS(Room, room, std::uint_fast32_t, (unsigned number));
-DEFINE_SUBDB_CLASS(Group, group, std::uint_fast32_t, (unsigned number));
-DEFINE_SUBDB_CLASS(Time, time, std::uint_fast32_t, (unsigned day, unsigned lesson));
+	typedef Table<Container<Object>> Data;
+	typedef HashTable<Id, Key, Self> Index;
+
+private:
+	friend Index;
+	Key operator() (Id id)
+	{
+		return getKey(data[id].data);
+	}
+
+protected:
+	Data data;
+	Index index;
+	void readTableRowData(std::istream &file);
+
+	SubDB() :
+		index(*this)
+	{
+	}
+
+public:
+	Id add(Params... params);
+	Id find(Params... params);
+	Id need(Params... params);
+};
+
+typedef SubDB<Teacher, char const *, std::string const &> Teachers, SubDB_Teacher;
+typedef SubDB<Subject, char const *, std::string const &> Subjects, SubDB_Subject;
+typedef SubDB<Room, std::uint_fast32_t, unsigned> Rooms, SubDB_Room;
+typedef SubDB<Group, std::uint_fast32_t, unsigned> Groups, SubDB_Group;
+typedef SubDB<Time, std::uint_fast32_t, unsigned, unsigned> Times, SubDB_Time;

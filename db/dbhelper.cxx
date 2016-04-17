@@ -38,32 +38,32 @@ RowReference::RowReference(Database const *database, Row const *prow) :
 
 char const *RowReference::getTeacher() const
 {
-	return db->teachers[row->teacher].data.name;
+	return db->Teachers::data[row->teacher].data.name;
 }
 
 char const *RowReference::getSubject() const
 {
-	return db->subjects[row->subject].data.name;
+	return db->Subjects::data[row->subject].data.name;
 }
 
 unsigned RowReference::getRoom() const
 {
-	return db->rooms[row->room].data.number;
+	return db->Rooms::data[row->room].data.number;
 }
 
 unsigned RowReference::getGroup() const
 {
-	return db->groups[row->group].data.number;
+	return db->Groups::data[row->group].data.number;
 }
 
 unsigned RowReference::getDay() const
 {
-	return db->times[row->time].data.day;
+	return db->Times::data[row->time].data.day;
 }
 
 unsigned RowReference::getLesson() const
 {
-	return db->times[row->time].data.lesson;
+	return db->Times::data[row->time].data.lesson;
 }
 
 RowData RowReference::getData() const
@@ -104,30 +104,30 @@ char const *getKey(Subject const &object)
 
 uint_fast32_t getKey(Room const &object)
 {
-	return getRoomKey(object.number);
+	return getKey(object.number);
 }
 
 uint_fast32_t getKey(Group const &object)
 {
-	return getGroupKey(object.number);
+	return getKey(object.number);
 }
 
 uint_fast32_t getKey(Time const &object)
 {
-	return getTimeKey(object.day, object.lesson);
+	return getKey(object.day, object.lesson);
 }
 
-uint_fast32_t getRoomKey(std::uint16_t number)
+char const *getKey(std::string name)
+{
+	return name.c_str();
+}
+
+std::uint_fast32_t getKey(std::uint16_t number)
 {
 	return number;
 }
 
-uint_fast32_t getGroupKey(std::uint16_t number)
-{
-	return number;
-}
-
-uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson)
+std::uint_fast32_t getKey(std::uint16_t day, std::uint16_t lesson)
 {
 	return (day << 16) | lesson;
 }

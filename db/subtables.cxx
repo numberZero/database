@@ -1,113 +1,53 @@
 #include "subtables.hxx"
 
-Id SubDB_Teacher::addTeacher(std::string const &name)
+template class SubDB<Teacher, char const *, std::string const &>;
+template class SubDB<Subject, char const *, std::string const &>;
+template class SubDB<Room, std::uint_fast32_t, unsigned>;
+template class SubDB<Group, std::uint_fast32_t, unsigned>;
+template class SubDB<Time, std::uint_fast32_t, unsigned, unsigned>;
+
+template <typename _Object, typename... Params>
+struct make
 {
-	if(name.length() >= Teacher::name_len)
-		throw DataError("Teacher name too long");
-	auto p = teachers.add();
-	Id id = p.first;
-	Teacher &teacher = p.second->data;
-	std::memcpy(teacher.name, name.data(), name.length());
-	teacher.name[name.length()] = 0;
-	index_teacher.add(id);
-	return id;
+	static void Object(_Object &object, Params... params)
+	{
+		object = _Object{params...};
+	}
+};
+
+template <typename _Object>
+struct make<_Object, std::string const &>
+{
+	static void Object(_Object &object, std::string const &name)
+	{
+		if(name.length() >= _Object::name_len)
+			throw DataError("Name too long");
+		_Object obj;
+		std::memcpy(obj.name, name.data(), name.length());
+		obj.name[name.length()] = 0;
+	}
+};
+
+template <typename _Object, typename _Key, typename... Params>
+Id SubDB<_Object, _Key, Params...>::add(Params... params)
+{
+	auto p = data.add();
+	make<_Object, Params...>::Object(p.second->data, params...);
+	index.add(p.first);
+	return p.first;
 }
 
-Id SubDB_Subject::addSubject(std::string const &name)
+template <typename _Object, typename _Key, typename... Params>
+Id SubDB<_Object, _Key, Params...>::find(Params... params)
 {
-	if(name.length() >= Subject::name_len)
-		throw DataError("Subject name too long");
-	auto p = subjects.add();
-	Id id = p.first;
-	Subject &subject = p.second->data;
-	std::memcpy(subject.name, name.data(), name.length());
-	subject.name[name.length()] = 0;
-	index_subject.add(id);
-	return id;
+	return index[getKey(params...)];
 }
 
-Id SubDB_Room::addRoom(unsigned number)
+template <typename _Object, typename _Key, typename... Params>
+Id SubDB<_Object, _Key, Params...>::need(Params... params)
 {
-	Id id = rooms.add(Room{(std::uint16_t)number});
-	index_room.add(id);
-	return id;
-}
-
-Id SubDB_Group::addGroup(unsigned int number)
-{
-	Id id = groups.add(Group{(std::uint16_t)number});
-	index_group.add(id);
-	return id;
-}
-
-Id SubDB_Time::addTime(unsigned day, unsigned lesson)
-{
-	Id id = times.add(Time{(std::uint16_t)day, (std::uint16_t)lesson});
-	index_time.add(id);
-	return id;
-}
-
-Id SubDB_Teacher::findTeacher(std::string const &name)
-{
-	return index_teacher[name.c_str()];
-}
-
-Id SubDB_Subject::findSubject(std::string const &name)
-{
-	return index_subject[name.c_str()];
-}
-
-Id SubDB_Room::findRoom(unsigned number)
-{
-	return index_room[getRoomKey(number)];
-}
-
-Id SubDB_Group::findGroup(unsigned number)
-{
-	return index_group[getGroupKey(number)];
-}
-
-Id SubDB_Time::findTime(unsigned day, unsigned lesson)
-{
-	return index_time[getTimeKey(day, lesson)];
-}
-
-Id SubDB_Teacher::needTeacher(std::string const &name)
-{
-	Id *id = index_teacher.get(name.c_str());
+	Id *id = index.get(getKey(params...));
 	if(id)
 		return *id;
-	return addTeacher(name);
-}
-
-Id SubDB_Subject::needSubject(std::string const &name)
-{
-	Id *id = index_subject.get(name.c_str());
-	if(id)
-		return *id;
-	return addSubject(name);
-}
-
-Id SubDB_Room::needRoom(unsigned number)
-{
-	Id *id = index_room.get(getRoomKey(number));
-	if(id)
-		return *id;
-	return addRoom(number);
-}
-
-Id SubDB_Group::needGroup(unsigned number)
-{
-	Id *id = index_group.get(getGroupKey(number));
-	if(id)
-		return *id;
-	return addGroup(number);
-}
-
-Id SubDB_Time::needTime(unsigned day, unsigned lesson)
-{
-	Id *id = index_time.get(getTimeKey(day, lesson));
-	if(id)
-		return *id;
-	return addTime(day, lesson);
+	return add(params...);
 }

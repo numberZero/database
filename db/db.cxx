@@ -19,30 +19,30 @@ void Database::writeText(std::string const &filename)
 
 void Database::readTableRowData_teachers(std::istream &file)
 {
-	addTeacher(readValue(file, "Name"));
+	Teachers::add(readValue(file, "Name"));
 }
 
 void Database::readTableRowData_subjects(std::istream &file)
 {
-	addSubject(readValue(file, "Name"));
+	Subjects::add(readValue(file, "Name"));
 }
 
 void Database::readTableRowData_rooms(std::istream &file)
 {
-	addRoom(readInteger(file, "Number"));
+	Rooms::add(readInteger(file, "Number"));
 }
 
 void Database::readTableRowData_groups(std::istream &file)
 {
 	long number = readInteger(file, "Number");
-	addGroup(number);
+	Groups::add(number);
 }
 
 void Database::readTableRowData_times(std::istream &file)
 {
 	long day = readInteger(file, "Day");
 	long lesson = readInteger(file, "Lesson");
-	addTime(day, lesson);
+	Times::add(day, lesson);
 }
 
 void Database::readTableRowData_rows(std::istream &file)
@@ -155,11 +155,11 @@ void Database::writeText(std::ostream &file)
 	file << "DATABASE\n";
 	file << "\n";
 #define writeTable(file, table) writeTable(file, table, #table)
-	writeTable(file,  teachers);
-	writeTable(file,  subjects);
-	writeTable(file,  rooms);
-	writeTable(file,  groups);
-	writeTable(file,  times);
+	writeTable(file, Teachers::data);
+	writeTable(file, Subjects::data);
+	writeTable(file, Rooms::data);
+	writeTable(file, Groups::data);
+	writeTable(file, Times::data);
 #undef writeTable
 	writeTable(file,  rows, "entries");
 	file << "END\n";
@@ -193,11 +193,11 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 {
 	Id id = rows.add(Row{teacher, subject, room, group, time});
 
-	teachers[teacher].addRow(id);
-	subjects[subject].addRow(id);
-	rooms[room].addRow(id);
-	groups[group].addRow(id);
-	times[time].addRow(id);
+	Teachers::data[teacher].addRow(id);
+	Subjects::data[subject].addRow(id);
+	Rooms::data[room].addRow(id);
+	Groups::data[group].addRow(id);
+	Times::data[time].addRow(id);
 
 	index_teacher_subject.set(teacher, subject);
 	index_teacher_room.set(teacher, room);
@@ -218,11 +218,11 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 
 RowReference Database::insert(RowData const &row)
 {
-	Id teacher = needTeacher(row.teacher);
-	Id subject = needSubject(row.subject);
-	Id room = needRoom(row.room);
-	Id group = needGroup(row.group);
-	Id time = needTime(row.day, row.lesson);
+	Id teacher = Teachers::need(row.teacher);
+	Id subject = Subjects::need(row.subject);
+	Id room = Rooms::need(row.room);
+	Id group = Groups::need(row.group);
+	Id time = Times::need(row.day, row.lesson);
 	return RowReference(this, rows.get(addRow(teacher, subject, room, group, time)));
 }
 
