@@ -7,6 +7,7 @@
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
 #include "subtables.hxx"
+#include "srxw.hxx"
 
 class Database:
 	public SubDB_Teacher,
@@ -42,6 +43,8 @@ private:
 	void readTableRowData_times(std::istream &file);
 	void readTableRowData_rows(std::istream &file);
 	void readTable(std::istream &file, std::string const &name, void (Database::*reader)(std::istream &file));
+
+	SRXWLock lock;
 
 public:
 	Id addRow(Id teacher, Id subject, Id room, Id group, Id time);

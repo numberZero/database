@@ -218,6 +218,7 @@ Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 
 RowReference Database::insert(RowData const &row)
 {
+	SRXW_WriteLockGuard gurad(lock);
 	Id teacher = Teachers::need(row.teacher);
 	Id subject = Subjects::need(row.subject);
 	Id room = Rooms::need(row.room);
@@ -237,6 +238,7 @@ Selection Database::select(SelectionParams const &p)
 
 std::size_t Database::remove(SelectionParams const &p)
 {
+	SRXW_WriteLockGuard gurad(lock);
 	std::size_t count = 0;
 	std::unique_ptr<PreSelection_Real> s;
 	if(!p.isValid())

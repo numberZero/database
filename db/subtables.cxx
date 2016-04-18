@@ -22,9 +22,8 @@ struct make<_Object, std::string const &>
 	{
 		if(name.length() >= _Object::name_len)
 			throw DataError("Name too long");
-		_Object obj;
-		std::memcpy(obj.name, name.data(), name.length());
-		obj.name[name.length()] = 0;
+		std::memcpy(object.name, name.data(), name.length());
+		object.name[name.length()] = 0;
 	}
 };
 

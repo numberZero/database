@@ -1,5 +1,5 @@
 print;
-insert teacher="mr. L.", subject="Math", room=412, group=101, day=2, lesson=1;
+insert teacher="mr. L.", subject="Differential Equations", room=412, group=101, day=2, lesson=1;
 print;
 select teacher="mr. L.";
 print;

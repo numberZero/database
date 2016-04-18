@@ -88,6 +88,7 @@ Selection &Selection::operator=(Selection &&b)
 
 void Selection::reset(Selection &b)
 {
+	gurad = std::move(b.gurad);
 	db = b.db;
 	p = b.p;
 	s = std::move(b.s);

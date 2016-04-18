@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 		std::cerr << std::endl;
 		return -1;
 	}
-	std::clog << "Database manipulation program" << std::endl;
+	std::clog << "Zolden database manipulation program" << std::endl;
 	if(argc == 2)
 	{
 		std::clog << "Reading database from: " << argv[1] << std::endl;

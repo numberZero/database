@@ -12,6 +12,7 @@ add_executable(zold
 	lib/hashtable.cxx
 	lib/misc.cxx
 	lib/net.cxx
+	lib/srxw.cxx
 	server/client.cxx
 	server/main.cxx
 )

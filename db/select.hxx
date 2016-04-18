@@ -3,6 +3,7 @@
 #include <string>
 #include "data.hxx"
 #include "dbhelper.hxx"
+#include "srxw.hxx"
 #include "struct.hxx"
 
 class PreSelection
@@ -88,6 +89,7 @@ class Selection
 	Database *db;
 	SelectionParams p;
 	std::unique_ptr<PreSelection> s;
+	std::unique_ptr<SRXW_ReadLockGuard> gurad;
 
 	void reset(Selection &b);
 	bool reach(); // finds first row that fits the query
