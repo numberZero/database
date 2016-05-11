@@ -42,7 +42,9 @@ void Client::sendAnswerHeader(int errcode, std::string message)
 
 void Client::select(SelectionParams const &sp)
 {
+#ifndef NDEBUG
 	std::clog << "SELECT called" << std::endl;
+#endif
 	sendAnswerHeader();
 	for(Selection sel(db.select(sp)); sel.isValid(); sel.next())
 	{
@@ -79,7 +81,9 @@ void Client::operator() ()
 			std::size_t rem;
 			std::size_t count;
 			std::unique_ptr<char[]> packet(readPacket(socket.get(), rem));
+#ifndef NDEBUG
 			std::clog << pref + " Packet arrived\n" << std::flush;
+#endif
 			char *ptr = packet.get();
 			QueryType qt;
 			SelectionParams sp;

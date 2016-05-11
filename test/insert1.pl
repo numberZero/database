@@ -18,7 +18,13 @@ $testname = "insert1";
 $row_count = int(shift(@ARGV) || 1000);
 $group_size = int(shift(@ARGV) || ($row_count / 100));
 
+sub tryclient {
+	my $filename = shift @_;
+	(-x $filename) and $filename;
+}
+
 $tempdir = tempdir("/tmp/zolden-test-$testname.XXXXXX");
+$client = tryclient("./release/zol") || tryclient("./build/zol") || tryclient("./zol") || die "Can't find Zolden client";
 
 $csvfilename_unsorted = "$tempdir/data1.csv";
 $csvfilename_sorted = "$tempdir/data2.csv";
@@ -29,7 +35,7 @@ open $shfile, ">", $shfilename_insert;
 
 $ingroup_count = 0;
 $query_begin = "echo";
-$query_end = " | ./build/zol &\n";
+$query_end = " | $client &\n";
 
 $cb = sub {
 	print $csvfile join(",", @_), "\n";
@@ -67,20 +73,20 @@ print STDERR "Sorting\n";
 system("sort -u $csvfilename_unsorted > $csvfilename_sorted");
 
 print STDERR "Cleaning the DB\n";
-system("echo 'remove;' | ./build/zol >&/dev/null");
+system("echo 'remove;' | $client >&/dev/null");
 
 print STDERR "Inserting\n";
 system("$shfilename_insert >/dev/null");
 
 print STDERR "Selecting\n";
-system("echo 'print;' | ./build/zol | ./test/print2csv.pl | sort -u > $csvfilename_got");
+system("echo 'print;' | $client | ./test/print2csv.pl | sort -u > $csvfilename_got");
 
 print STDERR "Comparing\n";
 if(system("diff $csvfilename_sorted $csvfilename_got") == 0) {
 	print STDERR "pass\n";
 
 	print STDERR "Cleaning the DB\n";
-	system("echo 'remove;' | ./build/zol >&/dev/null");
+	system("echo 'remove;' | $client >&/dev/null");
 
 	print "$pass $testname: $row_count rows in groups of $group_size rows each\n";
 	system("rm -r $tempdir");
