@@ -67,10 +67,11 @@ Selection::Selection() :
 {
 }
 
-Selection::Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect) :
+Selection::Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect, std::unique_ptr<SRXW_ReadLockGuard> &&lguard) :
 	db(&database),
 	p(params),
-	s(std::move(preselect))
+	s(std::move(preselect)),
+	guard(std::move(lguard))
 {
 	reach();
 }
@@ -88,7 +89,7 @@ Selection &Selection::operator=(Selection &&b)
 
 void Selection::reset(Selection &b)
 {
-	gurad = std::move(b.gurad);
+	guard = std::move(b.guard);
 	db = b.db;
 	p = b.p;
 	s = std::move(b.s);

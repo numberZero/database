@@ -229,11 +229,12 @@ RowReference Database::insert(RowData const &row)
 
 Selection Database::select(SelectionParams const &p)
 {
+	std::unique_ptr<SRXW_ReadLockGuard> guard(new SRXW_ReadLockGuard(lock));
 	std::unique_ptr<PreSelection> s;
 	if(!p.isValid())
 		return Selection();
 	s.reset(new PreSelection_Full(rows)); // slow but always works
-	return Selection(*this, p, std::move(s));
+	return Selection(*this, p, std::move(s), std::move(guard));
 }
 
 std::size_t Database::remove(SelectionParams const &p)

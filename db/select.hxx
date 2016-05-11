@@ -89,14 +89,14 @@ class Selection
 	Database *db;
 	SelectionParams p;
 	std::unique_ptr<PreSelection> s;
-	std::unique_ptr<SRXW_ReadLockGuard> gurad;
+	std::unique_ptr<SRXW_ReadLockGuard> guard;
 
 	void reset(Selection &b);
 	bool reach(); // finds first row that fits the query
 
 public:
 	Selection();
-	Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect);
+	Selection(Database &database, SelectionParams const &params, std::unique_ptr<PreSelection> &&preselect, std::unique_ptr<SRXW_ReadLockGuard> &&lguard);
 	Selection(Selection const &b) = delete;
 	Selection(Selection &&b);
 
