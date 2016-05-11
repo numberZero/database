@@ -34,7 +34,8 @@ void sendQuery(Socket &socket, QueryType type, DataType data)
 	char *head = packet;
 	char *body = packet + head_size;
 	NetworkType<QueryType>::static_serialize(head, type);
-	assert(body_size == NetworkType<DataType>::dynamic_serialize(body, body_size, data));
+	std::size_t bytes = NetworkType<DataType>::dynamic_serialize(body, body_size, data);
+	assert(body_size == bytes);
 	writePacket(socket.get(), packet, packet_size);
 }
 

@@ -29,7 +29,8 @@ void Client::sendMessage(int errcode, std::string message)
 	std::size_t size = NetworkType<ResultMessage>::dynamic_size(msg);
 	std::unique_ptr<char[]> buffer(new char[size]);
 	char *body = buffer.get();
-	assert(size == NetworkType<ResultMessage>::dynamic_serialize(body, size, msg));
+	std::size_t bytes = NetworkType<ResultMessage>::dynamic_serialize(body, size, msg);
+	assert(size == bytes);
 	writePacket(socket.get(), buffer.get(), size);
 }
 
@@ -49,7 +50,8 @@ void Client::select(SelectionParams const &sp)
 		std::size_t size;
 		size = NetworkType<RowData>::dynamic_size(row);
 		std::unique_ptr<char[]> packet(new char[size]);
-		assert(size == NetworkType<RowData>::dynamic_serialize(packet.get(), size, row));
+		std::size_t bytes = NetworkType<RowData>::dynamic_serialize(packet.get(), size, row);
+		assert(size == bytes);
 		writePacket(socket.get(), packet.get(), size);
 	}
 	writePacket(socket.get(), nullptr, 0); // end of data
