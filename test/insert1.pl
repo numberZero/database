@@ -15,9 +15,10 @@ $fail = "[${red}FAIL${gray}]";
 
 $testname = "insert1";
 
-$rowcount = int(shift(@_) || 1000);
+$row_count = int(shift(@ARGV) || 1000);
+$group_size = int(shift(@ARGV) || ($row_count / 100));
 
-$tempdir = tempdir("/tmp/zolden-test-$testname.XXXXXX", CLEANUP => 1);
+$tempdir = tempdir("/tmp/zolden-test-$testname.XXXXXX");
 
 $csvfilename_unsorted = "$tempdir/data1.csv";
 $csvfilename_sorted = "$tempdir/data2.csv";
@@ -25,6 +26,10 @@ $csvfilename_got = "$tempdir/data3.csv";
 $shfilename_insert = "$tempdir/insert.sh";
 open $csvfile, ">", $csvfilename_unsorted;
 open $shfile, ">", $shfilename_insert;
+
+$ingroup_count = 0;
+$query_begin = "echo";
+$query_end = " | ./build/zol &\n";
 
 $cb = sub {
 	print $csvfile join(",", @_), "\n";
@@ -36,14 +41,21 @@ $cb = sub {
 	$lesson = shift @_;
 
 	$query = "insert teacher = \"$teacher\", subject = \"$subject\", room = $room, group = $group, day = $day, lesson = $lesson;";
-	print $shfile "echo '$query' | ./build/zol &\n";
+	print $shfile " '$query'\\\n";
+	if(++$ingroup_count >= $group_size) {
+		print $shfile $query_end;
+		print $shfile $query_begin;
+		$ingroup_count = 0;
+	}
 };
 
 print STDERR "Generating the table\n";
 print $shfile "#!/bin/bash\n";
 print $shfile "\n";
 print $shfile "\n";
-maketable( \$cb, $rowcount, 100, 1000);
+print $shfile $query_begin;
+maketable( \$cb, $row_count, 100, 1000);
+print $shfile $query_end;
 print $shfile "\n";
 print $shfile "wait\n";
 
@@ -53,25 +65,29 @@ chmod 0700, $shfilename_insert;
 
 print STDERR "Sorting\n";
 system("sort -u $csvfilename_unsorted > $csvfilename_sorted");
-unlink $csvfilename_unsorted;
 
 print STDERR "Cleaning the DB\n";
 system("echo 'remove;' | ./build/zol >&/dev/null");
 
 print STDERR "Inserting\n";
-system("$shfilename_insert >&/dev/null");
+system("$shfilename_insert >/dev/null");
 
 print STDERR "Selecting\n";
 system("echo 'print;' | ./build/zol | ./test/print2csv.pl | sort -u > $csvfilename_got");
 
-print STDERR "Cleaning the DB\n";
-system("echo 'remove;' | ./build/zol >&/dev/null");
-
 print STDERR "Comparing\n";
 if(system("diff $csvfilename_sorted $csvfilename_got") == 0) {
-	print "$pass $testname: $rowcount rows\n";
+	print STDERR "pass\n";
+
+	print STDERR "Cleaning the DB\n";
+	system("echo 'remove;' | ./build/zol >&/dev/null");
+
+	print "$pass $testname: $row_count rows in groups of $group_size rows each\n";
+	system("rm -r $tempdir");
 	exit 0;
 } else {
-	print "$fail $testname: Database engine error\n";
+	print STDERR "fail\n";
+	print STDERR "Keeping the DB dirty\n";
+	print "$fail $testname: Database engine error; see $tempdir\n";
 	exit 1;
 }

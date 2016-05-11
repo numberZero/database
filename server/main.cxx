@@ -47,10 +47,11 @@ int main(int argc, char **argv)
 		Socket fd(accept(server.get(), nullptr, nullptr));
 		if(!fd)
 			throw std::system_error(errno, std::system_category(), "Can't accept new connection");
-		std::clog << "Client connected. ";
+		std::string id = std::to_string(fd.get());
+		std::clog << "[MAIN] Client connected. (" + id + ")\n" << std::flush;
 		std::thread t(Client(std::move(fd)));
 		t.detach();
-		std::clog << "Thread started." << std::endl;
+		std::clog << "[MAIN] Thread started. (" + id + ")\n" << std::flush;
 	}
 	return 0;
 }

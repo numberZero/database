@@ -69,6 +69,7 @@ void Client::remove(SelectionParams const &rp)
 
 void Client::operator() ()
 {
+	std::string pref = "[" + std::to_string(socket.get()) + "]";
 	try
 	{
 		for(;;)
@@ -76,7 +77,7 @@ void Client::operator() ()
 			std::size_t rem;
 			std::size_t count;
 			std::unique_ptr<char[]> packet(readPacket(socket.get(), rem));
-			std::clog << "Packet arrived" << std::endl;
+			std::clog << pref + " Packet arrived\n" << std::flush;
 			char *ptr = packet.get();
 			QueryType qt;
 			SelectionParams sp;
@@ -120,22 +121,26 @@ void Client::operator() ()
 	}
 	catch(packer::PackingError const &e)
 	{
-		std::clog << "Invalid packet: " << e.what() << std::endl;
+		std::clog << pref + "Invalid packet: " << e.what() << std::endl;
 	}
 	catch(InvalidRequestException const &e)
 	{
-		std::clog << "Invalid request: " << e.what() << std::endl;
+		std::clog << pref + "Invalid request: " << e.what() << std::endl;
 	}
 	catch(BioEof const &e)
 	{
-		std::clog << "Client disconnect" << std::endl;
+		std::clog << pref + "Client disconnect" << std::endl;
+	}
+	catch(std::system_error const &e)
+	{
+		std::clog << pref + "Client system error: " << e.what() << " (" << e.code() << ")" << std::endl;
 	}
 	catch(std::exception const &e)
 	{
-		std::clog << "Client error: " << e.what() << std::endl;
+		std::clog << pref + "Client error: " << e.what() << std::endl;
 	}
 	catch(...)
 	{
-		std::clog << "Client error" << std::endl;
+		std::clog << pref + "Client error" << std::endl;
 	}
 }
