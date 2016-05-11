@@ -6,7 +6,6 @@
 class SharedReadExclusiveWriteLock
 {
 	std::mutex mtx;
-	std::unique_lock<std::mutex> lock{mtx, std::defer_lock};
 	std::condition_variable read_cv;
 	std::condition_variable write_cv;
 	std::int_fast32_t read_wait = 0;
@@ -14,26 +13,31 @@ class SharedReadExclusiveWriteLock
 	std::int_fast32_t write_wait = 0;
 
 public:
-	void read_lock();
-	void read_unlock();
-	void write_lock();
-	void write_unlock();
+	typedef SharedReadExclusiveWriteLock Lock;
+
+	class ReadLockGuard
+	{
+		Lock &srxw;
+		std::unique_lock<std::mutex> lock;
+	public:
+		ReadLockGuard() = delete;
+		ReadLockGuard(ReadLockGuard const&) = delete;
+		ReadLockGuard(Lock &_lock);
+		~ReadLockGuard();
+	};
+
+	class WriteLockGuard
+	{
+		Lock &srxw;
+		std::unique_lock<std::mutex> lock;
+	public:
+		WriteLockGuard() = delete;
+		WriteLockGuard(WriteLockGuard const&) = delete;
+		WriteLockGuard(Lock &_lock);
+		~WriteLockGuard();
+	};
 };
 
 typedef SharedReadExclusiveWriteLock SRXWLock;
-
-class SRXW_ReadLockGuard
-{
-	SRXWLock &lock;
-public:
-	SRXW_ReadLockGuard(SRXWLock &_lock);
-	~SRXW_ReadLockGuard();
-};
-
-class SRXW_WriteLockGuard
-{
-	SRXWLock &lock;
-public:
-	SRXW_WriteLockGuard(SRXWLock &_lock);
-	~SRXW_WriteLockGuard();
-};
+typedef SharedReadExclusiveWriteLock::ReadLockGuard SRXW_ReadLockGuard;
+typedef SharedReadExclusiveWriteLock::WriteLockGuard SRXW_WriteLockGuard;

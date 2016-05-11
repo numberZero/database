@@ -1,59 +1,49 @@
 #include "srxw.hxx"
 
-void SharedReadExclusiveWriteLock::read_lock()
+#ifndef USE_FALLBACK_LOCK
+#define USE_SRXW_LOCK
+#endif
+
+SharedReadExclusiveWriteLock::ReadLockGuard::ReadLockGuard(SRXWLock &_lock) :
+	srxw(_lock),
+	lock(_lock.mtx)
 {
-	lock.lock();
-	while(write_wait > 0)
-		read_cv.wait(lock);
-	++read_count;
+#ifdef USE_SRXW_LOCK
+	while(srxw.write_wait > 0)
+		srxw.read_cv.wait(lock);
+	++srxw.read_count;
 	lock.unlock();
+#endif
 }
 
-void SharedReadExclusiveWriteLock::read_unlock()
+SharedReadExclusiveWriteLock::ReadLockGuard::~ReadLockGuard()
 {
+#ifdef USE_SRXW_LOCK
 	lock.lock();
-	--read_count;
-	if((read_count == 0) && (write_wait > 0))
-		write_cv.notify_one();
-	lock.unlock();
+	--srxw.read_count;
+	if((srxw.read_count == 0) && (srxw.write_wait > 0))
+		srxw.write_cv.notify_one();
+#endif
 }
 
-void SharedReadExclusiveWriteLock::write_lock()
+SharedReadExclusiveWriteLock::WriteLockGuard::WriteLockGuard(SRXWLock &_lock) :
+	srxw(_lock),
+	lock(_lock.mtx)
 {
-	lock.lock();
-	++write_wait;
-	while(read_count > 0)
-		write_cv.wait(lock);
+#ifdef USE_SRXW_LOCK
+	++srxw.write_wait;
+	while(srxw.read_count > 0)
+		srxw.write_cv.wait(lock);
+#endif
 }
 
-void SharedReadExclusiveWriteLock::write_unlock()
+SharedReadExclusiveWriteLock::WriteLockGuard::~WriteLockGuard()
 {
-	--write_wait;
-	if(write_wait > 0)
-		write_cv.notify_one();
+#ifdef USE_SRXW_LOCK
+	--srxw.write_wait;
+	if(srxw.write_wait > 0)
+		srxw.write_cv.notify_one();
 	else
-		read_cv.notify_all();
-	lock.unlock();
-}
-
-SRXW_ReadLockGuard::SRXW_ReadLockGuard(SRXWLock &_lock) :
-	lock(_lock)
-{
-	lock.read_lock();
-}
-
-SRXW_ReadLockGuard::~SRXW_ReadLockGuard()
-{
-	lock.read_unlock();
-}
-
-SRXW_WriteLockGuard::SRXW_WriteLockGuard(SRXWLock &_lock) :
-	lock(_lock)
-{
-	lock.write_lock();
-}
-
-SRXW_WriteLockGuard::~SRXW_WriteLockGuard()
-{
-	lock.write_unlock();
+		srxw.read_cv.notify_all();
+#endif
 }
