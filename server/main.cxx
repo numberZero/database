@@ -1,5 +1,6 @@
-#include <cassert>
 #include <iostream>
+#include <list>
+#include <map>
 #include <memory>
 #include <thread>
 #include <sys/types.h>
@@ -14,6 +15,8 @@
 
 Database db;
 Socket server;
+std::map<std::string, std::string> named_arguments;
+std::list<std::string> positional_arguments;
 
 void blockSIGPIPE()
 {
@@ -23,25 +26,53 @@ void blockSIGPIPE()
 	sigaction(SIGPIPE, &act, nullptr);
 }
 
+void readArguments(int argc, char **argv)
+{
+	int k;
+	std::string key;
+	for(k = 1; k != argc; ++k)
+	{
+		std::string value(argv[k]);
+		if(value.substr(0, 2) == "--")
+		{
+			if(value == "--")
+				break;
+			key = value.substr(2);
+			continue;
+		}
+		if(!key.empty())
+			named_arguments.emplace(std::move(key), std::move(value));
+		else
+			positional_arguments.push_back(std::move(value));
+		key.clear();
+	}
+}
+
+std::string getArgument(std::string name, std::string def = "")
+{
+	auto iter = named_arguments.find(name);
+	if(iter != named_arguments.end())
+		return iter->second;
+	return def;
+}
+
 int main(int argc, char **argv)
 {
 	blockSIGPIPE();
-	if(argc > 2)
-	{
-		std::cerr << "Usage:" << std::endl;
-		std::cerr << "\t" << argv[0] << " [ <data-file-name> ]" << std::endl;
-		std::cerr << std::endl;
-		return -1;
-	}
+	readArguments(argc, argv);
+	std::string file = getArgument("file");
+	std::string addr = getArgument("addr", zolden_addr);
+	std::string port = getArgument("port", std::to_string(zolden_port));
 	std::clog << "Zolden database manipulation program" << std::endl;
-	if(argc == 2)
+	if(!file.empty())
 	{
-		std::clog << "Reading database from: " << argv[1] << std::endl;
-		db.readText(argv[1]);
+		std::clog << "Reading database from: " << file << std::endl;
+		db.readText(file);
 	}
-	server = Bind(zolden_addr, std::to_string(zolden_port), true);
+	server = Bind(addr, port, true);
 	if(0 != listen(server.get(), 20))
 		throw std::system_error(errno, std::system_category(), "Can't listen on a socket");
+	std::clog << "Listening at " << addr << ":" << port << std::endl;
 	for(;;)
 	{
 		Socket fd(accept(server.get(), nullptr, nullptr));
