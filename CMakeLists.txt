@@ -5,11 +5,12 @@ add_executable(zold
 	common/struct.cxx
 	db/db.cxx
 	db/dbhelper.cxx
+	db/hashtable.cxx
 	db/select.cxx
 	db/subtables.cxx
+	db/table.cxx
 	lib/bio.cxx
-	lib/bitset.cxx
-	lib/hashtable.cxx
+	lib/file.cxx
 	lib/misc.cxx
 	lib/net.cxx
 	lib/srxw.cxx
@@ -24,6 +25,7 @@ add_executable(zol
 	client/tokenizer.cxx
 	client/query.cxx
 	lib/bio.cxx
+	lib/file.cxx
 	lib/misc.cxx
 	lib/net.cxx
 )

@@ -38,7 +38,7 @@ void PreSelection_Full::next()
 }
 
 /*** PreSelection_SimpleKey ***/
-
+/*
 Id PreSelection_SimpleKey::getRowId()
 {
 	assert(isValid());
@@ -58,7 +58,7 @@ void PreSelection_SimpleKey::next()
 	if(!shift)
 		node = node->next;
 }
-
+*/
 /********* Selection *********/
 
 Selection::Selection() :

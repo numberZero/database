@@ -18,12 +18,18 @@ Socket server;
 std::map<std::string, std::string> named_arguments;
 std::list<std::string> positional_arguments;
 
-void blockSIGPIPE()
+void emptySignalHandler(int signal)
+{
+	std::clog << "Signal caught: " + std::to_string(signal) << std::endl;
+}
+
+void setupSignalHandling()
 {
 	struct sigaction act;
 	std::memset(&act, 0, sizeof(act));
-	act.sa_handler = SIG_IGN;
+	act.sa_handler = emptySignalHandler;
 	sigaction(SIGPIPE, &act, nullptr);
+	sigaction(SIGINT, &act, nullptr);
 }
 
 void daemonize()
@@ -74,9 +80,30 @@ std::string getArgument(std::string name, std::string def = "")
 	return def;
 }
 
+struct TestTable: public BackedTable
+{
+	TestTable() : BackedTable(12, "/tmp/table1.dat")
+	{
+		std::cout << create().first << std::endl;
+		std::cout << create().first << std::endl;
+		std::cout << get(1) << std::endl;
+		memset(get(1), 'z', 5);
+		memset(get(1) + 5, 'a', 5);
+		std::cout << create().first << std::endl;
+		std::cout << create().first << std::endl;
+	}
+
+	~TestTable()
+	{
+		std::cout << "Finalization" << std::endl;
+	}
+};
+
+TestTable test1;
+
 int main(int argc, char **argv)
 {
-	blockSIGPIPE();
+	setupSignalHandling();
 	readArguments(argc, argv);
 	std::string file = getArgument("file");
 	std::string addr = getArgument("addr", zolden_addr);
@@ -103,12 +130,17 @@ int main(int argc, char **argv)
 	{
 		Socket fd(accept(server.get(), nullptr, nullptr));
 		if(!fd)
+		{
+			if(errno == EINTR)
+				break;
 			throw std::system_error(errno, std::system_category(), "Can't accept new connection");
+		}
 		std::string id = std::to_string(fd.get());
-		std::clog << "[MAIN] Client connected. (" + id + ")\n" << std::flush;
+		std::cerr << "[MAIN] Client connected. (" + id + ")\n";
 		std::thread t(Client(std::move(fd)));
 		t.detach();
-		std::clog << "[MAIN] Thread started. (" + id + ")\n" << std::flush;
+		std::cerr << "[MAIN] Thread started. (" + id + ")\n";
 	}
-	return 0;
+	std::clog << "Shutting down" << std::endl;
+	pthread_exit(nullptr);
 }

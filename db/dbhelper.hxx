@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <string>
 #include "data.hxx"
 #include "struct.hxx"
@@ -8,42 +9,17 @@ class Database;
 template <typename _Object>
 struct Table;
 
-struct Bitset;
-
-struct RowRefList
-{
-	static const int node_capacity = 16;
-
-	struct Node
-	{
-		Id rows[node_capacity];
-		Node *next;
-	};
-
-	Node *head = nullptr;
-	std::size_t count = 0;
-
-	RowRefList() = default;
-	~RowRefList();
-	void addRow(Id row);
-};
-
 template <typename _Data>
 struct Container
 {
+	std::atomic<std::int16_t> ref_count;
 	_Data data;
-	RowRefList rows;
 
 	Container() = default;
 
 	Container(_Data &&contents) :
 		data(contents)
 	{
-	}
-
-	void addRow(Id row)
-	{
-		rows.addRow(row);
 	}
 };
 
@@ -74,11 +50,7 @@ char const *getKey(Subject const &object);
 std::uint_fast32_t getKey(Room const &object);
 std::uint_fast32_t getKey(Group const &object);
 std::uint_fast32_t getKey(Time const &object);
-/*
-std::uint_fast32_t getRoomKey(std::uint16_t number);
-std::uint_fast32_t getGroupKey(std::uint16_t number);
-std::uint_fast32_t getTimeKey(std::uint16_t day, std::uint16_t lesson);
-*/
+
 char const *getKey(std::string name);
 std::uint_fast32_t getKey(std::uint16_t number);
 std::uint_fast32_t getKey(std::uint16_t day, std::uint16_t lesson);

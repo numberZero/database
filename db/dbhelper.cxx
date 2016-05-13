@@ -3,7 +3,7 @@
 #include "db.hxx"
 
 /*** RowRefList ***/
-
+/*
 RowRefList::~RowRefList()
 {
 	Node *node = head;
@@ -27,7 +27,7 @@ void RowRefList::addRow(Id row)
 	head->rows[idx] = row;
 	++count;
 }
-
+*/
 /*** RowReference ***/
 
 RowReference::RowReference(Database const *database, Row const *prow) :

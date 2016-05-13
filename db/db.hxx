@@ -3,7 +3,6 @@
 #include "dbcommon.hxx"
 #include "table.hxx"
 #include "select.hxx"
-#include "bitset.hxx"
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
 #include "subtables.hxx"
@@ -21,7 +20,7 @@ class Database:
 
 private:
 	Rows rows;
-
+/*
 	Bitset index_teacher_subject;
 	Bitset index_teacher_room;
 	Bitset index_teacher_group;
@@ -35,7 +34,7 @@ private:
 	Bitset index_room_time;
 
 	Bitset index_group_time;
-
+*/
 	void readTableRowData_teachers(std::istream &file);
 	void readTableRowData_subjects(std::istream &file);
 	void readTableRowData_rooms(std::istream &file);

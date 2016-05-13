@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <system_error>
+#include "file.hxx"
 
 class gai_category_t : public std::error_category
 {
@@ -14,26 +15,7 @@ struct gai_deleter
 	void operator() (struct addrinfo *ai);
 };
 
-struct Socket
-{
-	Socket() = default;
-	Socket(Socket const &) = delete;
-	Socket(Socket &&) noexcept;
-	explicit Socket(int s) noexcept;
-	~Socket();
-
-	Socket &operator = (Socket const &) = delete;
-	Socket &operator = (Socket&&) noexcept;
-
-	bool operator ! () const noexcept;
-
-	int get() const noexcept;
-	void reset(int s);
-	int release() noexcept;
-
-private:
-	int fd = -1;
-};
+typedef File Socket;
 
 extern gai_category_t gai_category;
 

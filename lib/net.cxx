@@ -24,51 +24,6 @@ void gai_deleter::operator() (addrinfo *ai)
 	freeaddrinfo(ai);
 }
 
-Socket::Socket(Socket &&b) noexcept
-{
-	std::swap(fd, b.fd); // this->fd is already initialized with (-1)
-}
-
-Socket::Socket(int s) noexcept
-{
-	fd = s;
-}
-
-Socket::~Socket()
-{
-	reset(-1);
-}
-
-Socket &Socket::operator = (Socket &&b) noexcept
-{
-	std::swap(fd, b.fd);
-	return *this;
-}
-
-bool Socket::operator ! () const noexcept
-{
-	return fd < 0;
-}
-
-int Socket::get() const noexcept
-{
-	return fd;
-}
-
-void Socket::reset(int s)
-{
-	if(fd)
-		close(fd);
-	fd = s;
-}
-
-int Socket::release() noexcept
-{
-	int s = fd;
-	fd = -1;
-	return s;
-}
-
 template <bool Callback(int fd, addrinfo &addr)>
 int Choose(std::string address, std::string service, int flags)
 {

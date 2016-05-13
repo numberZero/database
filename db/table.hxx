@@ -1,33 +1,74 @@
 #pragma once
 #include <cstdio>
 #include <cstdlib>
+#include <atomic>
+#include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <utility>
+#include "file.hxx"
 
-typedef std::size_t Size, Index;
+class BackedTable
+{
+private:
+	typedef std::int16_t RefCount;
+
+	struct Entry
+	{
+		RefCount rc;
+		char data[];
+	};
+
+	File fd;
+	void *data;
+
+	std::size_t entry_size;
+	std::size_t entry_count;
+	std::size_t next_insert_id;
+	std::size_t capacity;
+
+	std::unique_ptr<std::size_t[]> free_entries_buffer;
+	std::size_t free_entries_start;
+	std::size_t free_entries_count;
+	std::size_t free_entries_capacity;
+
+	Entry *get_entry(std::size_t index, bool no_check = false);
+
+protected:
+	std::pair<std::size_t, void *> create();
+	void *get(std::size_t index);
+	void grab(std::size_t index);
+	void drop(std::size_t index);
+	
+	virtual void first_load(std::size_t index, void *object);
+
+public:
+	BackedTable(std::size_t item_size, std::string const &filename);
+	~BackedTable();
+};
 
 template <typename _Object>
 class Table
 {
 private:
-	_Object **data;
-	Size count;
-	Size capacity;
+	_Object ** data;
+	std::size_t count;
+	std::size_t capacity;
 
-	Index alloc();
+	std::size_t alloc();
 
 public:
 	Table();
 	~Table();
-	std::pair<Index, _Object *> add();
-	Index add(_Object &&object);
-	void remove(Index id);
-	_Object *get(Index id);
-	_Object const *get(Index id) const;
-	Size size() const;
+	std::pair<std::size_t, _Object *> add();
+	std::size_t add(_Object &&object);
+	void remove(std::size_t id);
+	_Object *get(std::size_t id);
+	_Object const *get(std::size_t id) const;
+	std::size_t size() const;
 
-	_Object &operator[] (Index id);
-	_Object const &operator[] (Index id) const;
+	_Object &operator[] (std::size_t id);
+	_Object const &operator[] (std::size_t id) const;
 };
 
 template <typename _Object>
@@ -45,7 +86,7 @@ Table<_Object>::~Table()
 }
 
 template <typename _Object>
-Index Table<_Object>::alloc()
+std::size_t Table<_Object>::alloc()
 {
 	if(count >= capacity)
 	{
@@ -64,23 +105,23 @@ Index Table<_Object>::alloc()
 }
 
 template <typename _Object>
-std::pair<Index, _Object *> Table<_Object>::add()
+std::pair<std::size_t, _Object *> Table<_Object>::add()
 {
-	Index id = alloc();
+	std::size_t id = alloc();
 	data[id] = new _Object();
 	return { id, data[id] };
 }
 
 template <typename _Object>
-Index Table<_Object>::add(_Object &&object)
+std::size_t Table<_Object>::add(_Object &&object)
 {
-	Index id = alloc();
+	std::size_t id = alloc();
 	data[id] = new _Object(object);
 	return id;
 }
 
 template <typename _Object>
-void Table<_Object>::remove(Index id)
+void Table<_Object>::remove(std::size_t id)
 {
 	if(id >= count)
 		throw std::out_of_range("Table::remove called with invalid id");
@@ -91,7 +132,7 @@ void Table<_Object>::remove(Index id)
 }
 
 template <typename _Object>
-_Object *Table<_Object>::get(Index id)
+_Object *Table<_Object>::get(std::size_t id)
 {
 	if(id >= count)
 		return nullptr;
@@ -99,7 +140,7 @@ _Object *Table<_Object>::get(Index id)
 }
 
 template <typename _Object>
-_Object const *Table<_Object>::get(Index id) const
+_Object const *Table<_Object>::get(std::size_t id) const
 {
 	if(id >= count)
 		return nullptr;
@@ -107,13 +148,13 @@ _Object const *Table<_Object>::get(Index id) const
 }
 
 template <typename _Object>
-Size Table<_Object>::size() const
+std::size_t Table<_Object>::size() const
 {
 	return count;
 }
 
 template <typename _Object>
-_Object &Table<_Object>::operator[] (Index id)
+_Object &Table<_Object>::operator[] (std::size_t id)
 {
 	_Object *obj = get(id);
 	if(!obj)
@@ -122,7 +163,7 @@ _Object &Table<_Object>::operator[] (Index id)
 }
 
 template <typename _Object>
-_Object const &Table<_Object>::operator[] (Index id) const
+_Object const &Table<_Object>::operator[] (std::size_t id) const
 {
 	_Object const *obj = get(id);
 	if(!obj)
