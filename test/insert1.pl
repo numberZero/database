@@ -1,30 +1,20 @@
-#!/bin/perl
+#!/usr/bin/perl
 
+use vars;
+use warnings;
 use autodie;
-use File::Temp qw/ tempfile tempdir /;
 
 push @INC, "./test/";
-
+require testlib;
 require randtable;
-
-$gray = "\e[m";
-$red = "\e[31m";
-$green = "\e[32m";
-$pass = "[${green}PASS${gray}]";
-$fail = "[${red}FAIL${gray}]";
-
-$testname = "insert1";
 
 $row_count = int(shift(@ARGV) || 1000);
 $group_size = int(shift(@ARGV) || ($row_count / 100));
 
-sub tryclient {
-	my $filename = shift @_;
-	(-x $filename) and $filename;
-}
-
-$tempdir = tempdir("/tmp/zolden-test-$testname.XXXXXX");
-$client = tryclient("./release/zol") || tryclient("./build/zol") || tryclient("./zol") || die "Can't find Zolden client";
+running("insert1");
+open_temp_dir();
+find_zolden();
+start_server();
 
 $csvfilename_unsorted = "$tempdir/data1.csv";
 $csvfilename_sorted = "$tempdir/data2.csv";
@@ -35,7 +25,7 @@ open $shfile, ">", $shfilename_insert;
 
 $ingroup_count = 0;
 $query_begin = "echo";
-$query_end = " | $client &\n";
+$query_end = " | $zol &\n";
 
 $cb = sub {
 	print $csvfile join(",", @_), "\n";
@@ -70,30 +60,22 @@ close $shfile;
 chmod 0700, $shfilename_insert;
 
 print STDERR "Sorting\n";
-system("sort -u $csvfilename_unsorted > $csvfilename_sorted");
-
-print STDERR "Cleaning the DB\n";
-system("echo 'remove;' | $client >&/dev/null");
+system "sort -u $csvfilename_unsorted > $csvfilename_sorted";
 
 print STDERR "Inserting\n";
-system("$shfilename_insert >/dev/null");
+system "$shfilename_insert >/dev/null";
 
 print STDERR "Selecting\n";
-system("echo 'print;' | $client | ./test/print2csv.pl | sort -u > $csvfilename_got");
+system "echo 'print;' | $zol | ./test/print2csv.pl | sort -u > $csvfilename_got";
 
 print STDERR "Comparing\n";
-if(system("diff $csvfilename_sorted $csvfilename_got") == 0) {
-	print STDERR "pass\n";
-
-	print STDERR "Cleaning the DB\n";
-	system("echo 'remove;' | $client >&/dev/null");
-
-	print "$pass $testname: $row_count rows in groups of $group_size rows each\n";
-	system("rm -r $tempdir");
-	exit 0;
+$result = system "diff $csvfilename_sorted $csvfilename_got";
+if($result == 0) {
+	pass("$row_count rows in groups of $group_size rows each\n");
+	stop_server();
+	close_temp_dir();
 } else {
-	print STDERR "fail\n";
-	print STDERR "Keeping the DB dirty\n";
-	print "$fail $testname: Database engine error; see $tempdir\n";
-	exit 1;
+	fail("Database engine error\n");
 }
+
+exit $result;

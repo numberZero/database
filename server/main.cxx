@@ -26,6 +26,17 @@ void blockSIGPIPE()
 	sigaction(SIGPIPE, &act, nullptr);
 }
 
+void daemonize()
+{
+	pid_t child = fork();
+	if(child == 0)
+		return;
+	if(child < 0)
+		throw std::system_error(errno, std::system_category(), "Can't go to background");
+	std::cout << child << std::endl; // Return PID
+	std::exit(0);
+}
+
 void readArguments(int argc, char **argv)
 {
 	int k;
@@ -38,14 +49,21 @@ void readArguments(int argc, char **argv)
 			if(value == "--")
 				break;
 			key = value.substr(2);
+			named_arguments.emplace(key, "");
 			continue;
 		}
 		if(!key.empty())
-			named_arguments.emplace(std::move(key), std::move(value));
+			named_arguments.at(key) = std::move(value);
 		else
 			positional_arguments.push_back(std::move(value));
 		key.clear();
 	}
+}
+
+bool hasArgument(std::string name)
+{
+	auto iter = named_arguments.find(name);
+	return iter != named_arguments.end();
 }
 
 std::string getArgument(std::string name, std::string def = "")
@@ -73,6 +91,14 @@ int main(int argc, char **argv)
 	if(0 != listen(server.get(), 20))
 		throw std::system_error(errno, std::system_category(), "Can't listen on a socket");
 	std::clog << "Listening at " << addr << ":" << port << std::endl;
+	if(hasArgument("daemon"))
+	{
+		std::clog << "Going into background..." << std::endl;
+		daemonize();
+		std::clog << "Daemonized" << std::endl;
+	}
+	else
+		std::clog << "Remaining in foreground" << std::endl;
 	for(;;)
 	{
 		Socket fd(accept(server.get(), nullptr, nullptr));
