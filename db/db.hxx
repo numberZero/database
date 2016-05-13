@@ -46,6 +46,7 @@ private:
 	SRXWLock lock;
 
 public:
+	Database() : rows("") {}
 	Id addRow(Id teacher, Id subject, Id room, Id group, Id time);
 
 	void readText(std::string const &filename);

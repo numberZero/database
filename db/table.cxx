@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include "table.hxx"
 
+static int counter = 0;
+
 static std::size_t increase_capacity(std::size_t capacity)
 {
 	if(capacity < 0x00000100)
@@ -22,7 +24,6 @@ static std::size_t increase_capacity(std::size_t capacity)
 #define ensure(value,message) if(!value) syserror(message)
 
 BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
-	fd(open(filename.c_str(), O_CREAT | O_RDWR, 0640)),
 	entry_size(item_size + sizeof(Entry)),
 	entry_count(0),
 	next_insert_id(0),
@@ -31,6 +32,10 @@ BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
 	free_entries_capacity(1024)
 {
 // open the backing storage
+	std::string fn = filename;
+	if(filename.empty())
+		fn = "/tmp/zolden-data-" + std::to_string(++counter) + ".zdb";
+	fd.reset(open(fn.c_str(), O_CREAT | O_RDWR, 0640));
 	ensure(fd, "Can't open file " + filename + " for BackedTable");
 	off_t bytes = lseek((int)fd, 0, SEEK_END);
 	ensure(bytes == (off_t)-1, "Can't check file size for BackedTable");
@@ -42,7 +47,7 @@ BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
 	free_entries_buffer.reset(new std::size_t[free_entries_capacity]);
 	for(std::size_t k = 0; k != capacity; ++k)
 	{
-		Entry *e(get_entry(k, true));
+		Entry *e(get_entry_addr(k));
 		if(!e->rc) // if free
 			continue; // we will add it later, if needed
 		first_load(k, e->data);
@@ -62,12 +67,24 @@ BackedTable::~BackedTable()
 	munmap(data, capacity * entry_size);
 }
 
-BackedTable::Entry *BackedTable::get_entry(std::size_t index, bool no_check)
+BackedTable::Entry *BackedTable::get_entry_addr(std::size_t index) const noexcept
+{
+	return reinterpret_cast<BackedTable::Entry *>(reinterpret_cast<char *>(data) + entry_size * index);
+}
+
+bool BackedTable::is_entry(std::size_t index) const noexcept
+{
+	if(index >= capacity)
+		return false;
+	return get_entry_addr(index)->rc != 0;
+}
+
+BackedTable::Entry *BackedTable::get_entry(std::size_t index) const
 {
 	if(index >= capacity)
 		throw std::out_of_range("BackedTable index out of range");
-	Entry *entry(reinterpret_cast<BackedTable::Entry *>(reinterpret_cast<char *>(data) + entry_size * index));
-	if(!no_check && !entry->rc)
+	Entry *entry(get_entry_addr(index));
+	if(!entry->rc)
 		throw std::out_of_range("BackedTable index points to non-existing entry");
 	return entry;
 }
@@ -98,14 +115,20 @@ std::pair<std::size_t, void *> BackedTable::create()
 			capacity = new_capacity;
 		}
 	}
-	Entry *entry(get_entry(index, true));
+	Entry *entry(get_entry_addr(index));
 	if(entry->rc)
 		throw std::runtime_error("Database file corrupted");
 	entry->rc = 1;
+	++entry_count;
 	return{index, entry->data};
 }
 
 void *BackedTable::get(std::size_t index)
+{
+	return get_entry(index)->data;
+}
+
+void const *BackedTable::get(std::size_t index) const
 {
 	return get_entry(index)->data;
 }
@@ -125,6 +148,7 @@ void BackedTable::drop(std::size_t index)
 		throw std::logic_error("Reference counting underflow");
 	if(rc == 0) // last reference dropped
 	{
+		--entry_count;
 		if(free_entries_count >= free_entries_capacity)
 			throw std::runtime_error("Free entries buffer overflow");
 		std::size_t pos = (free_entries_start + free_entries_count++) % free_entries_capacity;
@@ -132,6 +156,26 @@ void BackedTable::drop(std::size_t index)
 	}
 }
 
+bool BackedTable::first(std::size_t &index)
+{
+	index = invalid_index;
+	return next(index);
+}
+
+bool BackedTable::next(std::size_t &index)
+{
+	while(++index < capacity)
+		if(get_entry_addr(index)->rc)
+			return true;
+	return false;
+}
+
 void BackedTable::first_load(std::size_t index, void *object)
 {
+	++entry_count;
+}
+
+std::size_t BackedTable::size() const
+{
+	return entry_count;
 }

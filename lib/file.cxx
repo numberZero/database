@@ -46,7 +46,7 @@ int File::get() const noexcept
 
 void File::reset(int s)
 {
-	if(fd)
+	if(fd != -1)
 		close(fd);
 	fd = s;
 }

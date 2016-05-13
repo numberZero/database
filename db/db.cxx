@@ -138,16 +138,20 @@ void writeTableRowData(std::ostream &file, Container<_Object> const &container)
 template <typename _Object>
 void writeTable(std::ostream &file, Table<_Object> &table, std::string const &name)
 {
+	Id n = table.size();
 	file << "TABLE " << name << "\n";
-	file << "Count " << table.size() << "\n";
+	file << "Count " << n << "\n";
 	file << "\n";
-	for(Id k = 0; k != table.size(); ++k)
+	Id k = 0;
+	for(auto const& item: table)
 	{
-		file << "ROW " << k << "\n";
-		writeTableRowData(file, table[k]);
+		file << "ROW " << k++ << "\n";
+		writeTableRowData(file, item);
 		file << "\n";
 	}
 	file << std::endl;
+	if(k != n)
+		throw std::runtime_error("Table writing failed: row number changed");
 }
 
 void Database::writeText(std::ostream &file)
@@ -169,16 +173,11 @@ void Database::writeText(std::ostream &file)
 void Database::printDB(std::ostream &file, int width)
 {
 	(void)(width);
-	for(std::size_t k = 0; k != rows.size(); ++k)
+	int k = 0;
+	for(Row const& prow: rows)//std::size_t k = 0; k != rows.size(); ++k)
 	{
-		file << "*** Row " << k << " ***\n";
-		Row *prow = rows.get(k);
-		if(!prow)
-		{
-			file << "(deleted)" << std::endl;
-			continue;
-		}
-		RowReference row(this, prow);
+		file << "*** Row " << ++k << " ***\n";
+		RowReference row(this, &prow);
 		file << "Day: " << row.getDay() << "\n";
 		file << "Lesson #" << row.getLesson() << "\n";
 		file << "Room #" << row.getRoom() << "\n";
@@ -191,7 +190,7 @@ void Database::printDB(std::ostream &file, int width)
 
 Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 {
-	Id id = rows.add(Row{teacher, subject, room, group, time});
+	Id id = rows.insert(Row{teacher, subject, room, group, time});
 /*
 	Teachers::data[teacher].addRow(id);
 	Subjects::data[subject].addRow(id);
@@ -224,7 +223,7 @@ RowReference Database::insert(RowData const &row)
 	Id room = Rooms::need(row.room);
 	Id group = Groups::need(row.group);
 	Id time = Times::need(row.day, row.lesson);
-	return RowReference(this, rows.get(addRow(teacher, subject, room, group, time)));
+	return RowReference(this, &rows.get(addRow(teacher, subject, room, group, time)));
 }
 
 Selection Database::select(SelectionParams const &p)
@@ -249,9 +248,9 @@ std::size_t Database::remove(SelectionParams const &p)
 	{
 		Id row = s->getRowId();
 		s->next(); // to be sure iterator won’t break
-		if(!RowReference(this, rows.get(row)).check(p))
+		if(!RowReference(this, &rows.get(row)).check(p))
 			continue;
-		rows.remove(row); // it always present (unless threads conflict)
+		rows.drop(row); // it always present (unless threads conflict)
 		++count;
 	}
 	return count;

@@ -21,7 +21,7 @@ private:
 	friend Index;
 	Key operator() (Id id)
 	{
-		return getKey(data[id].data);
+		return getKey(data.get(id).data);
 	}
 
 protected:
@@ -30,6 +30,7 @@ protected:
 	void readTableRowData(std::istream &file);
 
 	SubDB() :
+		data(""),
 		index(*this)
 	{
 	}

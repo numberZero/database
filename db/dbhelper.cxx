@@ -24,7 +24,7 @@ void RowRefList::addRow(Id row)
 		node->next = head;
 		head = node;
 	}
-	head->rows[idx] = row;
+	head->rows.get(idx) = row;
 	++count;
 }
 */
@@ -38,32 +38,32 @@ RowReference::RowReference(Database const *database, Row const *prow) :
 
 char const *RowReference::getTeacher() const
 {
-	return db->Teachers::data[row->teacher].data.name;
+	return db->Teachers::data.get(row->teacher).data.name;
 }
 
 char const *RowReference::getSubject() const
 {
-	return db->Subjects::data[row->subject].data.name;
+	return db->Subjects::data.get(row->subject).data.name;
 }
 
 unsigned RowReference::getRoom() const
 {
-	return db->Rooms::data[row->room].data.number;
+	return db->Rooms::data.get(row->room).data.number;
 }
 
 unsigned RowReference::getGroup() const
 {
-	return db->Groups::data[row->group].data.number;
+	return db->Groups::data.get(row->group).data.number;
 }
 
 unsigned RowReference::getDay() const
 {
-	return db->Times::data[row->time].data.day;
+	return db->Times::data.get(row->time).data.day;
 }
 
 unsigned RowReference::getLesson() const
 {
-	return db->Times::data[row->time].data.lesson;
+	return db->Times::data.get(row->time).data.lesson;
 }
 
 RowData RowReference::getData() const

@@ -10,7 +10,6 @@ our $green = "\e[32m";
 my @PATH = ("./bin", "./release", "./build", "./", "/usr/bin", "/bin");
 
 my $testname;
-$tempdir;
 my $client;
 my $server;
 my $port;

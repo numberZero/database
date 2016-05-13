@@ -11,7 +11,7 @@ PreSelection_Real::PreSelection_Real(Rows const &db) :
 
 Row const *PreSelection_Real::getRow()
 {
-	return rows.get(getRowId());
+	return &rows.get(getRowId());
 }
 
 /*** PreSelection_Full ***/

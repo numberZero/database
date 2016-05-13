@@ -30,7 +30,7 @@ struct make<_Object, std::string const &>
 template <typename _Object, typename _Key, typename... Params>
 Id SubDB<_Object, _Key, Params...>::add(Params... params)
 {
-	auto p = data.add();
+	auto p = data.alloc();
 	make<_Object, Params...>::Object(p.second->data, params...);
 	index.add(p.first);
 	return p.first;

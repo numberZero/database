@@ -80,27 +80,6 @@ std::string getArgument(std::string name, std::string def = "")
 	return def;
 }
 
-struct TestTable: public BackedTable
-{
-	TestTable() : BackedTable(12, "/tmp/table1.dat")
-	{
-		std::cout << create().first << std::endl;
-		std::cout << create().first << std::endl;
-		std::cout << get(1) << std::endl;
-		memset(get(1), 'z', 5);
-		memset(get(1) + 5, 'a', 5);
-		std::cout << create().first << std::endl;
-		std::cout << create().first << std::endl;
-	}
-
-	~TestTable()
-	{
-		std::cout << "Finalization" << std::endl;
-	}
-};
-
-TestTable test1;
-
 int main(int argc, char **argv)
 {
 	setupSignalHandling();
