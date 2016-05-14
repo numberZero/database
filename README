@@ -1,0 +1,18 @@
+==== Zolden DBMS ====
+This program is an example of a database management system.
+Note: it is Linux-only!
+
+== Compilation ==
+git clone https://github.com/numberZero/database
+cd database
+mkdir build
+cd build
+cmake ..
+make
+
+== Preprocessor defines ==
+For server:
+- USE_EXCLUSIVE_LOCK - disallow requests to be processed simultaneously
+    instead of default SRXW (shared read or exclusive write) policy
+- USE_MANUAL_TCP_FLUSH - instead of system default settings
+- DISCONNECT_ON_INVALID_REQUEST - ...
