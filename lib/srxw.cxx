@@ -1,6 +1,6 @@
 #include "srxw.hxx"
 
-#ifndef USE_FALLBACK_LOCK
+#ifndef USE_EXCLUSIVE_LOCK
 #define USE_SRXW_LOCK
 #endif
 
