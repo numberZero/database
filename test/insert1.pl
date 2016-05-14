@@ -24,8 +24,8 @@ open $csvfile, ">", $csvfilename_unsorted;
 open $shfile, ">", $shfilename_insert;
 
 $ingroup_count = 0;
-$query_begin = "echo";
-$query_end = " | $zol &\n";
+$query_begin = "$zol <<'QUERY_END' &\n";
+$query_end = "QUERY_END\n";
 
 $cb = sub {
 	print $csvfile join(",", @_), "\n";
@@ -37,7 +37,7 @@ $cb = sub {
 	$lesson = shift @_;
 
 	$query = "insert teacher = \"$teacher\", subject = \"$subject\", room = $room, group = $group, day = $day, lesson = $lesson;";
-	print $shfile " '$query'\\\n";
+	print $shfile "\t$query\n";
 	if(++$ingroup_count >= $group_size) {
 		print $shfile $query_end;
 		print $shfile $query_begin;
@@ -66,7 +66,7 @@ print STDERR "Inserting\n";
 system "$shfilename_insert >/dev/null";
 
 print STDERR "Selecting\n";
-system "echo 'print;' | $zol | ./test/print2csv.pl | sort -u > $csvfilename_got";
+system "$zol <<<'print;' | ./test/print2csv.pl | sort -u > $csvfilename_got";
 
 print STDERR "Comparing\n";
 $result = system "diff -q $csvfilename_sorted $csvfilename_got";

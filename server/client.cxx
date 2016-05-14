@@ -1,4 +1,8 @@
 #include <cassert>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include "protocol.hxx"
 #include "db/select.hxx"
 #include "db/db.hxx"
@@ -11,6 +15,7 @@ NEW_ERROR_CLASS(InvalidRequestException, runtime_error, std);
 Client::Client(File &&s) :
 	socket(std::move(s))
 {
+	SetSocketOption(socket, IPPROTO_TCP, TCP_CORK, 1);
 }
 
 void Client::sendAnswerHeader(bool success, int mc)
@@ -41,7 +46,7 @@ void Client::sendAnswerHeader(int errcode, std::string message)
 
 void Client::flush()
 {
-// Do nothing here; flush is not required with Linux TCP sockets
+	SetSocketOption(socket, IPPROTO_TCP, TCP_NODELAY, 1);
 }
 
 void Client::select(SelectionParams const &sp)
