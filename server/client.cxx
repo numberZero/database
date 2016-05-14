@@ -1,7 +1,4 @@
 #include <cassert>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 #include "protocol.hxx"
 #include "db/select.hxx"
 #include "db/db.hxx"

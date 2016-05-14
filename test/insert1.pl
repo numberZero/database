@@ -69,13 +69,13 @@ print STDERR "Selecting\n";
 system "echo 'print;' | $zol | ./test/print2csv.pl | sort -u > $csvfilename_got";
 
 print STDERR "Comparing\n";
-$result = system "diff $csvfilename_sorted $csvfilename_got";
+$result = system "diff -q $csvfilename_sorted $csvfilename_got";
 if($result == 0) {
+	print STDERR "Test passed\n";
 	pass("$row_count rows in groups of $group_size rows each\n");
 	stop_server();
 	close_temp_dir();
 } else {
-	fail("Database engine error\n");
+	print STDERR "Test failed\n";
+	fail("Database engine error (or external influence)\n");
 }
-
-exit $result;

@@ -3,10 +3,6 @@ use warnings;
 use File::Temp qw(tempdir);
 use File::Path qw(remove_tree);
  
-our $gray = "\e[m";
-our $red = "\e[31m";
-our $green = "\e[32m";
-
 my @PATH = ("./bin", "./release", "./build", "./", "/usr/bin", "/bin");
 
 my $testname;
@@ -14,6 +10,7 @@ my $client;
 my $server;
 my $port;
 my $pid;
+my $result;
 
 sub findexec {
 	my $name = shift @_;
@@ -56,14 +53,14 @@ sub close_temp_dir {
 sub start_server {
 	defined $server or die "Server has not been found";
 	defined $pid and die "Server already started";
-	print STDERR "Starting server\n";
-	$port = int(30000 + rand(30000));
+	$port = 0;
+	print STDERR "Starting server at port $port\n";
 	$pid = open CHILD, '-|', $server, '--port', $port or die "Can't start server: $!";
-	while(<CHILD>) {
-		last if m/READY/;
-	}
+	$_ = <CHILD>;
+	m/^READY ([0-9]+)/ or die "Server refused to start: $_";
+	$port = int($1);
 	defined $client and $zol = "$client 127.0.0.1 $port";
-	print STDERR "Server started, PID $pid\n";
+	print STDERR "Server started at port $port, PID $pid\n";
 }
 
 # Stops Zolden server
@@ -71,7 +68,7 @@ sub stop_server {
 	print STDERR "Stopping server\n";
 	kill 'TERM', $pid;
 	while(<CHILD>) {
-		last if m/SHUTDOWN/;
+		last if m/^SHUTDOWN/;
 	}
 	print STDERR "Shutdown request accepted\n";
 	waitpid $pid, 0;
@@ -81,16 +78,23 @@ sub stop_server {
 }
 
 sub pass {
-	print "[${green}PASS${gray}] ", @_;
+	$result = 0;
+	print "[\e[32mPASS\e[m] ", @_;
 }
 
 sub fail {
-	print "[${red}FAIL${gray}] ", @_;
+	$result = 1;
+	print "[\e[31mFAIL\e[m] ", @_;
 }
 
 END {
-	defined $pid and print "Server still active; port $port, pid $pid\n";
-	defined $tempdir and print "Temporary directory still exists at $tempdir\n";
+	defined $pid and print STDERR "Server may still be active; port $port, pid $pid\n";
+	defined $tempdir and print STDERR "Temporary directory may still exist at $tempdir\n";
+	if( not defined $result) {
+		print "[\e[41;37mXCPT\e[m]\n";
+		$result = -1;
+	}
+	exit $result;
 }
 
 return TRUE;

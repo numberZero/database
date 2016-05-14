@@ -1,0 +1,23 @@
+#!/bin/bash
+
+default_logfile="/tmp/zolden-test.log";
+
+if [ -n "$1" ]; then
+	test="$1";
+else
+	echo "Test name needed";
+fi;
+
+if [ -z "$2" ]; then
+	logfile="$default_logfile";
+else
+	logfile="$(realpath "$1")";
+fi;
+
+dir0="$(dirname "$0")";
+dir="$(basename "$dir0")";
+cd "$dir0/..";
+
+while "./$dir/$test.pl" 2> "$logfile"; do true; done;
+
+cat "$logfile" 1>&2;

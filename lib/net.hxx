@@ -17,8 +17,28 @@ struct gai_deleter
 
 extern gai_category_t gai_category;
 
+union IP4addr
+{
+	std::uint8_t bytes[4];
+	std::uint32_t data;
+};
+
+struct AddressIPv4
+{
+	IP4addr addr;
+	std::uint16_t port;
+};
+
 File Connect(std::string address, std::string service); ///< \returns connected socket
 File Bind(std::string address, std::string service, bool reuseaddr); ///< \returns bound socket (no listen() call performed)
 
 void SetSocketOption(File &socket, int level, int optname, int value);
 void SetSocketOption(File &socket, int level, int optname, void const *value, std::size_t length);
+
+AddressIPv4 GetSocketAddressIPv4(File &socket);
+
+namespace std
+{
+	string to_string(IP4addr const &);
+	string to_string(AddressIPv4 const &);
+};

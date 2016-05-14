@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdio>
 #include <cstring>
 #include <memory>
 #include <sys/types.h>
@@ -94,3 +95,35 @@ void SetSocketOption(File &socket, int level, int optname, void const *value, st
 {
 	syserror_throwif(setsockopt(socket.get(), level, optname, value, length), "Can't set socket option");
 }
+
+AddressIPv4 GetSocketAddressIPv4(File &socket)
+{
+	AddressIPv4 result;
+	sockaddr_in addr;
+	socklen_t len(sizeof(addr));
+	getsockname(socket.get(), reinterpret_cast<sockaddr *>(&addr), &len);
+	if(addr.sin_family != AF_INET)
+		throw std::invalid_argument("The socket given is not an IPv4 socket");
+	result.addr.data = addr.sin_addr.s_addr;
+	result.port = ntohs(addr.sin_port);
+	return result;
+}
+
+namespace std
+{
+	string to_string(IP4addr const &a)
+	{
+		char buf[16]; // enough
+		int len = snprintf(buf, 16, "%hhu.%hhu.%hhu.%hhu", a.bytes[0], a.bytes[1], a.bytes[2], a.bytes[3]);
+		assert(len < 16);
+		return string(buf, len);
+	}
+
+	string to_string(AddressIPv4 const &a)
+	{
+		char buf[22]; // enough
+		int len = snprintf(buf, 22, "%hhu.%hhu.%hhu.%hhu:%hu", a.addr.bytes[0], a.addr.bytes[1], a.addr.bytes[2], a.addr.bytes[3], a.port);
+		assert(len < 22);
+		return string(buf, len);
+	}
+};

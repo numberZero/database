@@ -6,6 +6,7 @@
 #include <thread>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -19,6 +20,7 @@
 std::atomic<bool> running(true);
 std::unique_ptr<Database> db;
 File server;
+AddressIPv4 address;
 std::map<std::string, std::string> named_arguments;
 std::list<std::string> positional_arguments;
 
@@ -117,7 +119,8 @@ int main(int argc, char **argv)
 	}
 	server = Bind(addr, port, true);
 	syserror_throwif(listen(server.get(), 20), "Can't listen on a socket");
-	std::clog << "Listening at " << addr << ":" << port << std::endl;
+	address = GetSocketAddressIPv4(server);
+	std::clog << "Listening at " << std::to_string(address) << std::endl;
 	if(hasArgument("daemon"))
 	{
 		std::clog << "Going into background..." << std::endl;
@@ -127,7 +130,7 @@ int main(int argc, char **argv)
 	else
 	{
 		std::clog << "Remaining in foreground" << std::endl;
-		std::cout << "READY" << std::endl;
+		std::cout << "READY " << address.port << std::endl;
 	}
 	while(running)
 	{
