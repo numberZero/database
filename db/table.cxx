@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "table.hxx"
+#include "rtcheck.hxx"
 
 static int counter = 0;
 
@@ -16,14 +17,16 @@ static std::size_t increase_capacity(std::size_t capacity)
 	return capacity + 0x00010000;
 }
 
-[[noreturn]] static void syserror(std::string const& what)
+BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
+	BackedTable(
+		item_size,
+		File(open(filename.c_str(), O_RDWR | O_CREAT, 0640))
+	)
 {
-	throw std::system_error(errno, std::system_category(), what);
 }
 
-#define ensure(value,message) if(!value) syserror(message)
-
-BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
+BackedTable::BackedTable(std::size_t item_size, File &&file) :
+	fd(std::move(file)),
 	entry_size(item_size + sizeof(Entry)),
 	entry_count(0),
 	next_insert_id(0),
@@ -32,16 +35,11 @@ BackedTable::BackedTable(std::size_t item_size, std::string const &filename) :
 	free_entries_capacity(1024)
 {
 // open the backing storage
-	std::string fn = filename;
-	if(filename.empty())
-		fn = "/tmp/zolden-data-" + std::to_string(++counter) + ".zdb";
-	fd.reset(open(fn.c_str(), O_CREAT | O_RDWR, 0640));
-	ensure(fd, "Can't open file " + filename + " for BackedTable");
 	off_t bytes = lseek((int)fd, 0, SEEK_END);
-	ensure(bytes == (off_t)-1, "Can't check file size for BackedTable");
+	syserror_throwif(bytes == (off_t)-1, "Can't check file size for BackedTable");
 	capacity = bytes / entry_size;
 	data = mmap(nullptr, capacity * entry_size, PROT_READ | PROT_WRITE, MAP_SHARED, (int)fd, 0);
-	ensure(data, "Can't check file size for BackedTable");
+	syserror_throwif(!data, "Can't check file size for BackedTable");
 
 // prepare metadata
 	free_entries_buffer.reset(new std::size_t[free_entries_capacity]);
@@ -107,9 +105,9 @@ std::pair<std::size_t, void *> BackedTable::create()
 		{ // extending the table
 			std::size_t new_capacity = increase_capacity(capacity);
 			std::size_t new_size = new_capacity * entry_size;
-			ensure(0 == ftruncate((int)fd, new_size), "Can't extend table file");
+			syserror_throwif(ftruncate((int)fd, new_size), "Can't extend table file");
 			void *file = mmap(nullptr, new_size, PROT_READ | PROT_WRITE, MAP_SHARED, (int)fd, 0);
-			ensure(file, "Can't extend table mapping");
+			syserror_throwif(!file, "Can't extend table mapping");
 			munmap(data, capacity * entry_size);
 			data = file;
 			capacity = new_capacity;

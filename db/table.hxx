@@ -54,6 +54,7 @@ protected:
 
 public:
 	BackedTable(std::size_t item_size, std::string const &filename);
+	BackedTable(std::size_t item_size, File &&file);
 	~BackedTable();
 
 	std::size_t size() const;
@@ -92,6 +93,7 @@ protected:
 
 public:
 	Table(std::string const &filename);
+	Table(File &&file);
 
 	std::pair<std::size_t, Item *> alloc();
 	std::size_t insert(Item const& b);
@@ -138,6 +140,12 @@ typename Table<_Item>::Iterator &Table<_Item>::Iterator::operator++()
 template <typename _Item>
 Table<_Item>::Table(std::string const &filename) :
 	BackedTable(sizeof(Item), filename)
+{
+}
+
+template <typename _Item>
+Table<_Item>::Table(File &&file) :
+	BackedTable(sizeof(Item), std::move(file))
 {
 }
 

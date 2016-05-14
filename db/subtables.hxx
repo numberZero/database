@@ -14,14 +14,14 @@ public:
 	typedef _Key Key;
 	typedef SubDB<Object, Key, Params...> Self;
 
-	typedef Table<Container<Object>> Data;
+	typedef Table<Object> Data;
 	typedef HashTable<Id, Key, Self> Index;
 
 private:
 	friend Index;
 	Key operator() (Id id)
 	{
-		return getKey(data.get(id).data);
+		return getKey(data.get(id));
 	}
 
 protected:
@@ -29,8 +29,14 @@ protected:
 	Index index;
 	void readTableRowData(std::istream &file);
 
-	SubDB() :
-		data(""),
+	SubDB(std::string const &file) :
+		data(file),
+		index(*this)
+	{
+	}
+
+	SubDB(File &&file) :
+		data(std::move(file)),
 		index(*this)
 	{
 	}

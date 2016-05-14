@@ -3,7 +3,30 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <fcntl.h>
 #include "misc.hxx"
+
+Database::Database(std::string const &datadir) :
+	SubDB_Teacher(datadir + "/teacher.zolden-table"),
+	SubDB_Subject(datadir + "/subject.zolden-table"),
+	SubDB_Room(datadir + "/room.zolden-table"),
+	SubDB_Group(datadir + "/gropu.zolden-table"),
+	SubDB_Time(datadir + "/time.zolden-table"),
+	rows(datadir + "/row.zolden-table"),
+	temporary(false)
+{
+}
+
+Database::Database(std::string const &datadir, db_temporary_t) :
+	SubDB_Teacher(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	SubDB_Subject(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	SubDB_Room(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	SubDB_Group(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	SubDB_Time(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	rows(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	temporary(true)
+{
+}
 
 void Database::readText(std::string const &filename)
 {

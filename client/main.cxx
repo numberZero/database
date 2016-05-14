@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include "config.hxx"
+#include "net.hxx"
 #include "reader.hxx"
 #include "struct.hxx"
 

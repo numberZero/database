@@ -56,23 +56,28 @@ sub close_temp_dir {
 sub start_server {
 	defined $server or die "Server has not been found";
 	defined $pid and die "Server already started";
+	print STDERR "Starting server\n";
 	$port = int(30000 + rand(30000));
-
-	my $tmppid = open(CHILD, "-|");
-	defined $tmppid or die "Can't fork: $!";
-	if (not $tmppid) {
-		exec $server, '--daemon', '--port', $port or die "Can't exec: $!";
+	$pid = open CHILD, '-|', $server, '--port', $port or die "Can't start server: $!";
+	while(<CHILD>) {
+		last if m/READY/;
 	}
-	my $line = <CHILD>;
-	$pid = int($line) or die "Can't start the server: $line";
-	close CHILD;
 	defined $client and $zol = "$client 127.0.0.1 $port";
+	print STDERR "Server started, PID $pid\n";
 }
 
 # Stops Zolden server
 sub stop_server {
+	print STDERR "Stopping server\n";
 	kill 'TERM', $pid;
+	while(<CHILD>) {
+		last if m/SHUTDOWN/;
+	}
+	print STDERR "Shutdown request accepted\n";
+	waitpid $pid, 0;
+	close CHILD;
 	undef $pid;
+	print STDERR "Server stopped\n";
 }
 
 sub pass {

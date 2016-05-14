@@ -8,7 +8,7 @@
 #include "query.hxx"
 
 QueryMachineState global_state {
-	Socket(),
+	File(),
 	std::cin,
 	std::cout,
 	SelectionParams()
@@ -24,7 +24,7 @@ QueryMachineState global_state {
  * \throws std::exception subclasses when something goes wrong (see `packer::*`, `writePacket`, `new` for details)
  */
 template <typename DataType>
-void sendQuery(Socket &socket, QueryType type, DataType data)
+void sendQuery(File &socket, QueryType type, DataType data)
 {
 	std::size_t head_size = NetworkType<QueryType>::StaticSize;
 	std::size_t body_size = NetworkType<DataType>::dynamic_size(data);
@@ -36,7 +36,7 @@ void sendQuery(Socket &socket, QueryType type, DataType data)
 	NetworkType<QueryType>::static_serialize(head, type);
 	std::size_t bytes = NetworkType<DataType>::dynamic_serialize(body, body_size, data);
 	assert(body_size == bytes);
-	writePacket(socket.get(), packet, packet_size);
+	writePacket(socket, packet, packet_size);
 }
 
 /**
@@ -50,12 +50,12 @@ void sendQuery(Socket &socket, QueryType type, DataType data)
  * \throws std::exception subclasses when something goes wrong (see `packer::*`, `readPacket`, `new` for details)
  */
 template <typename DataType>
-bool recvAnswer(Socket &socket, DataType &data)
+bool recvAnswer(File &socket, DataType &data)
 {
 	char *packet;
 	std::size_t packet_size;
 	std::size_t bytes;
-	readPacket(socket.get(), packet, packet_size);
+	readPacket(socket, packet, packet_size);
 	std::unique_ptr<char[]> buffer(packet); // auto-deleter
 	if(!packet_size)
 		return false;
@@ -82,7 +82,7 @@ bool recvAnswer(Socket &socket, DataType &data)
  * \throws std::exception subclasses when something goes wrong
  */
 template <typename DataType>
-DataType recvAnswer(Socket &socket)
+DataType recvAnswer(File &socket)
 {
 	DataType result;
 	if(!recvAnswer<DataType>(socket, result))
@@ -90,7 +90,7 @@ DataType recvAnswer(Socket &socket)
 	return std::move(result);
 }
 
-void processAnswerHeader(Socket &socket, std::ostream &cout)
+void processAnswerHeader(File &socket, std::ostream &cout)
 {
 	ResultHeader header = recvAnswer<ResultHeader>(socket);
 	if(header.success)

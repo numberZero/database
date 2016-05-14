@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 #include "misc.hxx"
-#include "net.hxx"
+#include "file.hxx"
 #include "struct.hxx"
 
 enum class Command
@@ -77,7 +77,7 @@ struct QueryExit: QueryCommand
 
 struct QueryMachineState
 {
-	Socket connection;
+	File connection;
 	std::istream &cin;
 	std::ostream &cout;
 	SelectionParams params;

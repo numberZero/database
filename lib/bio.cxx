@@ -1,37 +1,26 @@
-#include <cerrno>
-#include <unistd.h>
-#include "packer.hxx"
+#include <cassert>
 #include "bio.hxx"
+#include "fs.hxx"
+#include "packer.hxx"
 
-void readBlock(int fd, char *buffer, std::size_t bytes)
+void readBlock(File &fd, char *buffer, std::size_t bytes)
 {
 	while(bytes > 0)
 	{
-		ssize_t count = read(fd, buffer, bytes);
+		std::size_t count = Read(fd, buffer, bytes);
 		if(!count)
-			throw BioEof("readBlock() reached end of file");
-		if(count < 0)
-		{
-			if(errno == EINTR)
-				continue;
-			throw BioError(errno, std::system_category(), "readBlock()");
-		}
+			throw BioEof();
 		bytes -= count;
 		buffer += count;
 	}
 }
 
-void writeBlock(int fd, char const *buffer, std::size_t bytes)
+void writeBlock(File &fd, char const *buffer, std::size_t bytes)
 {
 	while(bytes > 0)
 	{
-		ssize_t count = write(fd, buffer, bytes);
-		if(count <= 0)
-		{
-			if(errno == EINTR)
-				continue;
-			throw BioError(errno, std::system_category(), "writeBlock()");
-		}
+		std::size_t count = Write(fd, buffer, bytes);
+		assert(count);
 		bytes -= count;
 		buffer += count;
 	}
@@ -39,12 +28,12 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes)
 
 static constexpr int const packet_length_size = 4;
 
-void readPacket(int fd, char *&buffer, std::size_t &bytes)
+void readPacket(File &fd, char *&buffer, std::size_t &bytes)
 {
 	buffer = readPacket(fd, bytes);
 }
 
-char *readPacket(int fd, std::size_t &bytes)
+char *readPacket(File &fd, std::size_t &bytes)
 {
 	char buf[packet_length_size];
 	readBlock(fd, buf, packet_length_size);
@@ -62,11 +51,10 @@ char *readPacket(int fd, std::size_t &bytes)
 	return buffer;
 }
 
-void writePacket(int fd, char const *buffer, std::size_t bytes)
+void writePacket(File &fd, char const *buffer, std::size_t bytes)
 {
 	char buf[packet_length_size];
 	packer::type::Integer<std::size_t, packet_length_size>::static_serialize(buf, bytes);
 	writeBlock(fd, buf, packet_length_size);
 	writeBlock(fd, buffer, bytes);
-	fsync(fd); // make sure data is actually sent
 }

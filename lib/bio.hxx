@@ -1,9 +1,8 @@
 #pragma once
 #include <cinttypes>
-#include "misc.hxx"
+#include "file.hxx"
 
-NEW_ERROR_CLASS(BioError, system_error, std);
-NEW_ERROR_CLASS(BioEof, runtime_error, std);
+struct BioEof {};
 
 /**
  * Reads data block from a stream
@@ -15,7 +14,7 @@ NEW_ERROR_CLASS(BioEof, runtime_error, std);
  * 
  * Unlike \c read, this function either reads a whole block (of length \p bytes), or throws an exception
  */
-void readBlock(int fd, char *buffer, std::size_t bytes);
+void readBlock(File &fd, char *buffer, std::size_t bytes);
 
 /**
  * Writes data block to a stream
@@ -26,7 +25,7 @@ void readBlock(int fd, char *buffer, std::size_t bytes);
  * 
  * Unlike \c write, this function either writes a whole block (of length \p bytes), or throws an exception
  */
-void writeBlock(int fd, char const *buffer, std::size_t bytes);
+void writeBlock(File &fd, char const *buffer, std::size_t bytes);
 
 /**
  * Reads next packet on the stream
@@ -37,7 +36,7 @@ void writeBlock(int fd, char const *buffer, std::size_t bytes);
  * \throws BioError on other errors, as reported by the OS
  * \note \p buffer is freed on exception throw
  */
-void readPacket(int fd, char *&buffer, std::size_t &bytes);
+void readPacket(File &fd, char *&buffer, std::size_t &bytes);
 
 /**
  * Reads next packet on the stream
@@ -48,7 +47,7 @@ void readPacket(int fd, char *&buffer, std::size_t &bytes);
  * \throws BioError on other errors, as reported by the OS
  * \note The same as <tt>readPacket(int, char *&, std::size_t &)</tt>
  */
-char *readPacket(int fd, std::size_t &bytes);
+char *readPacket(File &fd, std::size_t &bytes);
 
 /**
  * Writes packet to the stream
@@ -57,4 +56,4 @@ char *readPacket(int fd, std::size_t &bytes);
  * \param [in]	bytes	Packet length
  * \throws BioError on errors, as reported by the OS
  */
-void writePacket(int fd, char const *buffer, std::size_t bytes);
+void writePacket(File &fd, char const *buffer, std::size_t bytes);

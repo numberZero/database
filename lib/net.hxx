@@ -15,9 +15,10 @@ struct gai_deleter
 	void operator() (struct addrinfo *ai);
 };
 
-typedef File Socket;
-
 extern gai_category_t gai_category;
 
-Socket Connect(std::string address, std::string service); ///< \returns connected socket
-Socket Bind(std::string address, std::string service, bool reuseaddr); ///< \returns bound socket (no listen() call performed)
+File Connect(std::string address, std::string service); ///< \returns connected socket
+File Bind(std::string address, std::string service, bool reuseaddr); ///< \returns bound socket (no listen() call performed)
+
+void SetSocketOption(File &socket, int level, int optname, int value);
+void SetSocketOption(File &socket, int level, int optname, void const *value, std::size_t length);

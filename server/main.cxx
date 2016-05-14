@@ -1,3 +1,4 @@
+#include <atomic>
 #include <iostream>
 #include <list>
 #include <map>
@@ -5,6 +6,7 @@
 #include <thread>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
 #include "db/db.hxx"
@@ -12,15 +14,27 @@
 #include "config.hxx"
 #include "misc.hxx"
 #include "net.hxx"
+#include "rtcheck.hxx"
 
-Database db;
-Socket server;
+std::atomic<bool> running(true);
+std::unique_ptr<Database> db;
+File server;
 std::map<std::string, std::string> named_arguments;
 std::list<std::string> positional_arguments;
 
 void emptySignalHandler(int signal)
 {
 	std::clog << "Signal caught: " + std::to_string(signal) << std::endl;
+	switch(signal)
+	{
+		case SIGINT:
+			std::cout << "INT" << std::endl;
+			running = false;
+			break;
+		case SIGHUP:
+			std::cout << "HUP" << std::endl;
+			break;
+	}
 }
 
 void setupSignalHandling()
@@ -37,8 +51,7 @@ void daemonize()
 	pid_t child = fork();
 	if(child == 0)
 		return;
-	if(child < 0)
-		throw std::system_error(errno, std::system_category(), "Can't go to background");
+	syserror_throwif(child < 0, "Can't go to background");
 	std::cout << child << std::endl; // Return PID
 	std::exit(0);
 }
@@ -84,18 +97,26 @@ int main(int argc, char **argv)
 {
 	setupSignalHandling();
 	readArguments(argc, argv);
-	std::string file = getArgument("file");
+	std::string txtfile = getArgument("preload");
+	std::string datadir = getArgument("data");
 	std::string addr = getArgument("addr", zolden_addr);
 	std::string port = getArgument("port", std::to_string(zolden_port));
 	std::clog << "Zolden database manipulation program" << std::endl;
-	if(!file.empty())
+	if(datadir.empty())
 	{
-		std::clog << "Reading database from: " << file << std::endl;
-		db.readText(file);
+		datadir = "/tmp";
+		std::clog << "Warning: data directory is not specified. Using invisible temporary files in " << datadir << std::endl;
+		db.reset(new Database(datadir, db_temporary));
+	}
+	else
+		db.reset(new Database(datadir));
+	if(!txtfile.empty())
+	{
+		std::clog << "Reading database from: " << txtfile << std::endl;
+		db->readText(txtfile);
 	}
 	server = Bind(addr, port, true);
-	if(0 != listen(server.get(), 20))
-		throw std::system_error(errno, std::system_category(), "Can't listen on a socket");
+	syserror_throwif(listen(server.get(), 20), "Can't listen on a socket");
 	std::clog << "Listening at " << addr << ":" << port << std::endl;
 	if(hasArgument("daemon"))
 	{
@@ -104,15 +125,18 @@ int main(int argc, char **argv)
 		std::clog << "Daemonized" << std::endl;
 	}
 	else
-		std::clog << "Remaining in foreground" << std::endl;
-	for(;;)
 	{
-		Socket fd(accept(server.get(), nullptr, nullptr));
+		std::clog << "Remaining in foreground" << std::endl;
+		std::cout << "READY" << std::endl;
+	}
+	while(running)
+	{
+		File fd(accept(server.get(), nullptr, nullptr));
 		if(!fd)
 		{
 			if(errno == EINTR)
-				break;
-			throw std::system_error(errno, std::system_category(), "Can't accept new connection");
+				continue;
+			syserror("Can't accept new connection");
 		}
 		std::string id = std::to_string(fd.get());
 		std::cerr << "[MAIN] Client connected. (" + id + ")\n";
@@ -121,5 +145,6 @@ int main(int argc, char **argv)
 		std::cerr << "[MAIN] Thread started. (" + id + ")\n";
 	}
 	std::clog << "Shutting down" << std::endl;
+	std::cout << "SHUTDOWN" << std::endl;
 	pthread_exit(nullptr);
 }

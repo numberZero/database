@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include "net.hxx"
+#include "rtcheck.hxx"
 
 gai_category_t gai_category;
 
@@ -24,8 +25,8 @@ void gai_deleter::operator() (addrinfo *ai)
 	freeaddrinfo(ai);
 }
 
-template <bool Callback(int fd, addrinfo &addr)>
-int Choose(std::string address, std::string service, int flags)
+template <bool Callback(File &fd, addrinfo &addr)>
+File Choose(std::string address, std::string service, int flags)
 {
 	addrinfo hint;
 	addrinfo *info = nullptr;
@@ -44,52 +45,52 @@ int Choose(std::string address, std::string service, int flags)
 	errno = 0;
 	for(addrinfo *info = list.get(); info; info = info->ai_next)
 	{
-		int s = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
-		if(s < 0)
+		File s(socket(info->ai_family, info->ai_socktype, info->ai_protocol));
+		if(!s)
 			continue;
-		try
-		{
-			if(Callback(s, *info))
-				return s;
-		}
-		catch(...)
-		{
-			close(s);
-			throw;
-		}
-		close(s);
+		if(Callback(s, *info))
+			return std::move(s);
 	}
-	throw std::system_error(errno, std::system_category());
+	syserror("Can't open suitable socket");
 }
 
-bool ConnectCallback(int fd, addrinfo &addr)
+bool ConnectCallback(File &fd, addrinfo &addr)
 {
-	return 0 == connect(fd, addr.ai_addr, addr.ai_addrlen);
+	return !connect(fd.get(), addr.ai_addr, addr.ai_addrlen);
 }
 
-bool BindCallback(int fd, addrinfo &addr)
+bool BindCallback(File &fd, addrinfo &addr)
 {
-	return 0 == bind(fd, addr.ai_addr, addr.ai_addrlen);
+	return !bind(fd.get(), addr.ai_addr, addr.ai_addrlen);
 }
 
-bool BindCallback_RA(int fd, addrinfo &addr)
+bool BindCallback_RA(File &fd, addrinfo &addr)
 {
-	int one = 1;
-	setsockopt(fd, SOL_SOCKET, 	SO_REUSEADDR, &one, sizeof(one));
+	SetSocketOption(fd, SOL_SOCKET, SO_REUSEADDR, 1);
 	return BindCallback(fd, addr);
 }
 
-Socket Connect(std::string address, std::string service)
+File Connect(std::string address, std::string service)
 {
 	int const options = AI_V4MAPPED | AI_ADDRCONFIG;
-	return Socket(Choose<ConnectCallback>(address, service, options));
+	return Choose<ConnectCallback>(address, service, options);
 }
 
-Socket Bind(std::string address, std::string service, bool reuseaddr)
+File Bind(std::string address, std::string service, bool reuseaddr)
 {
 	int const options = AI_V4MAPPED | AI_ADDRCONFIG | AI_PASSIVE;
 	if(reuseaddr)
-		return Socket(Choose<BindCallback_RA>(address, service, options));
+		return Choose<BindCallback_RA>(address, service, options);
 	else
-		return Socket(Choose<BindCallback>(address, service, options));
+		return Choose<BindCallback>(address, service, options);
+}
+
+void SetSocketOption(File &socket, int level, int optname, int value)
+{
+	SetSocketOption(socket, level, optname, &value, sizeof(value));
+}
+
+void SetSocketOption(File &socket, int level, int optname, void const *value, std::size_t length)
+{
+	syserror_throwif(setsockopt(socket.get(), level, optname, value, length), "Can't set socket option");
 }

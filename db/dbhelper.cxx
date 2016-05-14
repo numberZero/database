@@ -38,32 +38,32 @@ RowReference::RowReference(Database const *database, Row const *prow) :
 
 char const *RowReference::getTeacher() const
 {
-	return db->Teachers::data.get(row->teacher).data.name;
+	return db->Teachers::data.get(row->teacher).name;
 }
 
 char const *RowReference::getSubject() const
 {
-	return db->Subjects::data.get(row->subject).data.name;
+	return db->Subjects::data.get(row->subject).name;
 }
 
 unsigned RowReference::getRoom() const
 {
-	return db->Rooms::data.get(row->room).data.number;
+	return db->Rooms::data.get(row->room).number;
 }
 
 unsigned RowReference::getGroup() const
 {
-	return db->Groups::data.get(row->group).data.number;
+	return db->Groups::data.get(row->group).number;
 }
 
 unsigned RowReference::getDay() const
 {
-	return db->Times::data.get(row->time).data.day;
+	return db->Times::data.get(row->time).day;
 }
 
 unsigned RowReference::getLesson() const
 {
-	return db->Times::data.get(row->time).data.lesson;
+	return db->Times::data.get(row->time).lesson;
 }
 
 RowData RowReference::getData() const

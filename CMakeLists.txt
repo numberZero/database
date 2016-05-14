@@ -10,6 +10,7 @@ add_executable(zold
 	db/subtables.cxx
 	db/table.cxx
 	lib/bio.cxx
+	lib/fs.cxx
 	lib/file.cxx
 	lib/misc.cxx
 	lib/net.cxx

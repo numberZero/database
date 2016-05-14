@@ -8,6 +8,8 @@
 #include "subtables.hxx"
 #include "srxw.hxx"
 
+static struct db_temporary_t {} db_temporary;
+
 class Database:
 	public SubDB_Teacher,
 	public SubDB_Subject,
@@ -20,6 +22,7 @@ class Database:
 
 private:
 	Rows rows;
+	bool temporary;
 /*
 	Bitset index_teacher_subject;
 	Bitset index_teacher_room;
@@ -46,7 +49,8 @@ private:
 	SRXWLock lock;
 
 public:
-	Database() : rows("") {}
+	Database(std::string const& datadir);
+	Database(std::string const& datadir, db_temporary_t);
 	Id addRow(Id teacher, Id subject, Id room, Id group, Id time);
 
 	void readText(std::string const &filename);
@@ -59,3 +63,5 @@ public:
 	Selection select(SelectionParams const &p);
 	std::size_t remove(SelectionParams const &p);
 };
+
+extern std::unique_ptr<Database> db;

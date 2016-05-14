@@ -1,15 +1,17 @@
 #include <cassert>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include "protocol.hxx"
 #include "db/select.hxx"
 #include "db/db.hxx"
 #include "bio.hxx"
 #include "client.hxx"
-
-extern Database db;
+#include "net.hxx"
 
 NEW_ERROR_CLASS(InvalidRequestException, runtime_error, std);
 
-Client::Client(Socket &&s) :
+Client::Client(File &&s) :
 	socket(std::move(s))
 {
 }
@@ -20,7 +22,7 @@ void Client::sendAnswerHeader(bool success, int mc)
 	std::size_t const size = NetworkType<ResultHeader>::StaticSize;
 	char buffer[size];
 	NetworkType<ResultHeader>::static_serialize(buffer, hdr);
-	writePacket(socket.get(), buffer, size);
+	writePacket(socket, buffer, size);
 }
 
 void Client::sendMessage(int errcode, std::string message)
@@ -31,7 +33,7 @@ void Client::sendMessage(int errcode, std::string message)
 	char *body = buffer.get();
 	std::size_t bytes = NetworkType<ResultMessage>::dynamic_serialize(body, size, msg);
 	assert(size == bytes);
-	writePacket(socket.get(), buffer.get(), size);
+	writePacket(socket, buffer.get(), size);
 }
 
 void Client::sendAnswerHeader(int errcode, std::string message)
@@ -40,13 +42,18 @@ void Client::sendAnswerHeader(int errcode, std::string message)
 	sendMessage(errcode, message);
 }
 
+void Client::flush()
+{
+// Do nothing here; flush is not required with Linux TCP sockets
+}
+
 void Client::select(SelectionParams const &sp)
 {
 #ifndef NDEBUG
 	std::clog << "SELECT called" << std::endl;
 #endif
 	sendAnswerHeader();
-	for(Selection sel(db.select(sp)); sel.isValid(); sel.next())
+	for(Selection sel(db->select(sp)); sel.isValid(); sel.next())
 	{
 		RowData row = sel.getRow().getData();
 		std::size_t size;
@@ -54,33 +61,37 @@ void Client::select(SelectionParams const &sp)
 		std::unique_ptr<char[]> packet(new char[size]);
 		std::size_t bytes = NetworkType<RowData>::dynamic_serialize(packet.get(), size, row);
 		assert(size == bytes);
-		writePacket(socket.get(), packet.get(), size);
+		writePacket(socket, packet.get(), size);
 	}
-	writePacket(socket.get(), nullptr, 0); // end of data
+	writePacket(socket, nullptr, 0); // end of data
+	flush();
 }
 
 void Client::insert(RowData const &row)
 {
-	db.insert(row);
+	db->insert(row);
+	std::clog << "Insert completed" << std::endl;
 	sendAnswerHeader();
+	flush();
 }
 
 void Client::remove(SelectionParams const &rp)
 {
-	db.remove(rp);
+	db->remove(rp);
 	sendAnswerHeader();
+	flush();
 }
 
 void Client::operator() ()
 {
-	std::string pref = "[" + std::to_string(socket.get()) + "]";
+	std::string pref = "[" + std::to_string(socket.get()) + "] ";
 	try
 	{
 		for(;;)
 		{
 			std::size_t rem;
 			std::size_t count;
-			std::unique_ptr<char[]> packet(readPacket(socket.get(), rem));
+			std::unique_ptr<char[]> packet(readPacket(socket, rem));
 #ifndef NDEBUG
 			std::clog << pref + " Packet arrived\n" << std::flush;
 #endif

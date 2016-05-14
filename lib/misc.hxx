@@ -1,6 +1,6 @@
 #pragma once
 #include <iosfwd>
-#include <system_error>
+#include <stdexcept>
 #include <string>
 
 #define NEW_ERROR_CLASS(name,base,basens)  \
