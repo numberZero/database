@@ -47,15 +47,15 @@ protected:
 	void grab(std::size_t index);
 	void drop(std::size_t index);
 
-	bool first(std::size_t &index);
-	bool next(std::size_t &index);
-
 	virtual void first_load(std::size_t index, void *object);
 
 public:
 	BackedTable(std::size_t item_size, std::string const &filename);
 	BackedTable(std::size_t item_size, File &&file);
 	~BackedTable();
+
+	bool first(std::size_t &index) const;
+	bool next(std::size_t &index) const;
 
 	std::size_t size() const;
 };

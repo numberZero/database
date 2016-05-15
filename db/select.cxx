@@ -1,15 +1,19 @@
 #include <cassert>
+#ifndef NDEBUG
+#include <iostream>
+#endif
 #include "db.hxx"
+#include "hashtable.hxx"
 #include "select.hxx"
 
-/*** PreSelection_Real ***/
+/*** PreSelection ***/
 
-PreSelection_Real::PreSelection_Real(Rows const &db) :
+PreSelection::PreSelection(Rows const &db) :
 	rows(db)
 {
 }
 
-Row const *PreSelection_Real::getRow()
+Row const *PreSelection::getRow()
 {
 	return &rows.get(getRowId());
 }
@@ -17,9 +21,13 @@ Row const *PreSelection_Real::getRow()
 /*** PreSelection_Full ***/
 
 PreSelection_Full::PreSelection_Full(Rows const &table) :
-	PreSelection_Real(table),
+	PreSelection(table),
 	index(0)
 {
+#ifndef NDEBUG
+	std::clog << "Using full preselection\n";
+#endif
+	rows.first(index);
 }
 
 Id PreSelection_Full::getRowId()
@@ -29,36 +37,42 @@ Id PreSelection_Full::getRowId()
 
 bool PreSelection_Full::isValid()
 {
-	return index < rows.size();
+	return index != invalid_index;
 }
 
 void PreSelection_Full::next()
 {
-	++index;
+	if(!rows.next(index))
+		index = invalid_index;
 }
 
 /*** PreSelection_SimpleKey ***/
-/*
+
+PreSelection_SimpleKey::PreSelection_SimpleKey(const Rows &db, HashTable::RowIterator iter):
+	PreSelection(db),
+	iterator(iter)
+{
+#ifndef NDEBUG
+	std::clog << "Using simple key preselection\n";
+#endif
+}
+
 Id PreSelection_SimpleKey::getRowId()
 {
 	assert(isValid());
-	return node->rows[index % RowRefList::node_capacity];
+	return *iterator;
 }
 
 bool PreSelection_SimpleKey::isValid()
 {
-	return index < rows->count;
+	return !!iterator;
 }
 
 void PreSelection_SimpleKey::next()
 {
-	assert(isValid());
-	++index;
-	std::size_t shift = index % RowRefList::node_capacity;
-	if(!shift)
-		node = node->next;
+	++iterator;
 }
-*/
+
 /********* Selection *********/
 
 Selection::Selection() :

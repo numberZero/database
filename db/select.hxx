@@ -3,32 +3,29 @@
 #include <string>
 #include "data.hxx"
 #include "dbhelper.hxx"
+#include "hashtable.hxx"
 #include "srxw.hxx"
 #include "struct.hxx"
 
 class PreSelection
 {
+protected:
+	Rows const &rows;
+
+	PreSelection(Rows const &db);
+
 public:
 	virtual ~PreSelection() = default;
+
+	Row const *getRow();
+
 	virtual bool isValid() = 0;
-	virtual Row const *getRow() = 0;
+	virtual Id getRowId() = 0;
 	virtual void next() = 0;
 };
 
-class PreSelection_Real:
-	public PreSelection
-{
-protected:
-	Rows const &rows;
-	PreSelection_Real(Rows const &db);
-
-public:
-	Row const *getRow() override;
-	virtual Id getRowId() = 0;
-};
-
 class PreSelection_Full:
-	public PreSelection_Real
+	public PreSelection
 {
 private:
 	std::size_t index;
@@ -39,32 +36,20 @@ public:
 	void next() override;
 	Id getRowId() override;
 };
-/*
+
 class PreSelection_SimpleKey:
-	public PreSelection_Real
+	public PreSelection
 {
 private:
-	Id id;
-	RowRefList *rows;
-	RowRefList::Node *node;
-	std::size_t index;
+	HashTable::RowIterator iterator;
 
 public:
-	template <typename _Object, typename _Key, typename _Table, typename _HashTable>
-	PreSelection_SimpleKey(Rows const &db, _HashTable &ht, _Table &table, _Key key) :
-		PreSelection_Real(db)
-	{
-		id = ht[key];
-		rows = table[id].rows;
-		node = rows->head;
-		index = 0;
-	}
-
+	PreSelection_SimpleKey(Rows const &db, HashTable::RowIterator iter);
 	bool isValid() override;
 	void next() override;
 	Id getRowId() override;
 };
-*/
+
 class Selection
 {
 	Database *db;

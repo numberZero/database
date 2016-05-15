@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "dbcommon.hxx"
 #include "table.hxx"
 #include "select.hxx"
@@ -24,21 +23,7 @@ class Database:
 private:
 	Rows rows;
 	bool temporary;
-/*
-	Bitset index_teacher_subject;
-	Bitset index_teacher_room;
-	Bitset index_teacher_group;
-	Bitset index_teacher_time;
 
-	Bitset index_subject_room;
-	Bitset index_subject_group;
-	Bitset index_subject_time;
-
-	Bitset index_room_group;
-	Bitset index_room_time;
-
-	Bitset index_group_time;
-*/
 	void readTableRowData_teachers(std::istream &file);
 	void readTableRowData_subjects(std::istream &file);
 	void readTableRowData_rooms(std::istream &file);

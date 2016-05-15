@@ -1,3 +1,6 @@
+#ifndef NDEBUG
+#include <iostream>
+#endif
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -146,6 +149,9 @@ void BackedTable::drop(std::size_t index)
 		throw std::logic_error("Reference counting underflow");
 	if(rc == 0) // last reference dropped
 	{
+#ifndef NDEBUG
+		std::clog << "Last reference dropped to " << index  << std::endl;
+#endif
 		--entry_count;
 		if(free_entries_count >= free_entries_capacity)
 			throw std::runtime_error("Free entries buffer overflow");
@@ -154,13 +160,13 @@ void BackedTable::drop(std::size_t index)
 	}
 }
 
-bool BackedTable::first(std::size_t &index)
+bool BackedTable::first(std::size_t &index) const
 {
 	index = invalid_index;
 	return next(index);
 }
 
-bool BackedTable::next(std::size_t &index)
+bool BackedTable::next(std::size_t &index) const
 {
 	while(++index < capacity)
 		if(get_entry_addr(index)->rc)

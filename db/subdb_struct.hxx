@@ -20,6 +20,8 @@ protected:
 	Id add(Params... params);
 	Id find(Params... params);
 	Id need(Params... params);
+
+	HashTable::RowIterator begin(Params... params);
 };
 
 typedef SubDB_Struct<Room, unsigned> Rooms, SubDB_Room;

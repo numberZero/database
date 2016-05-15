@@ -49,3 +49,10 @@ Id SubDB_Struct< _Object, Params...>::need(Params... params)
 		return id;
 	return add(params...);
 }
+
+template<typename _Object, typename... Params>
+HashTable::RowIterator SubDB_Struct< _Object, Params...>::begin(Params... params)
+{
+	_Object key{params...};
+	return HashTable::RowIterator(HashTable::find(&key));
+}

@@ -41,13 +41,23 @@ private:
 	Node *empty;
 
 	void allocate_chunk();
+	Node *&next_empty(Node *node);
 
 protected:
 	HashTable();
 	~HashTable();
 
+	std::size_t get_node_max_entries() const;
+
 	Node *find(PKey key);
+	Node *&find(Id id);
 	Hash hash(Id id);
+
+	Node *alloc_node();
+	void free_node(Node *node);
+
+	Node *add_node(Node *&chain_head);
+	bool rem_node(Node *&chain_head); ///< \returns whether the chain was removed completely
 
 	void insert(Id object);
 	void erase(Id object);
@@ -57,4 +67,23 @@ protected:
 	virtual PKey key_of(Id id) = 0;
 	virtual Hash hash(PKey key) = 0;
 	virtual bool equal(PKey key1, PKey key2) = 0;
+
+public:
+	class RowIterator
+	{
+	private:
+		Node const *node = nullptr;
+		std::size_t position = 0;
+
+	public:
+		RowIterator() = default;
+		RowIterator(Node const *);
+		RowIterator(RowIterator const &) = default;
+		RowIterator &operator= (RowIterator const &) = default;
+
+		bool operator!= (RowIterator const &) const;
+		bool operator! () const;
+		Id operator* () const;
+		RowIterator &operator++ ();
+	};
 };

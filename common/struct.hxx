@@ -12,6 +12,7 @@ struct StringParam: Param
 {
 	std::string value;
 
+	bool is_key() const;
 	void refine(StringParam const &b);
 	bool check(char const *data) const;
 	void set(std::string const &_value);
@@ -22,20 +23,11 @@ struct IntegerParam: Param
 	long min = 0;
 	long max = 0;
 
+	bool is_key() const;
 	void refine(IntegerParam const &b);
 	bool check(long data) const;
 	void set(long _value);
 	void set(long _min, long _max);
-	void set(std::string const &_value);
-};
-
-struct BooleanParam: Param
-{
-	bool value = false;
-
-	void refine(BooleanParam const &b);
-	bool check(bool data) const;
-	void set(bool _value);
 	void set(std::string const &_value);
 };
 

@@ -3,6 +3,11 @@
 
 /*** StringParam ***/
 
+bool StringParam::is_key() const
+{
+	return is_valid && do_check;
+}
+
 void StringParam::refine(StringParam const &b)
 {
 	do_return |= b.do_return;
@@ -37,6 +42,11 @@ void StringParam::set(std::string const &_value)
 }
 
 /*** IntegerParam ***/
+
+bool IntegerParam::is_key() const
+{
+	return is_valid && do_check && (min == max);
+}
 
 void IntegerParam::refine(IntegerParam const &b)
 {
@@ -86,40 +96,6 @@ void IntegerParam::set(std::string const &_value)
 		set(std::stol(_value));
 	else
 		set(std::stol(_value.substr(0, pos)), std::stol(_value.substr(pos + 1)));
-}
-
-/*** BooleanParam ***/
-
-void BooleanParam::refine(BooleanParam const &b)
-{
-	do_return |= b.do_return;
-	if(!b.do_check)
-		return;
-	if(do_check)
-		is_valid = value == b.value;
-	do_check = true;
-	value = b.value;
-}
-
-bool BooleanParam::check(bool data) const
-{
-	if(!do_check)
-		return true;
-	if(!is_valid)
-		return false;
-	return value == data;
-}
-
-void BooleanParam::set(bool _value)
-{
-	do_check = true;
-	is_valid = true;
-	value = _value;
-}
-
-void BooleanParam::set(std::string const &_value)
-{
-	set(parseBoolean(_value));
 }
 
 /*** SelectionParams ***/

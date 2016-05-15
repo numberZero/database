@@ -20,6 +20,8 @@ protected:
 	Id add(std::string const &name);
 	Id find(std::string const &name);
 	Id need(std::string const &name);
+
+	HashTable::RowIterator begin(std::string const &name);
 };
 
 typedef SubDB_String<Teacher> Teachers, SubDB_Teacher;

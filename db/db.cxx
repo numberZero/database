@@ -239,7 +239,18 @@ Selection Database::select(SelectionParams const &p)
 	std::unique_ptr<PreSelection> s;
 	if(!p.isValid())
 		return Selection();
-	s.reset(new PreSelection_Full(rows)); // slow but always works
+	if(p.teacher.is_key())
+		s.reset(new PreSelection_SimpleKey(rows, SubDB_Teacher::begin(p.teacher.value)));
+	else if(p.subject.is_key())
+		s.reset(new PreSelection_SimpleKey(rows, SubDB_Subject::begin(p.subject.value)));
+	else if(p.room.is_key())
+		s.reset(new PreSelection_SimpleKey(rows, SubDB_Room::begin(p.room.min)));
+	else if(p.group.is_key())
+		s.reset(new PreSelection_SimpleKey(rows, SubDB_Group::begin(p.group.min)));
+	else if(p.day.is_key() && p.lesson.is_key())
+		s.reset(new PreSelection_SimpleKey(rows, SubDB_Time::begin(p.day.min, p.lesson.min)));
+	else
+		s.reset(new PreSelection_Full(rows)); // slow but always works
 	return Selection(*this, p, std::move(s), std::move(guard));
 }
 
@@ -247,17 +258,23 @@ std::size_t Database::remove(SelectionParams const &p)
 {
 	SRXW_WriteLockGuard gurad(lock);
 	std::size_t count = 0;
-	std::unique_ptr<PreSelection_Real> s;
+	std::unique_ptr<PreSelection> s;
 	if(!p.isValid())
 		return 0;
 	s.reset(new PreSelection_Full(rows)); // slow but always works
 	while(s->isValid())
 	{
-		Id row = s->getRowId();
+		Id id = s->getRowId();
 		s->next(); // to be sure iterator won’t break
-		if(!RowReference(this, &rows.get(row)).check(p))
+		Row &row = rows.get(id);
+		if(!RowReference(this, &row).check(p))
 			continue;
-		rows.drop(row); // it always present (unless threads conflict)
+		Teachers::remove_row(id, row.teacher);
+		Subjects::remove_row(id, row.subject);
+		Rooms::remove_row(id, row.room);
+		Groups::remove_row(id, row.group);
+		Times::remove_row(id, row.time);
+		rows.drop(id); // it always present (unless threads conflict)
 		++count;
 	}
 	return count;

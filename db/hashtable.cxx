@@ -32,9 +32,19 @@ HashTable::~HashTable()
 void HashTable::allocate_chunk()
 {
 	Chunk *c2 = reinterpret_cast<Chunk *>(std::malloc(chunk_size));
+	std::memset(c2, 0, chunk_size);
 	c2->next = chunk;
-	c2->insert_id = 0;
 	chunk = c2;
+}
+
+auto HashTable::next_empty(Node *node) -> Node *&
+{
+	return *reinterpret_cast<Node **>(node);
+}
+
+std::size_t HashTable::get_node_max_entries() const
+{
+	return node_entries;
 }
 
 auto HashTable::find(PKey key) -> Node *
@@ -49,20 +59,32 @@ auto HashTable::find(PKey key) -> Node *
 	}
 }
 
+auto HashTable::find(Id id) -> Node *&
+{
+	Hash pos = hash(key_of(id)) % table_entries;
+	Node **pnode = &table[pos];
+	Node *node;
+	while((node = *pnode))
+	{
+		if(node->id == id)
+			return *pnode;
+		pnode = &node->next_samehash;
+	}
+	throw std::out_of_range("Node with given ID not found");
+}
+
 auto HashTable::hash(Id id) -> Hash
 {
 	return hash(key_of(id));
 }
 
-void HashTable::insert(Id object)
+auto HashTable::alloc_node() -> Node *
 {
-	std::size_t pos = hash(object) % table_entries;
-	Node *&place = table[pos];
 	Node *node;
 	if(empty)
 	{ // we have an empty node in the queue
 		node = empty;
-		empty = *reinterpret_cast<Node **>(node);
+		empty = next_empty(node);
 	}
 	else
 	{ // empty nodes queue is empty itself
@@ -75,6 +97,47 @@ void HashTable::insert(Id object)
 			node_size * chunk->insert_id++
 		);
 	}
+	return node;
+}
+
+void HashTable::free_node(Node *node)
+{
+	next_empty(node) = empty;
+	empty = node;
+}
+
+auto HashTable::add_node(Node *&chain_head) -> Node *
+{
+	Node *node = alloc_node();
+	node->id = chain_head->id;
+	node->next_sameid = chain_head;
+	node->next_samehash = chain_head->next_samehash; // necessary as chain_head is somewhere in the samehash chain
+	chain_head = node;
+	return node;
+}
+
+bool HashTable::rem_node(Node *&chain_head)
+{
+	Node *node = chain_head;
+	if(node->next_sameid)
+	{ // shortening chain
+		chain_head = node->next_sameid;
+		free_node(node);
+		return false;
+	}
+	else
+	{ // that was the last node in the chain; removing the chain
+		chain_head = node->next_samehash;
+		free_node(node);
+		return true;
+	}
+}
+
+void HashTable::insert(Id object)
+{
+	std::size_t pos = hash(object) % table_entries;
+	Node *&place = table[pos];
+	Node *node = alloc_node();
 	node->id = object;
 	node->next_samehash = place;
 	node->next_sameid = nullptr;
@@ -100,4 +163,35 @@ Id HashTable::at(PKey key)
 	Id id = get(key);
 	if(id == INVALID_ID)
 		throw std::out_of_range("Object not found in hash-table");
+}
+
+
+HashTable::RowIterator::RowIterator(Node const *_node) :
+	node(_node),
+	position(0)
+{
+}
+
+bool HashTable::RowIterator::operator!=(RowIterator const &b) const
+{
+	return (node == b.node) && (position == b.position);
+}
+
+bool HashTable::RowIterator::operator!() const
+{
+	return !node;
+}
+
+Id HashTable::RowIterator::operator*() const
+{
+	return node->rows[position];
+}
+
+HashTable::RowIterator &HashTable::RowIterator::operator++()
+{
+	if(++position > node->row_count)
+	{
+		node = node->next_sameid;
+		position = 0;
+	}
 }

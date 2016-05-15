@@ -17,4 +17,7 @@ protected:
 	DataTable const &table() const;
 
 	void add_row(Id row, Id to);
+	void remove_row(Id row, Id from);
+
+	RowIterator end();
 };

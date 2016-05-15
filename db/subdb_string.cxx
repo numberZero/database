@@ -50,3 +50,9 @@ Id SubDB_String< _Object>::need(std::string const &name)
 		return id;
 	return add(name);
 }
+
+template<typename _Object>
+HashTable::RowIterator SubDB_String< _Object>::begin(std::string const &name)
+{
+	return HashTable::RowIterator(HashTable::find(name.c_str()));
+}
