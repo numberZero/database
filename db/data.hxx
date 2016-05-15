@@ -4,35 +4,35 @@
 typedef std::uint32_t Id;
 static const Id INVALID_ID = ~(Id)0;
 
-struct Teacher
+struct [[gnu::packed]] Teacher
 {
 	static constexpr std::size_t const name_len = 128;
 	char name[name_len];
 };
 
-struct Subject
+struct [[gnu::packed]] Subject
 {
 	static constexpr std::size_t const name_len = 128;
 	char name[name_len];
 };
 
-struct Room
+struct [[gnu::packed]] Room
 {
 	std::uint16_t number;
 };
 
-struct Group
+struct [[gnu::packed]] Group
 {
 	std::uint16_t number;
 };
 
-struct Time
+struct [[gnu::packed]] Time
 {
 	std::uint16_t day;
 	std::uint16_t lesson;
 };
 
-struct Row
+struct [[gnu::packed]] Row
 {
 	Id teacher;
 	Id subject;

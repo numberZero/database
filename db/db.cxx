@@ -153,9 +153,9 @@ void writeTableRowData(std::ostream &file, Row const &object)
 }
 
 template <typename _Object>
-void writeTableRowData(std::ostream &file, Container<_Object> const &container)
+void writeTableRowData(std::ostream &file, _Object const &data)
 {
-	writeTableRowData(file, container.data);
+	writeTableRowData(file, data);
 }
 
 template <typename _Object>

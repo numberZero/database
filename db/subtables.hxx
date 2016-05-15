@@ -1,10 +1,9 @@
 #pragma once
 #pragma once
 #include <iostream>
-#include "dbcommon.hxx"
+#include "data.hxx"
 #include "table.hxx"
 #include "hashtable.hxx"
-#include "dbhelper.hxx"
 
 template <typename _Object, typename _Key, typename... Params>
 class SubDB
@@ -19,27 +18,14 @@ public:
 
 private:
 	friend Index;
-	Key operator() (Id id)
-	{
-		return getKey(data.get(id));
-	}
+	Key operator() (Id id);
 
 protected:
 	Data data;
 	Index index;
-	void readTableRowData(std::istream &file);
 
-	SubDB(std::string const &file) :
-		data(file),
-		index(*this)
-	{
-	}
-
-	SubDB(File &&file) :
-		data(std::move(file)),
-		index(*this)
-	{
-	}
+	SubDB(std::string const &file);
+	SubDB(File &&file);
 
 public:
 	Id add(Params... params);

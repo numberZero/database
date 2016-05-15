@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 project(zolden)
 
+option(USE_EXCLUSIVE_LOCK "Disallow requests to be processed simultaneously" OFF)
+option(USE_MANUAL_TCP_FLUSH "Flush TCP stream manually instead of system default settings" OFF)
+option(DISCONNECT_ON_INVALID_REQUEST "Disconnect anyone who have sent an incorrect request" OFF)
+
 add_executable(zold
 	common/struct.cxx
 	db/db.cxx
@@ -77,6 +81,19 @@ target_compile_definitions(zold PUBLIC
 target_compile_definitions(zol PUBLIC
 	_POSIX_C_SOURCE=200809L
 )
+
+if(USE_EXCLUSIVE_LOCK)
+	target_compile_definitions(zold PRIVATE USE_EXCLUSIVE_LOCK)
+endif()
+
+if(USE_MANUAL_TCP_FLUSH)
+	target_compile_definitions(zol PRIVATE USE_MANUAL_TCP_FLUSH)
+	target_compile_definitions(zold PRIVATE USE_MANUAL_TCP_FLUSH)
+endif()
+
+if(DISCONNECT_ON_INVALID_REQUEST)
+	target_compile_definitions(zold PRIVATE DISCONNECT_ON_INVALID_REQUEST)
+endif()
 
 target_link_libraries(zold PUBLIC
 	pthread

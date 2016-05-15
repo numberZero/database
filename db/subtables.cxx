@@ -1,4 +1,6 @@
 #include "subtables.hxx"
+#include "dbcommon.hxx"
+#include "dbhelper.hxx"
 
 template class SubDB<Teacher, char const *, std::string const &>;
 template class SubDB<Subject, char const *, std::string const &>;
@@ -27,6 +29,27 @@ struct make<_Object, std::string const &>
 	}
 };
 
+
+template <typename _Object, typename _Key, typename... Params>
+SubDB<_Object, _Key, Params...>::SubDB(const std::__cxx11::string &file):
+	data(file),
+	index(*this)
+{
+}
+
+template <typename _Object, typename _Key, typename... Params>
+SubDB<_Object, _Key, Params...>::SubDB(File && file):
+	data(std::move(file)),
+	index(*this)
+{
+}
+
+template <typename _Object, typename _Key, typename... Params>
+_Key SubDB<_Object, _Key, Params...>::operator()(Id id)
+{
+	return getKey(data.get(id));
+}
+
 template <typename _Object, typename _Key, typename... Params>
 Id SubDB<_Object, _Key, Params...>::add(Params... params)
 {
@@ -45,7 +68,7 @@ Id SubDB<_Object, _Key, Params...>::find(Params... params)
 template <typename _Object, typename _Key, typename... Params>
 Id SubDB<_Object, _Key, Params...>::need(Params... params)
 {
-	Id *id = index.get(getKey(params...));
+	Id const *id = index.get(getKey(params...));
 	if(id)
 		return *id;
 	return add(params...);

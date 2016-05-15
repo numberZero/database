@@ -9,20 +9,6 @@ class Database;
 template <typename _Object>
 struct Table;
 
-template <typename _Data>
-struct Container
-{
-	std::atomic<std::int16_t> ref_count;
-	_Data data;
-
-	Container() = default;
-
-	Container(_Data &&contents) :
-		data(contents)
-	{
-	}
-};
-
 typedef Table<Row> Rows;
 
 class RowReference

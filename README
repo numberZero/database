@@ -10,9 +10,9 @@ cd build
 cmake ..
 make
 
-== Preprocessor defines ==
-For server:
-- USE_EXCLUSIVE_LOCK - disallow requests to be processed simultaneously
+== Options ==
+- USE_EXCLUSIVE_LOCK [server] - disallow requests to be processed simultaneously
     instead of default SRXW (shared read or exclusive write) policy
-- USE_MANUAL_TCP_FLUSH - instead of system default settings
-- DISCONNECT_ON_INVALID_REQUEST - ...
+- USE_MANUAL_TCP_FLUSH [server, client] - instead of system default settings
+    note: currently client is unaware of this option
+- DISCONNECT_ON_INVALID_REQUEST [server]- ...
