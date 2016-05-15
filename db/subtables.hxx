@@ -6,26 +6,23 @@
 #include "hashtable.hxx"
 
 template <typename _Object, typename _Key, typename... Params>
-class SubDB
+class SubDB :
+	protected HashTable
 {
 public:
 	typedef _Object Object;
 	typedef _Key Key;
-	typedef SubDB<Object, Key, Params...> Self;
-
 	typedef Table<Object> Data;
-	typedef HashTable<Id, Key, Self> Index;
-
-private:
-	friend Index;
-	Key operator() (Id id);
 
 protected:
 	Data data;
-	Index index;
 
 	SubDB(std::string const &file);
 	SubDB(File &&file);
+
+	PKey key_of(Id id) override;
+	Hash hash(PKey key) override;
+	bool equal(PKey key1, PKey key2) override;
 
 public:
 	Id add(Params... params);

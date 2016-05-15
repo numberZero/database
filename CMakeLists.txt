@@ -3,12 +3,14 @@ project(zolden)
 
 option(USE_EXCLUSIVE_LOCK "Disallow requests to be processed simultaneously" OFF)
 option(USE_MANUAL_TCP_FLUSH "Flush TCP stream manually instead of system default settings" OFF)
+option(USE_TEMPORARY_FOR_KEY "Use a temporary expression for a temporary key (compiler may complain)" OFF)
 option(DISCONNECT_ON_INVALID_REQUEST "Disconnect anyone who have sent an incorrect request" OFF)
 
 add_executable(zold
 	common/struct.cxx
 	db/db.cxx
 	db/dbhelper.cxx
+	db/hashers.cxx
 	db/hashtable.cxx
 	db/select.cxx
 	db/subtables.cxx
@@ -89,6 +91,10 @@ endif()
 if(USE_MANUAL_TCP_FLUSH)
 	target_compile_definitions(zol PRIVATE USE_MANUAL_TCP_FLUSH)
 	target_compile_definitions(zold PRIVATE USE_MANUAL_TCP_FLUSH)
+endif()
+
+if(USE_TEMPORARY_FOR_KEY)
+	target_compile_definitions(zold PRIVATE USE_TEMPORARY_FOR_KEY)
 endif()
 
 if(DISCONNECT_ON_INVALID_REQUEST)

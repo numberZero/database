@@ -2,34 +2,6 @@
 #include "dbcommon.hxx"
 #include "db.hxx"
 
-/*** RowRefList ***/
-/*
-RowRefList::~RowRefList()
-{
-	Node *node = head;
-	while(node)
-	{
-		Node *next = node->next;
-		delete node;
-		node = next;
-	}
-}
-
-void RowRefList::addRow(Id row)
-{
-	std::size_t idx = count % node_capacity;
-	if(!idx)
-	{
-		Node *node = new Node;
-		node->next = head;
-		head = node;
-	}
-	head->rows.get(idx) = row;
-	++count;
-}
-*/
-/*** RowReference ***/
-
 RowReference::RowReference(Database const *database, Row const *prow) :
 	db(database),
 	row(prow)
@@ -88,46 +60,4 @@ bool RowReference::check(SelectionParams const &sp) const
 		sp.group.check(getGroup()) &&
 		sp.day.check(getDay()) &&
 		sp.lesson.check(getLesson());
-}
-
-/*** getKey ***/
-
-char const *getKey(Teacher const &object)
-{
-	return object.name;
-}
-
-char const *getKey(Subject const &object)
-{
-	return object.name;
-}
-
-uint_fast32_t getKey(Room const &object)
-{
-	return getKey(object.number);
-}
-
-uint_fast32_t getKey(Group const &object)
-{
-	return getKey(object.number);
-}
-
-uint_fast32_t getKey(Time const &object)
-{
-	return getKey(object.day, object.lesson);
-}
-
-char const *getKey(std::string name)
-{
-	return name.c_str();
-}
-
-std::uint_fast32_t getKey(std::uint16_t number)
-{
-	return number;
-}
-
-std::uint_fast32_t getKey(std::uint16_t day, std::uint16_t lesson)
-{
-	return (day << 16) | lesson;
 }

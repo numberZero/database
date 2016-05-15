@@ -134,7 +134,7 @@ void const *BackedTable::get(std::size_t index) const
 void BackedTable::grab(std::size_t index)
 {
 	Entry *entry(get_entry(index));
-	if(++entry->rc < 0) // overflow
+	if(!++entry->rc) // overflow
 		throw std::range_error("Reference counting overflow");
 }
 

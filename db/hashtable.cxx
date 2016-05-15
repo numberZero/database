@@ -1,56 +1,103 @@
 #include "hashtable.hxx"
+#include <cassert>
+#include <cstdlib>
 
-template<>
-bool ht_equal<char const *>(char const *key1, char const *key2)
+HashTable::HashTable() :
+	node_entries(0x00000010),
+	chunk_entries(0x00001000),
+	table_entries(0x00010000),
+	node_size(sizeof(Node) + sizeof(Id[node_entries])),
+	chunk_size(sizeof(Chunk) + node_size * chunk_entries),
+	table_size(sizeof(Node *) * table_entries),
+	table(nullptr),
+	chunk(nullptr),
+	empty(nullptr)
 {
-	return !std::strcmp(key1, key2);
+	table = reinterpret_cast<Node **>(std::malloc(table_size));
+	std::memset(table, 0, table_size);
+	allocate_chunk(); // we must have at least one data chunk
 }
 
-template<>
-bool ht_equal<std::uint16_t>(std::uint16_t key1, std::uint16_t key2)
+HashTable::~HashTable()
 {
-	return key1 == key2;
-}
-
-template<>
-bool ht_equal<std::uint32_t>(std::uint32_t key1, std::uint32_t key2)
-{
-	return key1 == key2;
-}
-
-template<>
-bool ht_equal<std::uint64_t>(std::uint64_t key1, std::uint64_t key2)
-{
-	return key1 == key2;
-}
-
-template<>
-std::size_t ht_hash<char const *>(const char *key)
-{
-	std::size_t value = 0;
-	while(*key)
+	std::free(table);
+	while(chunk)
 	{
-		value += *key;
-		value ^= (value << 3) | ((value >> 7) & 7);
-		++key;
+		Chunk *c2 = chunk->next;
+		std::free(chunk);
+		chunk = c2;
 	}
-	return value;
 }
 
-template<>
-std::size_t ht_hash<std::uint16_t>(std::uint16_t key)
+void HashTable::allocate_chunk()
 {
-	return key;
+	Chunk *c2 = reinterpret_cast<Chunk *>(std::malloc(chunk_size));
+	c2->next = chunk;
+	c2->insert_id = 0;
+	chunk = c2;
 }
 
-template<>
-std::size_t ht_hash<std::uint32_t>(std::uint32_t key)
+auto HashTable::find(PKey key) -> Node *
 {
-	return key;
+	Hash pos = hash(key) % table_entries;
+	Node *node = table[pos];
+	while(node)
+	{
+		if(equal(key, key_of(node->id)))
+			return node;
+		node = node->next_samehash;
+	}
 }
 
-template<>
-std::size_t ht_hash<std::uint64_t>(std::uint64_t key)
+auto HashTable::hash(Id id) -> Hash
 {
-	return key;
+	return hash(key_of(id));
+}
+
+void HashTable::insert(Id object)
+{
+	std::size_t pos = hash(object) % table_entries;
+	Node *&place = table[pos];
+	Node *node;
+	if(empty)
+	{ // we have an empty node in the queue
+		node = empty;
+		empty = *reinterpret_cast<Node **>(node);
+	}
+	else
+	{ // empty nodes queue is empty itself
+		if(chunk->insert_id >= chunk_entries) // only == is possible
+			allocate_chunk();
+		// now we certainly have some space in the current memory chunk
+		node = reinterpret_cast<Node *>(
+			reinterpret_cast<char *>(chunk) +
+			sizeof(Chunk) +
+			node_size * chunk->insert_id++
+		);
+	}
+	node->id = object;
+	node->next_samehash = place;
+	node->next_sameid = nullptr;
+	node->row_count = 0;
+	place = node;
+}
+/*
+void HashTable::erase(Id object)
+{
+
+}
+*/
+Id HashTable::get(PKey key)
+{
+	Node *node = find(key);
+	if(!node)
+		return INVALID_ID;
+	return node->id;
+}
+
+Id HashTable::at(PKey key)
+{
+	Id id = get(key);
+	if(id == INVALID_ID)
+		throw std::out_of_range("Object not found in hash-table");
 }

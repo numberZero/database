@@ -15,7 +15,7 @@ static std::size_t const invalid_index = static_cast<std::size_t>(-1);
 class BackedTable
 {
 private:
-	typedef std::int16_t RefCount;
+	typedef std::uint16_t RefCount;
 
 	struct Entry
 	{
