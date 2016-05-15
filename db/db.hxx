@@ -5,7 +5,8 @@
 #include "select.hxx"
 #include "hashtable.hxx"
 #include "dbhelper.hxx"
-#include "subtables.hxx"
+#include "subdb_string.hxx"
+#include "subdb_struct.hxx"
 #include "srxw.hxx"
 
 static struct db_temporary_t {} db_temporary;

@@ -182,11 +182,11 @@ void Database::writeText(std::ostream &file)
 	file << "DATABASE\n";
 	file << "\n";
 #define writeTable(file, table) writeTable(file, table, #table)
-	writeTable(file, Teachers::data);
-	writeTable(file, Subjects::data);
-	writeTable(file, Rooms::data);
-	writeTable(file, Groups::data);
-	writeTable(file, Times::data);
+	writeTable(file, Teachers::table());
+	writeTable(file, Subjects::table());
+	writeTable(file, Rooms::table());
+	writeTable(file, Groups::table());
+	writeTable(file, Times::table());
 #undef writeTable
 	writeTable(file,  rows, "entries");
 	file << "END\n";
@@ -214,27 +214,11 @@ void Database::printDB(std::ostream &file, int width)
 Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
 {
 	Id id = rows.insert(Row{teacher, subject, room, group, time});
-/*
-	Teachers::data[teacher].addRow(id);
-	Subjects::data[subject].addRow(id);
-	Rooms::data[room].addRow(id);
-	Groups::data[group].addRow(id);
-	Times::data[time].addRow(id);
-
-	index_teacher_subject.set(teacher, subject);
-	index_teacher_room.set(teacher, room);
-	index_teacher_group.set(teacher, group);
-	index_teacher_time.set(teacher, time);
-
-	index_subject_room.set(subject, room);
-	index_subject_group.set(subject, group);
-	index_subject_time.set(subject, time);
-
-	index_room_group.set(room, group);
-	index_room_time.set(room, time);
-
-	index_group_time.set(group, time);
-*/
+	Teachers::add_row(id, teacher);
+	Subjects::add_row(id, subject);
+	Rooms::add_row(id, room);
+	Groups::add_row(id, group);
+	Times::add_row(id, time);
 	return id;
 }
 
