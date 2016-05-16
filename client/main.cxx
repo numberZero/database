@@ -24,9 +24,9 @@ private:
 	bool stopping;
 	std::mutex mtx;
 	std::condition_variable cv;
-	std::thread back;
 	std::list<PNQuery> queries_in_progress;
 	QueryReader rd;
+	std::thread back;
 
 	void run2()
 	{
