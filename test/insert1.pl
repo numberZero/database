@@ -66,7 +66,7 @@ print STDERR "Inserting\n";
 system "$shfilename_insert >/dev/null";
 
 print STDERR "Selecting\n";
-system "$zol <<<'print;' | ./test/print2csv.pl | sort -u > $csvfilename_got";
+system "$zol <<<'print;' | ./test/print2csv.pl | sort > $csvfilename_got";
 
 print STDERR "Comparing\n";
 $result = system "diff -q $csvfilename_sorted $csvfilename_got";

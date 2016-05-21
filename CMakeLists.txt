@@ -16,6 +16,7 @@ add_executable(zold
 	db/subdb_struct.cxx
 	db/subtable.cxx
 	db/table.cxx
+	lib/args.cxx
 	lib/bio.cxx
 	lib/fs.cxx
 	lib/file.cxx
@@ -32,6 +33,7 @@ add_executable(zol
 	client/reader.cxx
 	client/tokenizer.cxx
 	client/query.cxx
+	lib/args.cxx
 	lib/bio.cxx
 	lib/file.cxx
 	lib/misc.cxx

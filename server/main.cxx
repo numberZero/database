@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+#include "args.hxx"
 #include "db/db.hxx"
 #include "client.hxx"
 #include "config.hxx"
@@ -21,8 +22,6 @@ std::atomic<bool> running(true);
 std::unique_ptr<Database> db;
 File server;
 AddressIPv4 address;
-std::map<std::string, std::string> named_arguments;
-std::list<std::string> positional_arguments;
 
 void emptySignalHandler(int signal)
 {
@@ -58,51 +57,14 @@ void daemonize()
 	std::exit(0);
 }
 
-void readArguments(int argc, char **argv)
-{
-	int k;
-	std::string key;
-	for(k = 1; k != argc; ++k)
-	{
-		std::string value(argv[k]);
-		if(value.substr(0, 2) == "--")
-		{
-			if(value == "--")
-				break;
-			key = value.substr(2);
-			named_arguments.emplace(key, "");
-			continue;
-		}
-		if(!key.empty())
-			named_arguments.at(key) = std::move(value);
-		else
-			positional_arguments.push_back(std::move(value));
-		key.clear();
-	}
-}
-
-bool hasArgument(std::string name)
-{
-	auto iter = named_arguments.find(name);
-	return iter != named_arguments.end();
-}
-
-std::string getArgument(std::string name, std::string def = "")
-{
-	auto iter = named_arguments.find(name);
-	if(iter != named_arguments.end())
-		return iter->second;
-	return def;
-}
-
 int main(int argc, char **argv)
 {
 	setupSignalHandling();
-	readArguments(argc, argv);
-	std::string txtfile = getArgument("preload");
-	std::string datadir = getArgument("data");
-	std::string addr = getArgument("addr", zolden_addr);
-	std::string port = getArgument("port", std::to_string(zolden_port));
+	arguments::read(argc, argv);
+	std::string txtfile = arguments::get("preload");
+	std::string datadir = arguments::get("data");
+	std::string addr = arguments::get("addr", zolden_addr);
+	std::string port = arguments::get("port", std::to_string(zolden_port));
 	std::clog << "Zolden database manipulation program" << std::endl;
 	if(datadir.empty())
 	{
@@ -121,7 +83,7 @@ int main(int argc, char **argv)
 	syserror_throwif(listen(server.get(), 20), "Can't listen on a socket");
 	address = GetSocketAddressIPv4(server);
 	std::clog << "Listening at " << std::to_string(address) << std::endl;
-	if(hasArgument("daemon"))
+	if(arguments::present("daemon"))
 	{
 		std::clog << "Going into background..." << std::endl;
 		daemonize();

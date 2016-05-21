@@ -59,7 +59,7 @@ sub start_server {
 	$_ = <CHILD>;
 	m/^READY ([0-9]+)/ or die "Server refused to start: $_";
 	$port = int($1);
-	defined $client and $zol = "$client 127.0.0.1 $port";
+	defined $client and $zol = "$client --addr 127.0.0.1 --port $port";
 	print STDERR "Server started at port $port, PID $pid\n";
 }
 
