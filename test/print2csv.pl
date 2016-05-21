@@ -12,7 +12,6 @@ sub readitem { # reads into global %row
 while(<>) {
 	if(m/\*\*\* Row (\d+) \*\*\*\n$/) { # row start
 		%row = ();
-#		print "Row $1: ";
 		readitem "teacher";
 		readitem "subject";
 		readitem "room";

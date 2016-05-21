@@ -189,7 +189,7 @@ Id HashTable::RowIterator::operator*() const
 
 HashTable::RowIterator &HashTable::RowIterator::operator++()
 {
-	if(++position > node->row_count)
+	if(++position >= node->row_count)
 	{
 		node = node->next_sameid;
 		position = 0;
