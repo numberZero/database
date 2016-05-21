@@ -121,6 +121,12 @@ void processAnswerHeader(File &socket, std::ostream &cout)
 	throw RemoteError(str.str());
 }
 
+void NetworkQuery::perform()
+{
+	send();
+	recv();
+}
+
 char const *QuerySelect::name() const
 {
 	if(re)
@@ -141,9 +147,13 @@ char const *QueryInsert::name() const
 	return "INSERT";
 }
 
-void QueryInsert::perform()
+void QueryInsert::send()
 {
 	sendQuery<RowData>(global_state.connection, QueryType::Insert, row);
+}
+
+void QueryInsert::recv()
+{
 	processAnswerHeader(global_state.connection, global_state.cout);
 }
 
@@ -152,9 +162,13 @@ char const *QueryRemove::name() const
 	return "REMOVE";
 }
 
-void QueryRemove::perform()
+void QueryRemove::send()
 {
 	sendQuery<SelectionParams>(global_state.connection, QueryType::Remove, params);
+}
+
+void QueryRemove::recv()
+{
 	processAnswerHeader(global_state.connection, global_state.cout);
 }
 
@@ -163,11 +177,17 @@ char const *QueryPrint::name() const
 	return "PRINT";
 }
 
-void QueryPrint::perform()
+void QueryPrint::send()
 {
-	global_state.params.clearReturn();
-	global_state.params.refine(params);
-	sendQuery<SelectionParams>(global_state.connection, QueryType::Select, global_state.params);
+	SelectionParams par2 = global_state.params;
+	par2.clearReturn();
+	par2.refine(params);
+	params = par2;
+	sendQuery<SelectionParams>(global_state.connection, QueryType::Select, params);
+}
+
+void QueryPrint::recv()
+{
 	processAnswerHeader(global_state.connection, global_state.cout);
 	for(std::size_t id = 1;; ++id)
 	{
@@ -179,7 +199,7 @@ void QueryPrint::perform()
 		}
 		global_state.cout << "*** Row " << id << " ***\n";
 #define PRINTPAR(name) \
-		if(global_state.params.name.do_return) \
+		if(params.name.do_return) \
 			global_state.cout << #name ": " << row.name << "\n"
 		PRINTPAR(teacher);
 		PRINTPAR(subject);

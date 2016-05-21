@@ -34,43 +34,53 @@ struct QuerySelect: Query
 	char const *name() const override;
 };
 
-struct QueryInsert: Query
+struct NetworkQuery: Query
+{
+	void perform() override;
+	virtual void send() = 0;
+	virtual void recv() = 0;
+};
+
+struct QueryInsert: NetworkQuery
 {
 	RowData row;
-	void perform() override;
 	char const *name() const override;
+	void send() override;
+	void recv() override;
 };
 
-struct QueryRemove: Query
+struct QueryRemove: NetworkQuery
 {
 	SelectionParams params;
-	void perform() override;
 	char const *name() const override;
+	void send() override;
+	void recv() override;
 };
 
-struct QueryPrint: Query
+struct QueryPrint: NetworkQuery
 {
 	SelectionParams params;
-	void perform() override;
 	char const *name() const override;
+	void send() override;
+	void recv() override;
 };
 
-struct QueryCommand: Query
+struct CommandQuery: Query
 {
 	Command const command;
-	QueryCommand(Command cmd): command(cmd) {}
+	CommandQuery(Command cmd): command(cmd) {}
 };
 
-struct QueryHelp: QueryCommand
+struct QueryHelp: CommandQuery
 {
-	QueryHelp() : QueryCommand(Command::Help) {}
+	QueryHelp() : CommandQuery(Command::Help) {}
 	void perform() override;
 	char const *name() const override;
 };
 
-struct QueryExit: QueryCommand
+struct QueryExit: CommandQuery
 {
-	QueryExit() : QueryCommand(Command::Help) {}
+	QueryExit() : CommandQuery(Command::Help) {}
 	void perform() override;
 	char const *name() const override;
 };

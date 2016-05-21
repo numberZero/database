@@ -27,7 +27,8 @@ PreSelection_Full::PreSelection_Full(Rows const &table) :
 #ifndef NDEBUG
 	std::clog << "Using full preselection\n";
 #endif
-	rows.first(index);
+	if(!rows.first(index))
+		index = invalid_index;
 }
 
 Id PreSelection_Full::getRowId()

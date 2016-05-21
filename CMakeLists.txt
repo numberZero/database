@@ -100,6 +100,10 @@ if(DISCONNECT_ON_INVALID_REQUEST)
 	target_compile_definitions(zold PRIVATE DISCONNECT_ON_INVALID_REQUEST)
 endif()
 
+target_link_libraries(zol PUBLIC
+	pthread
+)
+
 target_link_libraries(zold PUBLIC
 	pthread
 )
