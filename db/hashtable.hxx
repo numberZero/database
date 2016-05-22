@@ -44,7 +44,7 @@ private:
 	Node *&next_empty(Node *node);
 
 protected:
-	HashTable();
+	HashTable(std::size_t default_node_entries = 16);
 	~HashTable();
 
 	std::size_t get_node_max_entries() const;

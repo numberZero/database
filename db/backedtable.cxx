@@ -1,3 +1,5 @@
+#include <cassert>
+#include <cstring>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -9,7 +11,7 @@
 #include "backedtable.hxx"
 #include "rtcheck.hxx"
 
-static int counter = 0;
+#define FREE_ENTRIES_FACTOR	3/4	// no parenthesis here!
 
 static Id increase_capacity(Id capacity)
 {
@@ -70,6 +72,42 @@ void BackedTable::load()
 		}
 		next_insert_id = k + 1;
 	}
+}
+
+void BackedTable::vacuum()
+{
+#ifndef NDEBUG
+	std::clog << "Vacuuming..." << std::endl;
+#endif
+	for(Id to = 0; to < entry_count; ++to)
+	{
+		Entry *a;
+		Entry *b = get_entry_addr(to);
+		if(b->rc)
+			continue;
+		assert(entry_count <= next_insert_id);
+		assert(next_insert_id >= 1);
+		Id from;
+		for(from = next_insert_id - 1; from > to; --from)
+		{
+			a = get_entry_addr(from);
+			if(a->rc)
+				break;
+		}
+		assert(from >= to);
+		if(from == to)
+		{
+			next_insert_id = to;
+			break;
+		}
+		assert(a->rc);
+		std::memcpy(b, a, entry_size);
+		change_id(from, to);
+		a->rc = 0; // b has proper ref count already, so reset this
+		next_insert_id = from;
+	}
+	free_entries_start = 0;
+	free_entries_count = 0;
 }
 
 BackedTable::~BackedTable()
@@ -162,8 +200,17 @@ bool BackedTable::drop(Id index)
 		std::clog << "Last reference dropped to " << index  << std::endl;
 #endif
 		--entry_count;
-		if(free_entries_count >= free_entries_capacity)
-			throw std::runtime_error("Free entries buffer overflow");
+		assert(free_entries_count <= free_entries_capacity);
+		if(free_entries_count == free_entries_capacity)
+		{
+#ifndef NDEBUG
+			std::clog << "Emergency vacuuming, expect some lag" << std::endl;
+#endif
+			vacuum();
+		}
+		else if(free_entries_count >= free_entries_capacity * FREE_ENTRIES_FACTOR)
+			request_vacuuming();
+		assert(free_entries_count < free_entries_capacity);
 		std::size_t pos = (free_entries_start + free_entries_count++) % free_entries_capacity;
 		free_entries_buffer[pos] = index;
 		return true;
@@ -173,13 +220,13 @@ bool BackedTable::drop(Id index)
 
 bool BackedTable::first(Id &index) const
 {
-	index = invalid_index;
+	index = next_insert_id;
 	return next(index);
 }
 
 bool BackedTable::next(Id &index) const
 {
-	while(++index < capacity)
+	while(index-- > 0)
 		if(get_entry_addr(index)->rc)
 			return true;
 	return false;
@@ -187,6 +234,18 @@ bool BackedTable::next(Id &index) const
 
 void BackedTable::first_load(Id index, void *object)
 {
+}
+
+void BackedTable::change_id(Id from, Id to)
+{
+	throw std::logic_error("Id changing is not supported by this table");
+}
+
+void BackedTable::request_vacuuming()
+{
+#ifndef NDEBUG
+	std::clog << "Vacuuming requested" << std::endl;
+#endif
 }
 
 Id BackedTable::size() const

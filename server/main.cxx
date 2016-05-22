@@ -22,10 +22,17 @@ std::atomic<bool> running(true);
 std::unique_ptr<Database> db;
 File server;
 AddressIPv4 address;
+pthread_t main_thread;
 
-void emptySignalHandler(int signal)
+void mySignalHandler(int signal)
 {
 	std::clog << "Signal caught: " + std::to_string(signal) << std::endl;
+	if(!pthread_equal(pthread_self(), main_thread))
+	{
+		std::clog << "Redirecting signal to the main thread" << std::endl;
+		pthread_sigqueue(main_thread, signal, {0});
+		return;
+	}
 	switch(signal)
 	{
 		case SIGINT:
@@ -42,7 +49,7 @@ void setupSignalHandling()
 {
 	struct sigaction act;
 	std::memset(&act, 0, sizeof(act));
-	act.sa_handler = emptySignalHandler;
+	act.sa_handler = mySignalHandler;
 	sigaction(SIGPIPE, &act, nullptr);
 	sigaction(SIGINT, &act, nullptr);
 }
@@ -59,6 +66,7 @@ void daemonize()
 
 int main(int argc, char **argv)
 {
+	main_thread = pthread_self();
 	setupSignalHandling();
 	arguments::read(argc, argv);
 	std::string txtfile = arguments::get("preload");

@@ -43,9 +43,12 @@ protected:
 	bool drop(Id index); ///< \returns whether the item was deleted
 
 	virtual void first_load(Id index, void *object);
+	virtual void change_id(Id from, Id to);
+	virtual void request_vacuuming();
 
 	BackedTable(std::size_t item_size, File &&file, defer_load_t);
 	void load();
+	void vacuum();
 
 public:
 	BackedTable(std::size_t item_size, std::string const &filename);

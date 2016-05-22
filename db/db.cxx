@@ -269,10 +269,9 @@ std::size_t Database::remove(SelectionParams const &p)
 	if(!p.isValid())
 		return 0;
 	s.reset(new PreSelection_Full(*this)); // slow but always works
-	while(s->isValid())
+	for(; s->isValid(); s->next())
 	{
 		Id id = s->getRowId();
-		s->next(); // to be sure iterator won’t break
 		Row &row = Rows::table().get(id);
 		if(!RowReference(this, &row).check(p))
 			continue;

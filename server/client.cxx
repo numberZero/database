@@ -157,14 +157,21 @@ void Client::operator() ()
 	}
 	catch(std::system_error const &e)
 	{
-		std::clog << pref + "Client system error: " << e.what() << " (" << e.code() << ")" << std::endl;
+		std::clog << pref + "Client thread system error: " << e.what() << " (" << e.code() << ")" << std::endl;
+	}
+	catch(std::logic_error const &e)
+	{
+		std::clog << pref + "Database error: " << e.what() << std::endl;
+		std::terminate();
 	}
 	catch(std::exception const &e)
 	{
-		std::clog << pref + "Client error: " << e.what() << std::endl;
+		std::clog << pref + "Unknown client thread error: " << e.what() << std::endl;
+		std::terminate();
 	}
 	catch(...)
 	{
-		std::clog << pref + "Client error" << std::endl;
+		std::clog << pref + "Non-standard client thread error" << std::endl;
+		std::terminate();
 	}
 }

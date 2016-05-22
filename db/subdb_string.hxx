@@ -1,9 +1,9 @@
 #pragma once
 #include "subtable.hxx"
 
-template <typename _Object>
+template <typename _Object, Id Row::*pid>
 class SubDB_String :
-	protected Subtable<_Object>
+	public Subtable<_Object, pid>
 {
 private:
 	typedef HashTable::PKey PKey;
@@ -14,8 +14,8 @@ private:
 	bool equal(PKey key1, PKey key2) override;
 
 protected:
-	using Subtable<_Object>::Subtable;
-	using Subtable<_Object>::table;
+	using Subtable<_Object, pid>::Subtable;
+	using Subtable<_Object, pid>::table;
 
 	Id add(std::string const &name);
 	Id find(std::string const &name);
@@ -24,5 +24,5 @@ protected:
 	HashTable::RowIterator begin(std::string const &name);
 };
 
-typedef SubDB_String<Teacher> Teachers, SubDB_Teacher;
-typedef SubDB_String<Subject> Subjects, SubDB_Subject;
+typedef SubDB_String<Teacher, &Row::teacher> Teachers, SubDB_Teacher;
+typedef SubDB_String<Subject, &Row::subject> Subjects, SubDB_Subject;

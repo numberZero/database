@@ -1,9 +1,9 @@
 #pragma once
 #include "subtable.hxx"
 
-template <typename _Object, typename... Params>
+template <typename _Object, Id Row::*pid, typename... Params>
 class SubDB_Struct :
-	protected Subtable<_Object>
+	public Subtable<_Object, pid>
 {
 private:
 	typedef HashTable::PKey PKey;
@@ -14,8 +14,8 @@ private:
 	bool equal(PKey key1, PKey key2) override;
 
 protected:
-	using Subtable<_Object>::Subtable;
-	using Subtable<_Object>::table;
+	using Subtable<_Object, pid>::Subtable;
+	using Subtable<_Object, pid>::table;
 
 	Id add(Params... params);
 	Id find(Params... params);
@@ -24,7 +24,7 @@ protected:
 	HashTable::RowIterator begin(Params... params);
 };
 
-typedef SubDB_Struct<Room, std::uint32_t> Rooms, SubDB_Room;
-typedef SubDB_Struct<Group, std::uint32_t> Groups, SubDB_Group;
-typedef SubDB_Struct<Time, std::uint16_t, std::uint16_t> Times, SubDB_Time;
-typedef SubDB_Struct<Row, Id, Id, Id, Id, Id> Rows, SubDB_Row;
+typedef SubDB_Struct<Room, &Row::room, std::uint32_t> Rooms, SubDB_Room;
+typedef SubDB_Struct<Group, &Row::group, std::uint32_t> Groups, SubDB_Group;
+typedef SubDB_Struct<Time, &Row::time, std::uint16_t, std::uint16_t> Times, SubDB_Time;
+typedef SubDB_Struct<Row, nullptr, Id, Id, Id, Id, Id> Rows, SubDB_Row;

@@ -2,8 +2,8 @@
 #include <cassert>
 #include <cstdlib>
 
-HashTable::HashTable() :
-	node_entries(0x00000010),
+HashTable::HashTable(std::size_t default_node_entries) :
+	node_entries(default_node_entries),
 	chunk_entries(0x00001000),
 	table_entries(0x00010000),
 	node_size(sizeof(Node) + sizeof(Id[node_entries])),
@@ -121,6 +121,7 @@ bool HashTable::rem_node(Node *&chain_head)
 	Node *node = chain_head;
 	if(node->next_sameid)
 	{ // shortening chain
+		node->next_sameid->next_samehash = chain_head->next_samehash;
 		chain_head = node->next_sameid;
 		free_node(node);
 		return false;

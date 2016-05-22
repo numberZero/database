@@ -59,7 +59,7 @@ sub print_select_test {
 			$key[$i] = "$key_names->[$i] = \"$key_values[$i]\"";
 		}
 		my $key = join ", ", @key;
-		print $shfile_select "{ sort -u | diff <($zol <<<'select $key; print;' | ./test/print2csv.pl | sort) -; } <<-'DATA' &";
+		print $shfile_select "{ sort -u | diff -q <($zol <<<'select $key; print;' | ./test/print2csv.pl | sort) -; } <<-'DATA' &";
 		foreach(@$rows) {
 			print $shfile_select "\n\t", join ',', @$_;
 		}

@@ -9,12 +9,12 @@ else
 fi;
 shift;
 
-if [ -z "$1" ]; then
+#if [ -z "$1" ]; then
 	logfile="$default_logfile";
-else
-	logfile="$(realpath -s "$1")";
-fi;
-shift;
+#else
+#	logfile="$(realpath -s "$1")";
+#fi;
+#shift;
 echo "Sending output to $logfile";
 
 dir0="$(dirname "$0")";
