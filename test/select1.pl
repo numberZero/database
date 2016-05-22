@@ -93,11 +93,11 @@ my $cb = sub {
 };
 
 print STDERR "Generating the table\n";
-open our $shfile_insert, ">", $shfilename_insert;
+open $shfile_insert, ">", $shfilename_insert;
 print $shfile_insert "#!/bin/bash\n";
 print $shfile_insert "\n";
 print $shfile_insert $query_begin;
-maketable( \$cb, $row_count, 100, 1000);
+maketable( \$cb, $row_count);
 print $shfile_insert $query_end;
 print $shfile_insert "\n";
 print $shfile_insert "wait\n";
@@ -114,7 +114,7 @@ if($restart) {
 }
 
 print STDERR "Reprinting the table\n";
-open our $shfile_select, ">", $shfilename_select;
+open $shfile_select, ">", $shfilename_select;
 print $shfile_select "#!/bin/bash\n";
 print $shfile_select "\n";
 print_select_test(\%rows_t, [ "teacher" ]);

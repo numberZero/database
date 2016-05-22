@@ -4,26 +4,33 @@
 #include <fstream>
 #include <string>
 #include <fcntl.h>
+#include "fs.hxx"
 #include "misc.hxx"
 
 Database::Database(std::string const &datadir) :
-	SubDB_Teacher(datadir + "/teacher.zolden-table"),
-	SubDB_Subject(datadir + "/subject.zolden-table"),
-	SubDB_Room(datadir + "/room.zolden-table"),
-	SubDB_Group(datadir + "/group.zolden-table"),
-	SubDB_Time(datadir + "/time.zolden-table"),
-	rows(datadir + "/row.zolden-table"),
+	SubDB_Teacher(Open(datadir + "/teacher.zolden-table", O_RDWR | O_CREAT), defer_load),
+	SubDB_Subject(Open(datadir + "/subject.zolden-table", O_RDWR | O_CREAT), defer_load),
+	SubDB_Room(Open(datadir + "/room.zolden-table", O_RDWR | O_CREAT), defer_load),
+	SubDB_Group(Open(datadir + "/group.zolden-table", O_RDWR | O_CREAT), defer_load),
+	SubDB_Time(Open(datadir + "/time.zolden-table", O_RDWR | O_CREAT), defer_load),
+	SubDB_Row(Open(datadir + "/row.zolden-table", O_RDWR | O_CREAT), defer_load),
 	temporary(false)
 {
+	Teachers::load();
+	Subjects::load();
+	Rooms::load();
+	Groups::load();
+	Times::load();
+	Rows::load();
 }
 
 Database::Database(std::string const &datadir, db_temporary_t) :
-	SubDB_Teacher(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
-	SubDB_Subject(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
-	SubDB_Room(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
-	SubDB_Group(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
-	SubDB_Time(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
-	rows(File(open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640))),
+	SubDB_Teacher(Open(datadir, O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Subject(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Room(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Group(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Time(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Row(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	temporary(true)
 {
 }
@@ -75,7 +82,7 @@ void Database::readTableRowData_rows(std::istream &file)
 	Id subject = readInteger(file, "Subject");
 	Id teacher = readInteger(file, "Teacher");
 	Id group = readInteger(file, "Group");
-	addRow(teacher, subject, room, group, time);
+	Rows::need(teacher, subject, room, group, time);
 }
 
 void Database::readTable(std::istream &file, std::string const &name, void (Database::*reader)(std::istream &file))
@@ -188,7 +195,7 @@ void Database::writeText(std::ostream &file)
 	writeTable(file, Groups::table());
 	writeTable(file, Times::table());
 #undef writeTable
-	writeTable(file,  rows, "entries");
+	writeTable(file,  Rows::table(), "entries");
 	file << "END\n";
 	file.flush();
 }
@@ -197,7 +204,7 @@ void Database::printDB(std::ostream &file, int width)
 {
 	(void)(width);
 	int k = 0;
-	for(Row const& prow: rows)//std::size_t k = 0; k != rows.size(); ++k)
+	for(Row const& prow: Rows::table())
 	{
 		file << "*** Row " << ++k << " ***\n";
 		RowReference row(this, &prow);
@@ -211,15 +218,14 @@ void Database::printDB(std::ostream &file, int width)
 	}
 }
 
-Id Database::addRow(Id teacher, Id subject, Id room, Id group, Id time)
+void Database::on_add(Id id, Row &row)
 {
-	Id id = rows.insert(Row{teacher, subject, room, group, time});
-	Teachers::add_row(id, teacher);
-	Subjects::add_row(id, subject);
-	Rooms::add_row(id, room);
-	Groups::add_row(id, group);
-	Times::add_row(id, time);
-	return id;
+	Rows::on_add(id, row);
+	Teachers::add_row(id, row.teacher);
+	Subjects::add_row(id, row.subject);
+	Rooms::add_row(id, row.room);
+	Groups::add_row(id, row.group);
+	Times::add_row(id, row.time);
 }
 
 RowReference Database::insert(RowData const &row)
@@ -230,13 +236,14 @@ RowReference Database::insert(RowData const &row)
 	Id room = Rooms::need(row.room);
 	Id group = Groups::need(row.group);
 	Id time = Times::need(row.day, row.lesson);
-	return RowReference(this, &rows.get(addRow(teacher, subject, room, group, time)));
+	return{this, &Rows::table().get(Rows::need(teacher, subject, room, group, time))};
 }
 
 Selection Database::select(SelectionParams const &p)
 {
 	std::unique_ptr<SRXW_ReadLockGuard> guard(new SRXW_ReadLockGuard(lock));
 	std::unique_ptr<PreSelection> s;
+	Rows &rows = *this;
 	if(!p.isValid())
 		return Selection();
 	if(p.teacher.is_key())
@@ -261,12 +268,12 @@ std::size_t Database::remove(SelectionParams const &p)
 	std::unique_ptr<PreSelection> s;
 	if(!p.isValid())
 		return 0;
-	s.reset(new PreSelection_Full(rows)); // slow but always works
+	s.reset(new PreSelection_Full(*this)); // slow but always works
 	while(s->isValid())
 	{
 		Id id = s->getRowId();
 		s->next(); // to be sure iterator won’t break
-		Row &row = rows.get(id);
+		Row &row = Rows::table().get(id);
 		if(!RowReference(this, &row).check(p))
 			continue;
 		Teachers::remove_row(id, row.teacher);
@@ -274,7 +281,7 @@ std::size_t Database::remove(SelectionParams const &p)
 		Rooms::remove_row(id, row.room);
 		Groups::remove_row(id, row.group);
 		Times::remove_row(id, row.time);
-		rows.drop(id); // it always present (unless threads conflict)
+		Rows::remove(id); // it always present (unless threads conflict)
 		++count;
 	}
 	return count;

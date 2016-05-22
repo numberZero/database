@@ -6,11 +6,6 @@
 
 class Database;
 
-template <typename _Object>
-struct Table;
-
-typedef Table<Row> Rows;
-
 class RowReference
 {
 	Database const *db;

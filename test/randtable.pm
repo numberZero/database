@@ -24,8 +24,10 @@ sub mkstring {
 sub maketable {
 	local *callback = shift(@_);
 	my $row_count = shift(@_);
-	my $s_count = shift(@_) || 100;
-	my $t_count = shift(@_) || 1000;
+	my $s_count = shift(@_) || int($row_count / 50 + 10);
+	my $t_count = shift(@_) || int($row_count / 200 + 5);
+	my $r_count = shift(@_) || int($row_count / 20 + 5);
+	my $g_count = shift(@_) || int($row_count / 500 + 3);
 
 	for($i = 0; $i != $s_count; ++$i) {
 		$subjects[$i] = uc mkstring int(10 + rand(20));
@@ -40,8 +42,8 @@ sub maketable {
 		$tid = int(rand($t_count));
 		$teacher = $teachers[$tid];
 		$subject = $subjects[$ts[$tid]];
-		$room = 100 + int(rand(900));
-		$group = 100 + int(rand(600));
+		$room = 100 + int(rand($r_count));
+		$group = 100 + int(rand($g_count));
 		$day = 1 + int(rand(6));
 		$lesson = 1 + int(rand(6));
 		&$callback($teacher, $subject, $room, $group, $day, $lesson);

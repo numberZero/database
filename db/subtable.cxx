@@ -6,16 +6,11 @@ template class Subtable<Subject>;
 template class Subtable<Room>;
 template class Subtable<Group>;
 template class Subtable<Time>;
+template class Subtable<Row>;
 
 template<typename _Object>
-Subtable< _Object>::Subtable(std::string const &file):
-	DataTable(file)
-{
-}
-
-template<typename _Object>
-Subtable< _Object>::Subtable(File && file):
-	DataTable(std::move(file))
+Subtable< _Object>::Subtable(File && file, defer_load_t):
+	DataTable(std::move(file), defer_load)
 {
 }
 
@@ -29,6 +24,26 @@ template<typename _Object>
 auto Subtable< _Object>::table() const -> DataTable const &
 {
 	return *static_cast<DataTable const *>(this);
+}
+
+template<typename _Object>
+void Subtable< _Object>::first_load(Id index, _Object &item)
+{
+	on_add(index, item);
+}
+
+template<typename _Object>
+void Subtable< _Object>::on_add(Id index, _Object &item)
+{
+	HashTable::insert(index);
+}
+
+template<typename _Object>
+void Subtable< _Object>::remove(Id row)
+{
+	HashTable::erase(row);
+	if(!table().drop(row))
+		throw std::runtime_error("Removing a node with many references");
 }
 
 template<typename _Object>

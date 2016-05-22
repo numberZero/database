@@ -6,13 +6,14 @@
 #include "hashtable.hxx"
 #include "srxw.hxx"
 #include "struct.hxx"
+#include "table.hxx"
 
 class PreSelection
 {
 protected:
-	Rows const &rows;
+	Table<Row> const &rows;
 
-	PreSelection(Rows const &db);
+	PreSelection(Table<Row> const &rows);
 
 public:
 	virtual ~PreSelection() = default;
@@ -28,10 +29,10 @@ class PreSelection_Full:
 	public PreSelection
 {
 private:
-	std::size_t index;
+	Id index;
 
 public:
-	PreSelection_Full(Rows const &table);
+	PreSelection_Full(Table<Row> const &rows);
 	bool isValid() override;
 	void next() override;
 	Id getRowId() override;
@@ -44,7 +45,7 @@ private:
 	HashTable::RowIterator iterator;
 
 public:
-	PreSelection_SimpleKey(Rows const &db, HashTable::RowIterator iter);
+	PreSelection_SimpleKey(Table<Row> const &rows, HashTable::RowIterator iter);
 	bool isValid() override;
 	void next() override;
 	Id getRowId() override;

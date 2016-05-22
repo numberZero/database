@@ -2,9 +2,10 @@
 #include "dbcommon.hxx"
 #include "hashers.hxx"
 
-template class SubDB_Struct<Room, unsigned>;
-template class SubDB_Struct<Group, unsigned>;
-template class SubDB_Struct<Time, unsigned, unsigned>;
+template class SubDB_Struct<Room, std::uint32_t>;
+template class SubDB_Struct<Group, std::uint32_t>;
+template class SubDB_Struct<Time, std::uint16_t, std::uint16_t>;
+template class SubDB_Struct<Row, Id, Id, Id, Id, Id>;
 
 template<typename _Object, typename... Params>
 auto SubDB_Struct< _Object, Params...>::key_of(Id id) -> PKey
@@ -29,7 +30,7 @@ Id SubDB_Struct< _Object, Params...>::add(Params... params)
 {
 	auto p = table().alloc();
 	*p.second = _Object{params...};
-	HashTable::insert(p.first);
+	this->on_add(p.first, *p.second);
 	return p.first;
 }
 
@@ -37,7 +38,7 @@ template<typename _Object, typename... Params>
 Id SubDB_Struct< _Object, Params...>::find(Params... params)
 {
 	_Object key{params...};
-	return HashTable::at(&key);
+	return HashTable::get(&key);
 }
 
 template<typename _Object, typename... Params>

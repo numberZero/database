@@ -144,12 +144,13 @@ void HashTable::insert(Id object)
 	node->row_count = 0;
 	place = node;
 }
-/*
+
 void HashTable::erase(Id object)
 {
-
+	Node *&place = find(object);
+	while(!rem_node(place));
 }
-*/
+
 Id HashTable::get(PKey key)
 {
 	Node *node = find(key);

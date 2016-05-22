@@ -6,24 +6,24 @@ static const Id INVALID_ID = ~(Id)0;
 
 struct [[gnu::packed]] Teacher
 {
-	static constexpr std::size_t const name_len = 128;
+	static constexpr std::size_t const name_len = 124;
 	char name[name_len];
 };
 
 struct [[gnu::packed]] Subject
 {
-	static constexpr std::size_t const name_len = 128;
+	static constexpr std::size_t const name_len = 124;
 	char name[name_len];
 };
 
 struct [[gnu::packed]] Room
 {
-	std::uint16_t number;
+	std::uint32_t number;
 };
 
 struct [[gnu::packed]] Group
 {
-	std::uint16_t number;
+	std::uint32_t number;
 };
 
 struct [[gnu::packed]] Time

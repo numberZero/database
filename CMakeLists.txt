@@ -7,6 +7,7 @@ option(DISCONNECT_ON_INVALID_REQUEST "Disconnect anyone who have sent an incorre
 
 add_executable(zold
 	common/struct.cxx
+	db/backedtable.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/hashers.cxx

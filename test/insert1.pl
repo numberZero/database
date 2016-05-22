@@ -59,7 +59,7 @@ print $shfile "#!/bin/bash\n";
 print $shfile "\n";
 print $shfile "\n";
 print $shfile $query_begin;
-maketable( \$cb, $row_count, 100, 1000);
+maketable( \$cb, $row_count);
 print $shfile $query_end;
 print $shfile "\n";
 print $shfile "wait\n";

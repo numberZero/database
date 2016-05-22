@@ -24,6 +24,7 @@ protected:
 	HashTable::RowIterator begin(Params... params);
 };
 
-typedef SubDB_Struct<Room, unsigned> Rooms, SubDB_Room;
-typedef SubDB_Struct<Group, unsigned> Groups, SubDB_Group;
-typedef SubDB_Struct<Time, unsigned, unsigned> Times, SubDB_Time;
+typedef SubDB_Struct<Room, std::uint32_t> Rooms, SubDB_Room;
+typedef SubDB_Struct<Group, std::uint32_t> Groups, SubDB_Group;
+typedef SubDB_Struct<Time, std::uint16_t, std::uint16_t> Times, SubDB_Time;
+typedef SubDB_Struct<Row, Id, Id, Id, Id, Id> Rows, SubDB_Row;

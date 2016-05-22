@@ -8,7 +8,7 @@
 
 /*** PreSelection ***/
 
-PreSelection::PreSelection(Rows const &db) :
+PreSelection::PreSelection(Table<Row> const &db) :
 	rows(db)
 {
 }
@@ -20,8 +20,8 @@ Row const *PreSelection::getRow()
 
 /*** PreSelection_Full ***/
 
-PreSelection_Full::PreSelection_Full(Rows const &table) :
-	PreSelection(table),
+PreSelection_Full::PreSelection_Full(Table<Row> const &rows) :
+	PreSelection(rows),
 	index(0)
 {
 #ifndef NDEBUG
@@ -49,8 +49,8 @@ void PreSelection_Full::next()
 
 /*** PreSelection_SimpleKey ***/
 
-PreSelection_SimpleKey::PreSelection_SimpleKey(const Rows &db, HashTable::RowIterator iter):
-	PreSelection(db),
+PreSelection_SimpleKey::PreSelection_SimpleKey(Table<Row> const &rows, HashTable::RowIterator iter):
+	PreSelection(rows),
 	iterator(iter)
 {
 #ifndef NDEBUG

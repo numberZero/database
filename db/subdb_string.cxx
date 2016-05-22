@@ -32,14 +32,14 @@ Id SubDB_String< _Object>::add(std::string const &name)
 	auto p = table().alloc();
 	std::memcpy(p.second->name, name.c_str(), len);
 	p.second->name[len] = 0;
-	HashTable::insert(p.first);
+	this->on_add(p.first, *p.second);
 	return p.first;
 }
 
 template<typename _Object>
 Id SubDB_String< _Object>::find(std::string const &name)
 {
-	return HashTable::at(reinterpret_cast<PKey>(name.c_str()));
+	return HashTable::get(reinterpret_cast<PKey>(name.c_str()));
 }
 
 template<typename _Object>

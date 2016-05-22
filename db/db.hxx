@@ -1,12 +1,13 @@
 #pragma once
+#include "data.hxx"
 #include "dbcommon.hxx"
-#include "table.hxx"
-#include "select.hxx"
-#include "hashtable.hxx"
 #include "dbhelper.hxx"
+#include "hashtable.hxx"
+#include "select.hxx"
+#include "srxw.hxx"
 #include "subdb_string.hxx"
 #include "subdb_struct.hxx"
-#include "srxw.hxx"
+#include "table.hxx"
 
 static struct db_temporary_t {} db_temporary;
 
@@ -15,14 +16,16 @@ class Database:
 	public SubDB_Subject,
 	public SubDB_Room,
 	public SubDB_Group,
-	public SubDB_Time
+	public SubDB_Time,
+	public SubDB_Row
 {
 	friend class RowReference;
 	friend class Selection;
 
 private:
-	Rows rows;
 	bool temporary;
+
+	void on_add(Id index, Row &item) override;
 
 	void readTableRowData_teachers(std::istream &file);
 	void readTableRowData_subjects(std::istream &file);
