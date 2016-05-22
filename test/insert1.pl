@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use strict;
+use strict qw(vars refs);
 use vars;
 use warnings;
 use autodie;
@@ -8,35 +10,42 @@ push @INC, "./test/";
 require testlib;
 require randtable;
 
-$row_count = int(shift(@ARGV) || 1000);
-$group_size = int(shift(@ARGV) || ($row_count / 100));
+my $restart = 0;
+if($ARGV[0] eq 'restart') {
+	$restart = 1;
+	shift @ARGV;
+}
+our $row_count = int(shift(@ARGV) || 1000);
+our $group_size = int(shift(@ARGV) || ($row_count / 100));
 
 running("insert1");
-open_temp_dir();
 find_zolden();
-start_server();
+my $tempdir = open_temp_dir();
+my $datadir = "$tempdir/data";
+mkdir $datadir;
+my $zol = start_server($datadir);
 
-$csvfilename_unsorted = "$tempdir/data1.csv";
-$csvfilename_sorted = "$tempdir/data2.csv";
-$csvfilename_got = "$tempdir/data3.csv";
-$shfilename_insert = "$tempdir/insert.sh";
-open $csvfile, ">", $csvfilename_unsorted;
-open $shfile, ">", $shfilename_insert;
+my $csvfilename_unsorted = "$tempdir/data1.csv";
+my $csvfilename_sorted = "$tempdir/data2.csv";
+my $csvfilename_got = "$tempdir/data3.csv";
+my $shfilename_insert = "$tempdir/insert.sh";
+open our $csvfile, ">", $csvfilename_unsorted;
+open our $shfile, ">", $shfilename_insert;
 
-$ingroup_count = 0;
-$query_begin = "$zol <<'QUERY_END' &\n";
-$query_end = "QUERY_END\n";
+our $ingroup_count = 0;
+our $query_begin = "$zol <<'QUERY_END' &\n";
+our $query_end = "QUERY_END\n";
 
-$cb = sub {
+my $cb = sub {
 	print $csvfile join(",", @_), "\n";
-	$teacher = shift @_;
-	$subject = shift @_;
-	$room = shift @_;
-	$group = shift @_;
-	$day = shift @_;
-	$lesson = shift @_;
+	my $teacher = shift @_;
+	my $subject = shift @_;
+	my $room = shift @_;
+	my $group = shift @_;
+	my $day = shift @_;
+	my $lesson = shift @_;
 
-	$query = "insert teacher = \"$teacher\", subject = \"$subject\", room = $room, group = $group, day = $day, lesson = $lesson;";
+	my $query = "insert teacher = \"$teacher\", subject = \"$subject\", room = $room, group = $group, day = $day, lesson = $lesson;";
 	print $shfile "\t$query\n";
 	if(++$ingroup_count >= $group_size) {
 		print $shfile $query_end;
@@ -65,15 +74,21 @@ system "sort -u $csvfilename_unsorted > $csvfilename_sorted";
 print STDERR "Inserting\n";
 system "$shfilename_insert >/dev/null";
 
+if($restart) {
+	print STDERR "Restarting\n";
+	stop_server();
+	$zol = start_server($datadir);
+}
 print STDERR "Selecting\n";
 system "$zol <<<'print;' | ./test/print2csv.pl | sort > $csvfilename_got";
 
+stop_server();
+
 print STDERR "Comparing\n";
-$result = system "diff -q $csvfilename_sorted $csvfilename_got";
+my $result = system "diff -q $csvfilename_sorted $csvfilename_got";
 if($result == 0) {
 	print STDERR "Test passed\n";
 	pass("$row_count rows in groups of $group_size rows each\n");
-	stop_server();
 	close_temp_dir();
 } else {
 	print STDERR "Test failed\n";

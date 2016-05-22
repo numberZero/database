@@ -18,7 +18,7 @@ while(<>) {
 		readitem "group";
 		readitem "day";
 		readitem "lesson", "\n";
-		<> == "" or die "Empty line expected\n";
+		<> eq "\n" or die "Empty line expected\n";
 	}
 	elsif(m/^\*\*\* END \*\*\*\n$/) {
 		break;

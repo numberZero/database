@@ -12,6 +12,9 @@ my $port;
 my $pid;
 my $result;
 
+my $tempdir;
+my $zol;
+
 sub findexec {
 	my $name = shift @_;
 	for my $dir (@PATH) {
@@ -39,6 +42,7 @@ sub find_zolden {
 sub open_temp_dir {
 	defined $tempdir and die "Temporary directory is already open";
 	$tempdir = tempdir("/tmp/zolden-test-$testname.XXXXXX");
+	return $tempdir;
 }
 
 sub close_temp_dir {
@@ -53,14 +57,20 @@ sub close_temp_dir {
 sub start_server {
 	defined $server or die "Server has not been found";
 	defined $pid and die "Server already started";
+	my $datadir = shift @_;
+	my @args = ($server, '--port', $port);
+	if($datadir) {
+		push @args, '--data', $datadir;
+	}
 	$port = 0;
 	print STDERR "Starting server at port $port\n";
-	$pid = open CHILD, '-|', $server, '--port', $port or die "Can't start server: $!";
+	$pid = open CHILD, '-|', @args or die "Can't start server: $!";
 	$_ = <CHILD>;
 	m/^READY ([0-9]+)/ or die "Server refused to start: $_";
 	$port = int($1);
 	defined $client and $zol = "$client --addr 127.0.0.1 --port $port --batch";
 	print STDERR "Server started at port $port, PID $pid\n";
+	return $zol;
 }
 
 # Stops Zolden server
@@ -71,10 +81,15 @@ sub stop_server {
 		last if m/^SHUTDOWN/;
 	}
 	print STDERR "Shutdown request accepted\n";
-	waitpid $pid, 0;
+	waitpid($pid, 0) == $pid or die "Server is not running..?";
+	my $result = $? >> 8;
 	close CHILD;
 	undef $pid;
-	print STDERR "Server stopped\n";
+	if($result == 0) {
+		print STDERR "Server stopped\n";
+	} else {
+		crash("Server crashed with error code $?");
+	}
 }
 
 sub pass {
@@ -87,12 +102,17 @@ sub fail {
 	print "[\e[31mFAIL\e[m] ", @_;
 }
 
+sub crash {
+	$result = -1;
+	print "[\e[31mXCPT\e[m] ", @_;
+	exit $result;
+}
+
 END {
 	defined $pid and print STDERR "Server may still be active; port $port, pid $pid\n";
 	defined $tempdir and print STDERR "Temporary directory may still exist at $tempdir\n";
-	if( not defined $result) {
-		print "[\e[41;37mXCPT\e[m]\n";
-		$result = -1;
+	if(not defined $result) {
+		crash("No result given");
 	}
 	exit $result;
 }

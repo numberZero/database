@@ -10,7 +10,7 @@ Database::Database(std::string const &datadir) :
 	SubDB_Teacher(datadir + "/teacher.zolden-table"),
 	SubDB_Subject(datadir + "/subject.zolden-table"),
 	SubDB_Room(datadir + "/room.zolden-table"),
-	SubDB_Group(datadir + "/gropu.zolden-table"),
+	SubDB_Group(datadir + "/group.zolden-table"),
 	SubDB_Time(datadir + "/time.zolden-table"),
 	rows(datadir + "/row.zolden-table"),
 	temporary(false)
