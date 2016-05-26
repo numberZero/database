@@ -19,7 +19,14 @@ protected:
 		Node *next_samehash;
 		Node *next_sameid;
 		std::size_t row_count;
-		Id rows[];
+#ifdef USE_ZERO_SIZED_ARRAY
+		Id rws[];
+		Id *rows() { return rws; }
+		Id const *rows() const { return rws; }
+#else
+		Id *rows() { return reinterpret_cast<Id *>(this + 1); }
+		Id const *rows() const { return reinterpret_cast<Id const *>(this + 1); }
+#endif
 	};
 
 private:

@@ -26,3 +26,9 @@ protected:
 
 typedef SubDB_String<Teacher, &Row::teacher> Teachers, SubDB_Teacher;
 typedef SubDB_String<Subject, &Row::subject> Subjects, SubDB_Subject;
+
+#ifndef USE_EXTERNAL_TEMPLATE_INSTANTIATION
+#ifndef SUBDB_STRING_CXX
+#include "subdb_string.cxx"
+#endif
+#endif

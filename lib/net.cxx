@@ -126,4 +126,4 @@ namespace std
 		assert(len < 22);
 		return string(buf, len);
 	}
-};
+}

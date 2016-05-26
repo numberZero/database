@@ -31,3 +31,10 @@ protected:
 public:
 	using DataTable::get;
 };
+
+#ifndef USE_EXTERNAL_TEMPLATE_INSTANTIATION
+#ifndef SUBTABLE_CXX
+#include "subtable.cxx"
+#endif
+#endif
+

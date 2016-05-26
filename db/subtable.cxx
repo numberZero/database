@@ -1,3 +1,4 @@
+#define SUBTABLE_CXX
 #include "subtable.hxx"
 #include <cassert>
 #include "subdb_struct.hxx"
@@ -52,7 +53,7 @@ void Subtable< _Object, pid>::change_id(Id from, Id to)
 }
 
 template <typename _Object, Id Row::*pid>
-void Subtable< _Object, pid>::on_add(Id index, _Object &item)
+void Subtable< _Object, pid>::on_add(Id index, _Object &)
 {
 	HashTable::insert(index);
 }
@@ -77,7 +78,7 @@ void Subtable< _Object, pid>::add_row(Id row, Id to)
 	assert(head->row_count <= max_entries);
 	if(head->row_count == max_entries)
 		node = add_node(head);
-	node->rows[node->row_count++] = row;
+	node->rows()[node->row_count++] = row;
 }
 
 template <typename _Object, Id Row::*pid>
@@ -89,9 +90,9 @@ void Subtable< _Object, pid>::remove_row(Id row, Id from)
 	while(node)
 	{
 		for(std::size_t k = 0; k != node->row_count; ++k)
-			if(node->rows[k] == row)
+			if(node->rows()[k] == row)
 			{
-				node->rows[k] = head->rows[--head->row_count];
+				node->rows()[k] = head->rows()[--head->row_count];
 				if(!head->row_count)
 					if(HashTable::rem_node(head))
 						table().drop(from);

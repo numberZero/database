@@ -11,6 +11,8 @@
 #include "backedtable.hxx"
 #include "rtcheck.hxx"
 
+defer_load_t defer_load;
+
 #define FREE_ENTRIES_FACTOR	3/4	// no parenthesis here!
 
 static Id increase_capacity(Id capacity)
@@ -62,7 +64,11 @@ void BackedTable::load()
 		if(!e->rc) // if free
 			continue; // we will add it later, if needed
 		++entry_count;
+#ifdef USE_ZERO_SIZED_ARRAY
 		first_load(k, e->data);
+#else
+		first_load(k, e + 1);
+#endif
 		for(Id m = next_insert_id; m != k; ++m)
 		{ // [next_insert_id; k) all are free
 			if(free_entries_count >= free_entries_capacity)
@@ -168,17 +174,29 @@ std::pair<Id, void *> BackedTable::create()
 		throw std::runtime_error("Database file corrupted");
 	entry->rc = 1;
 	++entry_count;
+#ifdef USE_ZERO_SIZED_ARRAY
 	return{index, entry->data};
+#else
+	return{index, entry + 1};
+#endif
 }
 
 void *BackedTable::get(Id index)
 {
+#ifdef USE_ZERO_SIZED_ARRAY
 	return get_entry(index)->data;
+#else
+	return get_entry(index) + 1;
+#endif
 }
 
 void const *BackedTable::get(Id index) const
 {
+#ifdef USE_ZERO_SIZED_ARRAY
 	return get_entry(index)->data;
+#else
+	return get_entry(index) + 1;
+#endif
 }
 
 void BackedTable::grab(Id index)
@@ -192,8 +210,8 @@ bool BackedTable::drop(Id index)
 {
 	Entry *entry(get_entry(index));
 	RefCount rc = --entry->rc;
-	if(rc < 0) // underflow
-		throw std::logic_error("Reference counting underflow");
+//	if(rc < 0) // underflow
+//		throw std::logic_error("Reference counting underflow");
 	if(rc == 0) // last reference dropped
 	{
 #ifndef NDEBUG
@@ -232,11 +250,11 @@ bool BackedTable::next(Id &index) const
 	return false;
 }
 
-void BackedTable::first_load(Id index, void *object)
+void BackedTable::first_load(Id, void *)
 {
 }
 
-void BackedTable::change_id(Id from, Id to)
+void BackedTable::change_id(Id, Id)
 {
 	throw std::logic_error("Id changing is not supported by this table");
 }

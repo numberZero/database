@@ -5,17 +5,19 @@
 #include "file.hxx"
 
 static Id const invalid_index = INVALID_ID;
-static struct defer_load_t {} defer_load;
+extern struct defer_load_t {} defer_load;
 
 class BackedTable
 {
 private:
 	typedef std::uint32_t RefCount;
 
-	struct Entry
+	struct [[gnu::packed]] Entry
 	{
 		RefCount rc;
+#ifdef USE_ZERO_SIZED_ARRAY
 		char data[];
+#endif
 	};
 
 	File fd;

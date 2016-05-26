@@ -50,9 +50,16 @@ public:
 	Iterator end();
 };
 
+#ifdef USE_EXTERNAL_TEMPLATE_INSTANTIATION
 extern template class Table<Teacher>;
 extern template class Table<Subject>;
 extern template class Table<Room>;
 extern template class Table<Group>;
 extern template class Table<Time>;
 extern template class Table<Row>;
+#else
+#ifndef TABLE_CXX
+#include "table.cxx"
+#endif
+#endif
+

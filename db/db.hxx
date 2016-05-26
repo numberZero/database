@@ -9,7 +9,7 @@
 #include "subdb_struct.hxx"
 #include "table.hxx"
 
-static struct db_temporary_t {} db_temporary;
+extern struct db_temporary_t {} db_temporary;
 
 class Database:
 	public SubDB_Teacher,

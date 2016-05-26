@@ -1,3 +1,4 @@
+#define SUBDB_STRUCT_CXX
 #include "subdb_struct.hxx"
 #include "dbcommon.hxx"
 #include "hashers.hxx"

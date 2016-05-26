@@ -6,7 +6,11 @@ HashTable::HashTable(std::size_t default_node_entries) :
 	node_entries(default_node_entries),
 	chunk_entries(0x00001000),
 	table_entries(0x00010000),
+#ifdef USE_ZERO_SIZED_ARRAY
 	node_size(sizeof(Node) + sizeof(Id[node_entries])),
+#else
+	node_size(sizeof(Node) + sizeof(Id) * node_entries),
+#endif
 	chunk_size(sizeof(Chunk) + node_size * chunk_entries),
 	table_size(sizeof(Node *) * table_entries),
 	table(nullptr),
@@ -57,6 +61,7 @@ auto HashTable::find(PKey key) -> Node *
 			return node;
 		node = node->next_samehash;
 	}
+	return nullptr;
 }
 
 auto HashTable::find(Id id) -> Node *&
@@ -165,6 +170,7 @@ Id HashTable::at(PKey key)
 	Id id = get(key);
 	if(id == INVALID_ID)
 		throw std::out_of_range("Object not found in hash-table");
+	return id;
 }
 
 
@@ -186,7 +192,7 @@ bool HashTable::RowIterator::operator!() const
 
 Id HashTable::RowIterator::operator*() const
 {
-	return node->rows[position];
+	return node->rows()[position];
 }
 
 HashTable::RowIterator &HashTable::RowIterator::operator++()
@@ -196,4 +202,5 @@ HashTable::RowIterator &HashTable::RowIterator::operator++()
 		node = node->next_sameid;
 		position = 0;
 	}
+	return *this;
 }

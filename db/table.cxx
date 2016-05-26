@@ -1,3 +1,4 @@
+#define TABLE_CXX
 #include "data.hxx"
 #include "table.hxx"
 
@@ -37,6 +38,7 @@ typename Table<_Item>::Iterator &Table<_Item>::Iterator::operator++()
 {
 	if(!table.next(index))
 		index = invalid_index;
+	return *this;
 }
 
 template <typename _Item>
@@ -53,7 +55,7 @@ void Table<_Item>::first_load(Id index, void *item)
 }
 
 template <typename _Item>
-void Table<_Item>::first_load(Id index, Item &item)
+void Table<_Item>::first_load(Id, Item &)
 {
 }
 

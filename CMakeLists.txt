@@ -4,6 +4,7 @@ project(zolden)
 option(USE_EXCLUSIVE_LOCK "Disallow requests to be processed simultaneously" OFF)
 option(USE_MANUAL_TCP_FLUSH "Flush TCP stream manually instead of system default settings" OFF)
 option(DISCONNECT_ON_INVALID_REQUEST "Disconnect anyone who have sent an incorrect request" OFF)
+option(NICE_CXX_COMPILER "Use features not supported by some compilers" OFF)
 
 add_executable(zold
 	common/struct.cxx
@@ -99,6 +100,10 @@ endif()
 
 if(DISCONNECT_ON_INVALID_REQUEST)
 	target_compile_definitions(zold PRIVATE DISCONNECT_ON_INVALID_REQUEST)
+endif()
+
+if(NICE_CXX_COMPILER)
+	target_compile_definitions(zold PRIVATE USE_ZERO_SIZED_ARRAY USE_EXPLICIT_TEMPLATE_INSTANTIATION)
 endif()
 
 target_link_libraries(zol PUBLIC

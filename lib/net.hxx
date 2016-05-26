@@ -41,4 +41,4 @@ namespace std
 {
 	string to_string(IP4addr const &);
 	string to_string(AddressIPv4 const &);
-};
+}

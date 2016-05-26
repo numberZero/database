@@ -28,3 +28,9 @@ typedef SubDB_Struct<Room, &Row::room, std::uint32_t> Rooms, SubDB_Room;
 typedef SubDB_Struct<Group, &Row::group, std::uint32_t> Groups, SubDB_Group;
 typedef SubDB_Struct<Time, &Row::time, std::uint16_t, std::uint16_t> Times, SubDB_Time;
 typedef SubDB_Struct<Row, nullptr, Id, Id, Id, Id, Id> Rows, SubDB_Row;
+
+#ifndef USE_EXTERNAL_TEMPLATE_INSTANTIATION
+#ifndef SUBDB_STRUCT_CXX
+#include "subdb_struct.cxx"
+#endif
+#endif

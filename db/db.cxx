@@ -7,6 +7,8 @@
 #include "fs.hxx"
 #include "misc.hxx"
 
+db_temporary_t db_temporary;
+
 Database::Database(std::string const &datadir) :
 	SubDB_Teacher(Open(datadir + "/teacher.zolden-table", O_RDWR | O_CREAT), defer_load),
 	SubDB_Subject(Open(datadir + "/subject.zolden-table", O_RDWR | O_CREAT), defer_load),
@@ -25,14 +27,18 @@ Database::Database(std::string const &datadir) :
 }
 
 Database::Database(std::string const &datadir, db_temporary_t) :
+#ifdef O_TMPFILE
 	SubDB_Teacher(Open(datadir, O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Subject(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Room(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Group(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Time(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Row(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
-	temporary(true)
+#else
+	Database(datadir)
+#endif
 {
+	temporary = true;
 }
 
 void Database::readText(std::string const &filename)
