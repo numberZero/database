@@ -1,4 +1,4 @@
-#define SUBDB_STRUCT_CXX
+#define TEMPLATES__SUBDB_STRUCT
 #include "subdb_struct.hxx"
 #include "dbcommon.hxx"
 #include "hashers.hxx"

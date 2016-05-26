@@ -33,7 +33,7 @@ Database::Database(std::string const &datadir, db_temporary_t) :
 	SubDB_Room(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Group(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
 	SubDB_Time(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
-	SubDB_Row(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load),
+	SubDB_Row(Open(datadir.c_str(), O_RDWR | O_TMPFILE, 0640), defer_load)
 #else
 	Database(datadir)
 #endif

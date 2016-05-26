@@ -13,7 +13,24 @@ my $pid;
 my $result;
 
 my $tempdir;
+my $datadir;
 my $zol;
+
+my $restart = 0;
+if(scalar(@ARGV) > 0 and $ARGV[0] eq 'restart') {
+	print STDERR "Restarting mode enabled\n";
+	$restart = 1;
+	shift @ARGV;
+}
+
+sub restart_point {
+	if($restart) {
+		print STDERR "Restarting\n";
+		stop_server();
+		$zol = start_server($datadir);
+	}
+	return $zol;
+}
 
 sub findexec {
 	my $name = shift @_;
@@ -57,12 +74,12 @@ sub close_temp_dir {
 sub start_server {
 	defined $server or die "Server has not been found";
 	defined $pid and die "Server already started";
-	my $datadir = shift @_;
+	$datadir = shift @_;
+	$port = 0;
 	my @args = ($server, '--port', $port);
 	if($datadir) {
 		push @args, '--data', $datadir;
 	}
-	$port = 0;
 	print STDERR "Starting server at port $port\n";
 	$pid = open CHILD, '-|', @args or die "Can't start server: $!";
 	$_ = <CHILD>;

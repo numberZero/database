@@ -24,7 +24,6 @@ static Id increase_capacity(Id capacity)
 	return capacity + 0x00010000;
 }
 
-
 BackedTable::BackedTable(std::size_t item_size, File &&file, defer_load_t) :
 	fd(std::move(file)),
 	entry_size(item_size + sizeof(Entry)),
@@ -32,7 +31,7 @@ BackedTable::BackedTable(std::size_t item_size, File &&file, defer_load_t) :
 	next_insert_id(0),
 	free_entries_start(0),
 	free_entries_count(0),
-	free_entries_capacity(1024),
+	free_entries_capacity(256),
 	free_entries_buffer(new Id[free_entries_capacity])
 {
 	off_t bytes = lseek((int)fd, 0, SEEK_END);

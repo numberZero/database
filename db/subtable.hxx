@@ -17,6 +17,7 @@ protected:
 
 	using DataTable::load;
 	using HashTable::get;
+	using HashTable::update_row_id;
 
 	void first_load(Id index, _Object &item) override;
 	void change_id(Id from, Id to) override;
@@ -30,11 +31,11 @@ protected:
 
 public:
 	using DataTable::get;
+	void update_row_id(Id from, Id to);
 };
 
 #ifndef USE_EXTERNAL_TEMPLATE_INSTANTIATION
-#ifndef SUBTABLE_CXX
+#ifndef DEFER_TEMPLATES__SUBTABLE
 #include "subtable.cxx"
 #endif
 #endif
-

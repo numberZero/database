@@ -157,6 +157,26 @@ void HashTable::erase(Id object)
 	while(!rem_node(place));
 }
 
+void HashTable::update_row_id(Id object, Id from, Id to)
+{
+	Node *node = find(object);
+	std::size_t position = 0;
+	while(node)
+	{
+		if(node->row(position) == from)
+		{
+			node->row(position) = to;
+			return;
+		}
+		if(++position >= node->row_count)
+		{
+			node = node->next_sameid;
+			position = 0;
+		}
+	}
+	throw std::out_of_range("Row not found in object's row list");
+}
+
 Id HashTable::get(PKey key)
 {
 	Node *node = find(key);
@@ -192,7 +212,7 @@ bool HashTable::RowIterator::operator!() const
 
 Id HashTable::RowIterator::operator*() const
 {
-	return node->rows()[position];
+	return node->row(position);
 }
 
 HashTable::RowIterator &HashTable::RowIterator::operator++()

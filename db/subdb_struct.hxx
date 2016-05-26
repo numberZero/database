@@ -1,4 +1,5 @@
 #pragma once
+#define DEFER_TEMPLATES__SUBTABLE
 #include "subtable.hxx"
 
 template <typename _Object, Id Row::*pid, typename... Params>
@@ -30,7 +31,8 @@ typedef SubDB_Struct<Time, &Row::time, std::uint16_t, std::uint16_t> Times, SubD
 typedef SubDB_Struct<Row, nullptr, Id, Id, Id, Id, Id> Rows, SubDB_Row;
 
 #ifndef USE_EXTERNAL_TEMPLATE_INSTANTIATION
-#ifndef SUBDB_STRUCT_CXX
-#include "subdb_struct.cxx"
+#ifndef TEMPLATES__SUBTABLE
+#include "subtable.cxx"
 #endif
+#include "subdb_struct.cxx"
 #endif

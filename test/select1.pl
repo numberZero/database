@@ -11,11 +11,6 @@ push @INC, "./test/";
 require testlib;
 require randtable;
 
-my $restart = 0;
-if($ARGV[0] eq 'restart') {
-	$restart = 1;
-	shift @ARGV;
-}
 my $row_count = int(shift(@ARGV) || 100);
 
 running("select1");
@@ -107,11 +102,7 @@ chmod 0700, $shfilename_insert;
 print STDERR "Inserting\n";
 system "$shfilename_insert";
 
-if($restart) {
-	print STDERR "Restarting\n";
-	stop_server();
-	$zol = start_server($datadir);
-}
+$zol = restart_point();
 
 print STDERR "Reprinting the table\n";
 open $shfile_select, ">", $shfilename_select;

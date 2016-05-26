@@ -10,11 +10,6 @@ push @INC, "./test/";
 require testlib;
 require randtable;
 
-my $restart = 0;
-if($ARGV[0] eq 'restart') {
-	$restart = 1;
-	shift @ARGV;
-}
 our $row_count = int(shift(@ARGV) || 1000);
 our $group_size = int(shift(@ARGV) || ($row_count / 100));
 
@@ -74,11 +69,8 @@ system "sort -u $csvfilename_unsorted > $csvfilename_sorted";
 print STDERR "Inserting\n";
 system "$shfilename_insert >/dev/null";
 
-if($restart) {
-	print STDERR "Restarting\n";
-	stop_server();
-	$zol = start_server($datadir);
-}
+$zol = restart_point();
+
 print STDERR "Selecting\n";
 system "$zol <<<'print;' | ./test/print2csv.pl | sort > $csvfilename_got";
 

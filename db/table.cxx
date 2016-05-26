@@ -1,4 +1,4 @@
-#define TABLE_CXX
+#define TEMPLATES__TABLE
 #include "data.hxx"
 #include "table.hxx"
 

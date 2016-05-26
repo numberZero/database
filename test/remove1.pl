@@ -11,11 +11,6 @@ push @INC, "./test/";
 require testlib;
 require randtable;
 
-my $restart = 0;
-if($ARGV[0] eq 'restart') {
-	$restart = 1;
-	shift @ARGV;
-}
 my $row_count = int(shift(@ARGV) || 100);
 
 running("remove1");
@@ -102,11 +97,11 @@ my $cb = sub {
 	my $group = shift @_;
 	my $day = shift @_;
 	my $lesson = shift @_;
-	if($rows{@tmp}) {
-#		print "Duplicate!";
+	if($rows{(),@tmp}) {
+		print STDERR "Duplicate! (@tmp) already present\n";
 		return;
 	}
-	$rows{@tmp} = 1;
+	$rows{(),@tmp} = $row;
 	my $query = "insert teacher = \"$teacher\", subject = \"$subject\", room = $room, group = $group, day = $day, lesson = $lesson;";
 	print $shfile_insert "\t$query\n";
 	my_add_row(\%rows_t, $teacher, $row);
@@ -131,11 +126,7 @@ chmod 0700, $shfilename_insert;
 print STDERR "Inserting\n";
 system "$shfilename_insert";
 
-if($restart) {
-	print STDERR "Restarting\n";
-	stop_server();
-	$zol = start_server($datadir);
-}
+$zol = restart_point();
 
 print STDERR "Preparing remove\n";
 open $shfile_remove, ">", $shfilename_remove;
@@ -150,11 +141,7 @@ chmod 0700, $shfilename_remove;
 print STDERR "Removing\n";
 system "$shfilename_remove";
 
-if($restart) {
-	print STDERR "Restarting\n";
-	stop_server();
-	$zol = start_server($datadir);
-}
+$zol = restart_point();
 
 print STDERR "Reprinting the table\n";
 open $shfile_select, ">", $shfilename_select;

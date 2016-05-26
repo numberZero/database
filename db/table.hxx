@@ -58,8 +58,5 @@ extern template class Table<Group>;
 extern template class Table<Time>;
 extern template class Table<Row>;
 #else
-#ifndef TABLE_CXX
 #include "table.cxx"
 #endif
-#endif
-

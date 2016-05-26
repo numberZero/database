@@ -21,8 +21,7 @@ Row const *PreSelection::getRow()
 /*** PreSelection_Full ***/
 
 PreSelection_Full::PreSelection_Full(Table<Row> const &rows) :
-	PreSelection(rows),
-	index(0)
+	PreSelection(rows)
 {
 #ifndef NDEBUG
 	std::clog << "Using full preselection\n";

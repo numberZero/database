@@ -6,41 +6,51 @@ option(USE_MANUAL_TCP_FLUSH "Flush TCP stream manually instead of system default
 option(DISCONNECT_ON_INVALID_REQUEST "Disconnect anyone who have sent an incorrect request" OFF)
 option(NICE_CXX_COMPILER "Use features not supported by some compilers" OFF)
 
-add_executable(zold
+set(ZOLDEN_SOURCES
 	common/struct.cxx
+	lib/args.cxx
+	lib/bio.cxx
+	lib/file.cxx
+	lib/misc.cxx
+	lib/net.cxx
+)
+
+set(ZOLD_SOURCES
 	db/backedtable.cxx
 	db/db.cxx
 	db/dbhelper.cxx
 	db/hashers.cxx
 	db/hashtable.cxx
 	db/select.cxx
-	db/subdb_string.cxx
-	db/subdb_struct.cxx
-	db/subtable.cxx
-	db/table.cxx
-	lib/args.cxx
-	lib/bio.cxx
 	lib/fs.cxx
-	lib/file.cxx
-	lib/misc.cxx
-	lib/net.cxx
 	lib/srxw.cxx
 	server/client.cxx
 	server/main.cxx
 )
 
-add_executable(zol
-	common/struct.cxx
+set(ZOLD_TEMPLATE_SOURCES
+	db/subdb_string.cxx
+	db/subdb_struct.cxx
+	db/subtable.cxx
+	db/table.cxx
+)
+
+set(ZOL_SOURCES
 	client/main.cxx
 	client/reader.cxx
 	client/tokenizer.cxx
 	client/query.cxx
-	lib/args.cxx
-	lib/bio.cxx
-	lib/file.cxx
-	lib/misc.cxx
-	lib/net.cxx
 )
+
+list(APPEND ZOLD_SOURCES ${ZOLDEN_SOURCES})
+list(APPEND ZOL_SOURCES ${ZOLDEN_SOURCES})
+
+if(NICE_CXX_COMPILER)
+	list(APPEND ZOLD_SOURCES ${ZOLD_TEMPLATE_SOURCES})
+endif()
+
+add_executable(zold ${ZOLD_SOURCES})
+add_executable(zol ${ZOL_SOURCES})
 
 target_include_directories(zold PUBLIC
 	${CMAKE_SOURCE_DIR}
@@ -106,11 +116,11 @@ if(NICE_CXX_COMPILER)
 	target_compile_definitions(zold PRIVATE USE_ZERO_SIZED_ARRAY USE_EXPLICIT_TEMPLATE_INSTANTIATION)
 endif()
 
-target_link_libraries(zol PUBLIC
+target_link_libraries(zold PUBLIC
 	pthread
 )
 
-target_link_libraries(zold PUBLIC
+target_link_libraries(zol PUBLIC
 	pthread
 )
 

@@ -1,6 +1,7 @@
-#define SUBTABLE_CXX
+#define TEMPLATES__SUBTABLE
 #include "subtable.hxx"
 #include <cassert>
+#include "subdb_string.hxx"
 #include "subdb_struct.hxx"
 
 template class Subtable<Teacher, &Row::teacher>;
@@ -38,16 +39,25 @@ void Subtable< _Object, pid>::first_load(Id index, _Object &item)
 template <typename _Object, Id Row::*pid>
 void Subtable< _Object, pid>::change_id(Id from, Id to)
 {
-	if(!pid)
-		return; // nothing to change
-	Subtable<Row, nullptr> &rows = dynamic_cast<Rows &>(*this);
-	Node *&a = HashTable::find(from);
 	HashTable::insert(to);
-	for(HashTable::RowIterator iter(a); iter != end(); ++iter)
+	if(pid)
 	{
-		Id id = *iter;
-		rows.get(id).*pid = to;
-		add_row(id, to);
+		Rows *rows = dynamic_cast<Rows *>(this);
+		Node *&a = HashTable::find(from);
+		for(HashTable::RowIterator iter(a); iter != end(); ++iter)
+		{
+			Id id = *iter;
+			rows->get(id).*pid = to;
+			add_row(id, to);
+		}
+	}
+	else
+	{
+		dynamic_cast<SubDB_Teacher *>(this)->update_row_id(from, to);
+		dynamic_cast<SubDB_Subject *>(this)->update_row_id(from, to);
+		dynamic_cast<SubDB_Room *>(this)->update_row_id(from, to);
+		dynamic_cast<SubDB_Group *>(this)->update_row_id(from, to);
+		dynamic_cast<SubDB_Time *>(this)->update_row_id(from, to);
 	}
 	HashTable::erase(from);
 }
@@ -78,7 +88,7 @@ void Subtable< _Object, pid>::add_row(Id row, Id to)
 	assert(head->row_count <= max_entries);
 	if(head->row_count == max_entries)
 		node = add_node(head);
-	node->rows()[node->row_count++] = row;
+	node->row(node->row_count++) = row;
 }
 
 template <typename _Object, Id Row::*pid>
@@ -90,9 +100,9 @@ void Subtable< _Object, pid>::remove_row(Id row, Id from)
 	while(node)
 	{
 		for(std::size_t k = 0; k != node->row_count; ++k)
-			if(node->rows()[k] == row)
+			if(node->row(k) == row)
 			{
-				node->rows()[k] = head->rows()[--head->row_count];
+				node->row(k) = head->row(--head->row_count);
 				if(!head->row_count)
 					if(HashTable::rem_node(head))
 						table().drop(from);
@@ -104,6 +114,14 @@ void Subtable< _Object, pid>::remove_row(Id row, Id from)
 		node = node->next_sameid;
 	}
 	throw std::logic_error("Row not found");
+}
+
+template <typename _Object, Id Row::*pid>
+void Subtable< _Object, pid>::update_row_id(Id from, Id to)
+{
+	assert(pid);
+	Rows *rows = dynamic_cast<Rows *>(this);
+	update_row_id(rows->get(from).*pid, from, to);
 }
 
 template <typename _Object, Id Row::*pid>

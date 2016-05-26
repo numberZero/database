@@ -20,12 +20,12 @@ protected:
 		Node *next_sameid;
 		std::size_t row_count;
 #ifdef USE_ZERO_SIZED_ARRAY
-		Id rws[];
-		Id *rows() { return rws; }
-		Id const *rows() const { return rws; }
+		Id rows[];
+		Id &row(std::size_t n) { return rows[n]; }
+		Id const &row(std::size_t n) const { return rows[n]; }
 #else
-		Id *rows() { return reinterpret_cast<Id *>(this + 1); }
-		Id const *rows() const { return reinterpret_cast<Id const *>(this + 1); }
+		Id &row(std::size_t n) { return reinterpret_cast<Id *>(this + 1)[n]; }
+		Id const &row(std::size_t n) const { return reinterpret_cast<Id const *>(this + 1)[n]; }
 #endif
 	};
 
@@ -68,6 +68,7 @@ protected:
 
 	void insert(Id object);
 	void erase(Id object);
+	void update_row_id(Id object, Id from, Id to);
 	Id get(PKey key); ///< \returns INVALID_ID if not found
 	Id at(PKey key); ///< \throws std::out_of_range if not found
 

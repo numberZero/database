@@ -1,4 +1,4 @@
-#define SUBDB_STRING_CXX
+#define TEMPLATES__SUBDB_STRING
 #include "subdb_string.hxx"
 #include "dbcommon.hxx"
 #include "hashers.hxx"
